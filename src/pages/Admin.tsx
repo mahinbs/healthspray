@@ -677,9 +677,10 @@ const Admin = () => {
                   }}
                 >
                   <DialogTrigger asChild>
-                  <Button>
+                    <Button>
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Product</Button>
+                      Add Product
+                    </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
@@ -1064,7 +1065,8 @@ const Admin = () => {
                     </Button>
                   </DialogFooter>
                 </DialogContent>
-              </Dialog>
+                </Dialog>
+              </div>
             </div>
 
             {/* Stats Cards */}
