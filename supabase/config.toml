@@ -1,1 +1,7 @@
 project_id = "gielqkfnsypadbplaaci"
+
+[functions.setup-admin]
+verify_jwt = false
+
+[functions.add-admin]
+verify_jwt = false

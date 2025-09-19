@@ -97,6 +97,7 @@ const Shop = React.lazy(() => import("./pages/Shop"));
 const Cart = React.lazy(() => import("./pages/Cart"));
 const Wishlist = React.lazy(() => import("./pages/Wishlist"));
 const Admin = React.lazy(() => import("./pages/Admin"));
+const AdminSetup = React.lazy(() => import("./pages/AdminSetup"));
 const About = React.lazy(() => import("./pages/About"));
 const Contact = React.lazy(() => import("./pages/Contact"));
 const Privacy = React.lazy(() => import("./pages/Privacy"));
@@ -130,6 +131,7 @@ const App = () => {
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/admin" element={<AdminProvider><Admin /></AdminProvider>} />
+                    <Route path="/admin-setup" element={<AdminSetup />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/privacy" element={<Privacy />} />
