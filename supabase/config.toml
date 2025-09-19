@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.add-admin]
 verify_jwt = false
+
+[functions.bulk-add-products]
+verify_jwt = false

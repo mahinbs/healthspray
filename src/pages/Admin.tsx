@@ -57,6 +57,7 @@ import {
   ProductStats,
   convertToDatabaseProduct,
 } from "@/services/products";
+import { supabase } from "@/integrations/supabase/client";
 import OrderManagement from "@/components/OrderManagement";
 import AdminAnalytics from "@/components/AdminAnalytics";
 import AdminSettings from "@/components/AdminSettings";
@@ -372,6 +373,37 @@ const Admin = () => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleBulkAddProducts = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const { data, error } = await supabase.functions.invoke('bulk-add-products');
+      
+      if (error) {
+        console.error('Error calling bulk-add-products:', error);
+        toast.error('Failed to add products. Please try again.');
+        return;
+      }
+      
+      if (data.success) {
+        toast.success(`Successfully added ${data.inserted} Upurfit products!`);
+        if (data.skipped > 0) {
+          toast.info(`${data.skipped} products were already in the database.`);
+        }
+        
+        // Refresh the products list and stats
+        await loadData();
+      } else {
+        toast.error(data.error || 'Failed to add products');
+      }
+    } catch (error) {
+      console.error('Error in bulk add products:', error);
+      toast.error('Failed to add products. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleMultipleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -624,27 +656,40 @@ const Admin = () => {
             {/* Add Product Button */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-xl sm:text-2xl font-bold">Product Management</h2>
-              <Dialog
-                open={isAddDialogOpen}
-                onOpenChange={(open) => {
-                  setIsAddDialogOpen(open);
-                  if (!open) resetForm();
-                }}
-              >
-                <DialogTrigger asChild>
-                <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Product</Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Add New Product</DialogTitle>
-                    <DialogDescription>
-                      Fill in the details for the new product
-                    </DialogDescription>
-                  </DialogHeader>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleBulkAddProducts}
+                  disabled={isSubmitting}
+                  variant="outline"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <ShoppingBag className="h-4 w-4 mr-2" />
+                  )}
+                  Add Upurfit Products
+                </Button>
+                <Dialog
+                  open={isAddDialogOpen}
+                  onOpenChange={(open) => {
+                    setIsAddDialogOpen(open);
+                    if (!open) resetForm();
+                  }}
+                >
+                  <DialogTrigger asChild>
+                  <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Product</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Add New Product</DialogTitle>
+                      <DialogDescription>
+                        Fill in the details for the new product
+                      </DialogDescription>
+                    </DialogHeader>
 
-                  <div className="space-y-4">
+                    <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="name">Product Name</Label>
