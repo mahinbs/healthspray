@@ -49,6 +49,7 @@ import {
   Loader2,
   ShoppingBag,
   AlertCircle,
+  ImageIcon,
 } from "lucide-react";
 import { formatPrice } from "@/services/api";
 import {
@@ -404,6 +405,40 @@ const Admin = () => {
     }
   };
 
+  const handleUpdateProductImages = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const { data, error } = await supabase.functions.invoke('update-product-images');
+      
+      if (error) {
+        console.error('Error calling update-product-images:', error);
+        toast.error('Failed to update product images. Please try again.');
+        return;
+      }
+      
+      if (data.success) {
+        toast.success(`Successfully updated ${data.updated} products with new images!`);
+        if (data.skipped > 0) {
+          toast.info(`${data.skipped} products were skipped (not found).`);
+        }
+        if (data.errors && data.errors.length > 0) {
+          toast.error(`Some errors occurred: ${data.errors.join(', ')}`);
+        }
+        
+        // Refresh the products list and stats
+        await loadData();
+      } else {
+        toast.error(data.error || 'Failed to update product images');
+      }
+    } catch (error) {
+      console.error('Error in update product images:', error);
+      toast.error('Failed to update product images. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleMultipleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -668,6 +703,18 @@ const Admin = () => {
                     <ShoppingBag className="h-4 w-4 mr-2" />
                   )}
                   Add Upurfit Products
+                </Button>
+                <Button
+                  onClick={handleUpdateProductImages}
+                  disabled={isSubmitting}
+                  variant="outline"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                  )}
+                  Update Product Images
                 </Button>
                 <Dialog
                   open={isAddDialogOpen}
