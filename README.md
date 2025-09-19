@@ -1,4 +1,4 @@
-# 🐾 Zippty Playful Pals - Premium Pet Toys E-commerce
+# 🐾 Painssy Playful Pals - Premium Pet Toys E-commerce
 
 A modern, full-stack e-commerce platform for premium pet toys and interactive companions.
 

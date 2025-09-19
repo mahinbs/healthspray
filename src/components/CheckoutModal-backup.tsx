@@ -115,7 +115,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
       amount: orderData.amount,
       currency: orderData.currency,
       order_id: orderData.orderId,
-      name: 'Zippty - Premium Pet Care',
+      name: 'Painssy - Premium Sports Health',
       description: `Order for ${items.length} item${items.length > 1 ? 's' : ''}`,
       prefill: {
         name: address.fullName,

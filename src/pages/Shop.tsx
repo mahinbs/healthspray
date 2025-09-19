@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Search, Filter, Grid, List } from "lucide-react";
 import { productsService, convertToFrontendProduct } from "@/services/products";
-import heroImage from "@/assets/hero-pets.jpg";
+import heroImage from "@/assets/hero-sports-health-bg.webp";
 
 interface Product {
   id: string;

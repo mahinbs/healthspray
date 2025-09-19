@@ -1,6 +1,6 @@
 # 🛒 E-Commerce Cart System Implementation
 
-This document outlines the complete e-commerce cart system implementation for the Zippty Playful Pals website.
+This document outlines the complete e-commerce cart system implementation for the Painssy Playful Pals website.
 
 ## 🚀 Features Implemented
 

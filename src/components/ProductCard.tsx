@@ -34,11 +34,11 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
     <GlassCard 
       intensity="medium" 
       animated
-      className="group overflow-hidden transition-all duration-500 hover:shadow-float"
+      className="group overflow-hidden transition-all duration-500 hover:shadow-float h-full flex flex-col"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="p-0">
+      <div className="p-0 flex flex-col h-full">
         <div className="relative overflow-hidden rounded-t-2xl">
           <img 
             src={product.image} 
@@ -84,45 +84,45 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           }`} />
         </div>
         
-        <div className="p-8 space-y-6">
-          <div className="space-y-3">
-            <p className="text-sm text-primary font-semibold uppercase tracking-wider">{product.category}</p>
-            <h3 className="text-2xl font-bold leading-tight group-hover:text-primary transition-colors duration-300">
+        <div className="p-4 flex flex-col h-full">
+          <div className="space-y-2 flex-grow">
+            <p className="text-xs text-primary font-semibold uppercase tracking-wider">{product.category}</p>
+            <h3 className="text-lg font-bold leading-tight group-hover:text-primary transition-colors duration-300 min-h-[2.5rem] flex items-center">
               {product.name}
             </h3>
           </div>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 my-2">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <Star 
                   key={i} 
-                  className={`h-5 w-5 transition-colors duration-300 ${
+                  className={`h-4 w-4 transition-colors duration-300 ${
                     i < product.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'
                   }`} 
                 />
               ))}
             </div>
-            <span className="text-sm text-muted-foreground font-medium">({product.reviews} reviews)</span>
+            <span className="text-xs text-muted-foreground font-medium">({product.reviews} reviews)</span>
           </div>
           
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div className="space-y-1">
-              <div className="flex items-center space-x-3">
-                <span className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                   {formatPrice(product.price)}
                 </span>
                 {product.originalPrice && (
-                  <span className="text-xl text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
+                  <span className="text-lg text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
                 )}
               </div>
             </div>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex gap-2 mt-auto pb-1">
             <Button 
               variant="outline" 
-              className="flex-1 border-white/20 text-foreground hover:bg-white/10 hover:text-primary hover:shadow-sm"
+              className="flex-1 border-white/20 text-foreground hover:bg-white/10 hover:text-primary hover:shadow-sm text-xs px-2 py-1.5"
               onClick={onViewDetails}
             >
               View Details
@@ -130,23 +130,23 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
             <Button 
               onClick={handleAddToCart}
               disabled={isAddingToCart}
-              className={`flex-1 group bg-gradient-primary hover:shadow-glow text-white border-0 py-3 font-semibold rounded-xl transition-all duration-300 hover:scale-105 ${
+              className={`flex-1 group bg-gradient-primary hover:shadow-glow text-white border-0 py-1.5 px-2 font-semibold rounded-lg transition-all duration-300 hover:scale-105 text-xs ${
                 isInCartState ? 'bg-green-600 hover:bg-green-700' : ''
               }`}
             >
               {isAddingToCart ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1" />
                   Adding...
                 </>
               ) : isInCartState ? (
                 <>
-                  <CheckCircle className="mr-2 h-4 w-4" />
+                  <CheckCircle className="mr-1 h-3 w-3" />
                   In Cart
                 </>
               ) : (
                 <>
-                  <ShoppingCart className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                  <ShoppingCart className="mr-1 h-3 w-3 group-hover:scale-110 transition-transform duration-300" />
                   Add to Cart
                 </>
               )}

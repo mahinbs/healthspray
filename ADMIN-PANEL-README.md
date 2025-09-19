@@ -1,6 +1,6 @@
-# 🛠️ Zippty Admin Panel
+# 🛠️ Painssy Admin Panel
 
-A comprehensive admin panel for managing products on the Zippty Playful Pals website.
+A comprehensive admin panel for managing products on the Painssy Playful Pals website.
 
 ## 🔐 **Admin Credentials**
 
@@ -232,4 +232,4 @@ For issues or questions about the admin panel:
 
 **🎉 Happy Product Management!** 
 
-The admin panel gives you complete control over your Zippty product catalog. Add, edit, and manage products with ease! 
+The admin panel gives you complete control over your Painssy product catalog. Add, edit, and manage products with ease! 

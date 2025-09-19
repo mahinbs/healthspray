@@ -1,6 +1,6 @@
 # 🛍️ E-Commerce Website Functionality Guide
 
-This comprehensive guide documents all the features and functionalities of the Zippty Playful Pals e-commerce website, providing a complete blueprint for creating similar e-commerce platforms with different products and categories.
+This comprehensive guide documents all the features and functionalities of the Painssy Playful Pals e-commerce website, providing a complete blueprint for creating similar e-commerce platforms with different products and categories.
 
 ## 📋 Table of Contents
 
@@ -22,7 +22,7 @@ This comprehensive guide documents all the features and functionalities of the Z
 
 ## 🎯 Overview
 
-The Zippty Playful Pals website is a modern, full-stack e-commerce platform built with:
+The Painssy Playful Pals website is a modern, full-stack e-commerce platform built with:
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Backend**: Supabase (PostgreSQL + Edge Functions)

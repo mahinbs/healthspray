@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import zipptyLogo from "@/assets/zippty-logo.png";
+import painssyLogo from "@/assets/painssy-logo-new.png";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -66,9 +66,9 @@ const Header = () => {
             <div className="flex items-center">
               <Link to="/">
                 <img
-                  src={zipptyLogo}
-                  alt="Zippty - Premium Pet Care"
-                  className="h-12 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer"
+                  src={painssyLogo}
+                  alt="Painssy - Premium Sports Health"
+                  className="h-20 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer"
                 />
               </Link>
             </div>
@@ -258,7 +258,7 @@ const Header = () => {
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-slate-200/50">
-            <img src={zipptyLogo} alt="Zippty" className="h-8 w-auto" />
+            <img src={painssyLogo} alt="Painssy" className="h-12 w-auto" />
             <Button
               variant="ghost"
               size="icon"

@@ -21,7 +21,7 @@ const Shipping = () => {
               Shipping Information
             </h1>
             <p className="text-xl text-white/90">
-              Fast, reliable shipping to get your pet products delivered safely and on time.
+              Fast, reliable shipping to get your sports health products delivered safely and on time.
             </p>
           </div>
         </div>
@@ -85,7 +85,7 @@ const Shipping = () => {
               <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 p-6 rounded-lg border border-green-500/30">
                 <h3 className="text-xl font-semibold mb-3 text-green-400">Free Shipping on All Orders</h3>
                 <p className="text-muted-foreground leading-relaxed mb-4">
-                  We believe in making pet care accessible to everyone. That's why we offer free shipping on every order, regardless of the amount.
+                  We believe in making sports health products accessible to every athlete. That's why we offer free shipping on every order, regardless of the amount.
                 </p>
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
                   <div className="flex items-center text-sm">
@@ -145,11 +145,11 @@ const Shipping = () => {
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
                   <h4 className="font-semibold mb-2">Email</h4>
-                  <p className="text-muted-foreground">shipping@zippty.com</p>
+                  <p className="text-muted-foreground">shipping@painssy.com</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Phone</h4>
-                  <p className="text-muted-foreground">+91 6367189188</p>
+                  <p className="text-muted-foreground">+91 9876543210</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Live Chat</h4>

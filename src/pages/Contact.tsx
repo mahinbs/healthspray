@@ -3,8 +3,8 @@ import Footer from "@/components/Footer";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/hero-pets.jpg";
-import logo from "../assets/zippty-logo.png";
+import heroImage from "@/assets/hero-sports-health-bg.webp";
+import logo from "../assets/painssy-logo-new.png";
 
 const Contact = () => {
   return (
@@ -23,22 +23,22 @@ const Contact = () => {
           <div className="max-w-4xl mx-auto flex flex-col gap-6">
             <img
               src={logo}
-              alt="Zippty"
+              alt="Painssy"
               className="w-28 mx-auto object-contain"
             />
             <h2 className="text-2xl md:text-3xl">
-              If animals could talk, they'd talk about us!
+              Ready to elevate your performance?
             </h2>
             <p className="text-lg text-white/90">
-              Visit our store or get in touch with us for any questions about
-              our products.
+              Get in touch with us for any questions about our sports health
+              and recovery products.
             </p>
             <Link to="/shop">
               <Button variant="hero" size="lg">
                 Shop Now →
               </Button>
             </Link>
-            <div className="text-white/80">Collection of happy pet faces</div>
+            <div className="text-white/80">Professional-grade sports health solutions</div>
           </div>
         </div>
       </section>
@@ -55,8 +55,8 @@ const Contact = () => {
                 </span>
               </h2>
               <p className="text-muted-foreground">
-                Visit our store or contact us for any questions about our
-                products and services.
+                Contact us for any questions about our sports health products,
+                recovery solutions, and performance enhancement services.
               </p>
             </div>
 
@@ -73,7 +73,7 @@ const Contact = () => {
                     <div>
                       <h4 className="font-semibold">Address</h4>
                       <p className="text-muted-foreground">
-                        JP Colony, Shastri Nagar, Jaipur, Rajasthan -302016
+                        123 Sports Health Plaza, Fitness District, Mumbai, Maharashtra -400001
                       </p>
                     </div>
                   </div>
@@ -84,7 +84,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold">Email</h4>
-                      <p className="text-muted-foreground">info@zippty.in</p>
+                      <p className="text-muted-foreground">info@painssy.com</p>
                     </div>
                   </div>
 
@@ -94,7 +94,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold">Phone</h4>
-                      <p className="text-muted-foreground">+91 6367189188</p>
+                      <p className="text-muted-foreground">+91 9876543210</p>
                     </div>
                   </div>
 

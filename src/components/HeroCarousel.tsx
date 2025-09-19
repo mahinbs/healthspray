@@ -1,28 +1,28 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroPet1 from "@/assets/hero-pet-1.jpg";
-import heroPet2 from "@/assets/hero-pet-2.jpg";
-import heroPet3 from "@/assets/hero-pet-3.jpg";
+import heroMuscleSupplement from "@/assets/hero-muscle-supplement.jpg";
+import heroPreWorkoutSupplements from "@/assets/hero-pre-workout-supplements.webp";
+import heroTopSellingPreWorkout from "@/assets/hero-top-selling-pre-workout.webp";
 
 const heroImages = [
   {
-    src: heroPet1,
-    alt: "Golden retriever playing with interactive smart toy",
-    title: "Smart Play for Smart Pets",
-    subtitle: "Interactive toys that adapt to your pet's behavior"
+    src: heroMuscleSupplement,
+    alt: "HD Muscle X Nick Walker PreHD Variant Pre-Workout Supplements",
+    title: "Premium Pre-Workout Formula",
+    subtitle: "HD Muscle X Nick Walker PreHD Variant for maximum performance"
   },
   {
-    src: heroPet2,
-    alt: "Orange tabby cat with puzzle feeder",
-    title: "Mental Stimulation Made Fun",
-    subtitle: "Puzzle feeders that challenge and entertain"
+    src: heroPreWorkoutSupplements,
+    alt: "Pre-workout supplements at Supps247",
+    title: "Professional Grade Supplements",
+    subtitle: "High-quality pre-workout supplements for serious athletes"
   },
   {
-    src: heroPet3,
-    alt: "Beagle puppy with automated ball launcher",
-    title: "Endless Entertainment",
-    subtitle: "Automated toys for active playtime"
+    src: heroTopSellingPreWorkout,
+    alt: "Top Selling Pre-Workout Supplement",
+    title: "Top Selling Pre-Workout",
+    subtitle: "Our most popular pre-workout formula for maximum performance"
   }
 ];
 
@@ -75,6 +75,7 @@ const HeroCarousel = () => {
             size="icon"
             onClick={goToPrevious}
             className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white rounded-full"
+            aria-label="Previous image"
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
@@ -90,6 +91,7 @@ const HeroCarousel = () => {
                     ? "bg-white scale-125"
                     : "bg-white/50 hover:bg-white/70"
                 }`}
+                aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
@@ -99,6 +101,7 @@ const HeroCarousel = () => {
             size="icon"
             onClick={goToNext}
             className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white rounded-full"
+            aria-label="Next image"
           >
             <ChevronRight className="h-6 w-6" />
           </Button>

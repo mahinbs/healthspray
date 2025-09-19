@@ -27,41 +27,52 @@ const Hero = () => {
           <div className="space-y-6 animate-fade-in">
             <h1 className="text-6xl md:text-8xl font-bold leading-tight tracking-tight drop-shadow-2xl">
               <span className="text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                Joy for them{" "}
+                Relieve Pain.{" "}
               </span>
               <span className="bg-gradient-primary bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                love from you
+                Recover Faster.
               </span>{" "}
               <span className="text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                only at{" "}
+                Rise{" "}
               </span>
               <span className="relative text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                Zippty
+                Stronger.
                 <div className="absolute -inset-2 bg-gradient-primary opacity-30 blur-xl rounded-full animate-pulse-slow" />
               </span>
             </h1>
 
             <div className="bg-black/30 backdrop-blur-md rounded-3xl p-8 border border-white/30 max-w-4xl mx-auto shadow-2xl">
               <p className="text-2xl md:text-3xl text-white leading-relaxed animate-slide-up drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] font-medium">
-                At Zippty, we know pets are more than just animals they're family. That's why we create innovative interactive toys that keep them happy, engaged, and cared for every moment.
+                Scientifically designed pain relief and recovery solutions to keep you moving — before, during, and after every workout.
               </p>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-8 justify-center items-center animate-scale-in pb-20">
-            <Button
-              onClick={() => navigate("/shop")}
-              variant="hero"
-              size="lg"
-              className="group text-lg px-8 py-4 rounded-2xl hover:scale-105 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-            >
-              Shop Now
-              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <Button
+                onClick={() => navigate("/shop")}
+                variant="hero"
+                size="lg"
+                className="group text-lg px-8 py-4 rounded-2xl hover:scale-105 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+              >
+                Shop Now
+                <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
+              </Button>
+              <Button
+                onClick={() => navigate("/regimens")}
+                variant="outline"
+                size="lg"
+                className="group text-lg px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white hover:scale-105 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+              >
+                Explore Regimens
+                <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
+              </Button>
+            </div>
             <div className="text-lg text-white/90 animate-bounce-slow drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-medium">
               <p className="">
-                ✨ Transform playtime into an extraordinary adventure ✨
+                ✨ Professional-grade solutions for peak performance ✨
               </p>
             </div>
           </div>

@@ -1,16 +1,21 @@
 {
-  "name": "Zippty - Premium Pet Care",
-  "short_name": "Zippty",
-  "description": "Premium pet care products and toys",
+  "name": "Painssy - Premium Sports Health",
+  "short_name": "Painssy",
+  "description": "Premium sports health and recovery products",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#6366f1",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "https://res.cloudinary.com/dknafpppp/image/upload/v1758303779/ChatGPT_Image_Sep_20_2025_12_42_35_AM_xldlwd.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://res.cloudinary.com/dknafpppp/image/upload/v1758303779/ChatGPT_Image_Sep_20_2025_12_42_35_AM_xldlwd.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }

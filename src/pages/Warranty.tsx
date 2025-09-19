@@ -20,10 +20,10 @@ const Warranty = () => {
               </div>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold">
-              Product Quality
+              Product Quality & Safety
             </h1>
             <p className="text-xl text-white/90">
-              We stand behind the quality of our products and their performance.
+              We stand behind the quality and safety of our sports health products.
             </p>
           </div>
         </div>
@@ -42,10 +42,10 @@ const Warranty = () => {
               </div>
               
               <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 p-6 rounded-lg border border-green-500/30">
-                <h3 className="text-xl font-semibold mb-3 text-green-400">Premium Pet Products</h3>
+                <h3 className="text-xl font-semibold mb-3 text-green-400">Premium Sports Health Products</h3>
                 <p className="text-muted-foreground leading-relaxed mb-4">
-                  All Zippty products are manufactured to the highest standards using premium materials. 
-                  We ensure every product meets our strict quality criteria before shipping.
+                  All Painssy products are manufactured to the highest standards using premium, athlete-safe materials. 
+                  We ensure every product meets our strict quality and safety criteria before shipping.
                 </p>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="text-center">
@@ -56,7 +56,7 @@ const Warranty = () => {
                   <div className="text-center">
                     <div className="text-2xl mb-2">🛡️</div>
                     <p className="text-sm font-semibold">Safe Materials</p>
-                    <p className="text-xs text-muted-foreground">Pet-safe only</p>
+                    <p className="text-xs text-muted-foreground">Athlete-safe only</p>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl mb-2">📞</div>
@@ -77,11 +77,11 @@ const Warranty = () => {
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
                   <h4 className="font-semibold mb-2">Email</h4>
-                  <p className="text-muted-foreground">quality@zippty.com</p>
+                  <p className="text-muted-foreground">quality@painssy.com</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Phone</h4>
-                  <p className="text-muted-foreground">+91 6367189188</p>
+                  <p className="text-muted-foreground">+91 9876543210</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Live Chat</h4>

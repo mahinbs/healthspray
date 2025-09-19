@@ -103,7 +103,7 @@ export function Register({ onSwitchToLogin, onClose }: RegisterProps) {
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
         <CardDescription>
-          Join Zippty Playful Pals for the best pet toys
+          Join Painssy for the best sports health products
         </CardDescription>
       </CardHeader>
       <CardContent>

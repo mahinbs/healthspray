@@ -768,14 +768,14 @@ const Admin = () => {
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Interactive Robots">
-                              Interactive Robots
+                            <SelectItem value="Pain Relief">
+                              Pain Relief
                             </SelectItem>
-                            <SelectItem value="Cat Toys">Cat Toys</SelectItem>
-                            <SelectItem value="Smart Feeders">
-                              Smart Feeders
+                            <SelectItem value="Recovery Products">Recovery Products</SelectItem>
+                            <SelectItem value="Compression Wear">
+                              Compression Wear
                             </SelectItem>
-                            <SelectItem value="Dog Toys">Dog Toys</SelectItem>
+                            <SelectItem value="Warm-up Products">Warm-up Products</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1505,12 +1505,12 @@ const Admin = () => {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Interactive Robots">
-                      Interactive Robots
+                    <SelectItem value="Pain Relief">
+                      Pain Relief
                     </SelectItem>
-                    <SelectItem value="Cat Toys">Cat Toys</SelectItem>
-                    <SelectItem value="Smart Feeders">Smart Feeders</SelectItem>
-                    <SelectItem value="Dog Toys">Dog Toys</SelectItem>
+                    <SelectItem value="Recovery Products">Recovery Products</SelectItem>
+                    <SelectItem value="Compression Wear">Compression Wear</SelectItem>
+                    <SelectItem value="Warm-up Products">Warm-up Products</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

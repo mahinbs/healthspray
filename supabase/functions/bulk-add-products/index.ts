@@ -14,7 +14,7 @@ const upurfitProducts = [
     category: "Pre-Workout",
     description: "Warming gel to prepare muscles and help with activation before exercise. Perfect for pre-workout muscle preparation.",
     features: ["Muscle preparation", "Pre-workout activation", "Warming effect", "Easy application"],
-    image: ["/src/assets/hero-pets.jpg"], // Placeholder - you can update with actual product images
+    image: ["/src/assets/hero-sports-health-bg.webp"], // Sports health background
     stock: 50,
     rating: 5,
     reviews: 0,

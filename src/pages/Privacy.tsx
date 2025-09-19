@@ -41,7 +41,7 @@ const Privacy = () => {
             <GlassCard className="p-8">
               <h2 className="text-3xl font-bold mb-6 text-primary">Introduction</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                At Zippty, we are committed to protecting your privacy and ensuring the security of your personal information. 
+                At Painssy, we are committed to protecting your privacy and ensuring the security of your personal information. 
                 This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our 
                 website or use our services.
               </p>
@@ -181,7 +181,7 @@ const Privacy = () => {
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
                   <h4 className="font-semibold mb-2">Email</h4>
-                  <p className="text-muted-foreground">privacy@zippty.com</p>
+                  <p className="text-muted-foreground">privacy@painssy.com</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Phone</h4>

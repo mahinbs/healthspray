@@ -35,8 +35,8 @@ const ProductShowcase = () => {
         const dbProducts = await productsService.getActiveProducts();
         const formattedProducts = dbProducts.map(convertToFrontendProduct);
         
-        // Show only first 3 products for featured section
-        setProducts(formattedProducts.slice(0, 3));
+        // Show only first 4 products for featured section
+        setProducts(formattedProducts.slice(0, 4));
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -79,10 +79,10 @@ const ProductShowcase = () => {
             Featured Products
           </h2>
           <p className="text-lg max-w-2xl mx-auto">
-            Explore our top-rated interactive toys designed to bring enrichment to your pet's life.
+            Discover our premium pain relief and recovery solutions designed to keep you moving at your best.
           </p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 max-w-7xl mx-auto">
           {products.map((product, index) => (
             <div 
               key={product.id} 

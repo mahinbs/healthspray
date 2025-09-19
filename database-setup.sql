@@ -1,4 +1,4 @@
--- Database setup script for Zippty
+-- Database setup script for Painssy
 -- Run this in your Supabase SQL editor
 
 -- Add idempotency_key column to orders table (if it doesn't exist)

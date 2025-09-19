@@ -1,6 +1,6 @@
 # 💳 Razorpay Payment Gateway Implementation Guide
 
-This comprehensive guide explains how to implement Razorpay payment gateway in your e-commerce website, based on the successful implementation in the Zippty Playful Pals project.
+This comprehensive guide explains how to implement Razorpay payment gateway in your e-commerce website, based on the successful implementation in the Painssy Playful Pals project.
 
 ## 📋 Table of Contents
 

@@ -81,7 +81,7 @@ const LoadingFallback = () => (
       borderRadius: '50%',
       animation: 'spin 1s linear infinite'
     }}></div>
-    <p style={{ marginTop: '20px' }}>Loading Zippty...</p>
+    <p style={{ marginTop: '20px' }}>Loading Painssy...</p>
     <style>{`
       @keyframes spin {
         0% { transform: rotate(0deg); }

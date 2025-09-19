@@ -4,27 +4,27 @@ import { Zap, Heart, Cpu, Shield } from "lucide-react";
 const features = [
   {
     icon: Zap,
-    title: "Smart Technology",
+    title: "Advanced Formulations",
     description:
-      "AI-powered toys that adapt to your pet's behavior and preferences for endless engagement.",
+      "Scientifically developed products with cutting-edge ingredients for maximum performance and recovery.",
   },
   {
     icon: Heart,
-    title: "Health & Wellness",
+    title: "Health & Performance",
     description:
-      "Designed to promote physical activity and mental stimulation for optimal pet well-being.",
+      "Designed to enhance athletic performance, reduce injury risk, and accelerate recovery for optimal health.",
   },
   {
     icon: Cpu,
-    title: "Interactive Features",
+    title: "Smart Solutions",
     description:
-      "Smart toys that engage your pet's natural instincts and behaviors.",
+      "Innovative products that adapt to your training needs and provide targeted relief when you need it most.",
   },
   {
     icon: Shield,
-    title: "Pet-Safe Design",
+    title: "Safe & Tested",
     description:
-      "Every product is rigorously tested and made with non-toxic, durable materials.",
+      "Every product is rigorously tested and made with premium, safe ingredients for professional athletes.",
   },
 ];
 
@@ -38,15 +38,15 @@ const About = () => {
               <h2 className="text-4xl font-bold">
                 Where{" "}
                 <span className="bg-gradient-accent bg-clip-text text-transparent">
-                  technology
+                  science
                 </span>{" "}
-                meets play
+                meets performance
               </h2>
               <p className="text-lg text-muted-foreground">
-                At Zippty, we've combined cutting-edge technology with
-                irresistible fun to create a range of interactive toys and
-                robots designed to engage, excite, and enrich your furry
-                friend's life. Because playtime isn't just fun—it's essential.
+                At Painssy, we've combined cutting-edge science with
+                proven results to create a range of premium sports health products
+                designed to enhance performance, accelerate recovery, and keep you
+                moving at your best. Because your health isn't just important—it's essential.
               </p>
             </div>
 
@@ -82,15 +82,15 @@ const About = () => {
                 <div className="text-center space-y-2">
                   <h3 className="text-2xl font-bold">Quality & Innovation</h3>
                   <p className="text-muted-foreground">
-                    Trusted by pet owners all over India
+                    Trusted by athletes and fitness enthusiasts across India
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="text-center space-y-1">
-                    <div className="text-3xl font-bold text-primary">2k+</div>
+                    <div className="text-3xl font-bold text-primary">5k+</div>
                     <div className="text-sm text-muted-foreground">
-                      Happy Pets
+                      Active Athletes
                     </div>
                   </div>
                   <div className="text-center space-y-1">
@@ -102,13 +102,13 @@ const About = () => {
                   <div className="text-center space-y-1">
                     <div className="text-3xl font-bold text-primary">98%</div>
                     <div className="text-sm text-muted-foreground">
-                      Satisfaction Rate
+                      Recovery Rate
                     </div>
                   </div>
                   <div className="text-center space-y-1">
                     <div className="text-3xl font-bold text-primary">24/7</div>
                     <div className="text-sm text-muted-foreground">
-                      Pet Support
+                      Expert Support
                     </div>
                   </div>
                 </div>
