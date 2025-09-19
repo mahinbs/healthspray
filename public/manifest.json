@@ -1,0 +1,16 @@
+{
+  "name": "Zippty - Premium Pet Care",
+  "short_name": "Zippty",
+  "description": "Premium pet care products and toys",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
