@@ -20,7 +20,7 @@ import aboutRecoveryProducts from "@/assets/about-recovery-products.jpg";
 import aboutCompressionWear from "@/assets/about-compression-wear.jpg";
 import aboutSportsInjury from "@/assets/about-sports-injury.jpg";
 import aboutWarmupCooldown from "@/assets/about-warmup-cooldown.jpg";
-import logo from "../assets/painssy-logo-new.png";
+import logo from "../assets/physiq-final-logo-new.png";
 
 const features = [
   {
@@ -103,14 +103,14 @@ const About = () => {
           <div className="max-w-4xl mx-auto space-y-6">
             <img
               src={logo}
-              alt="Painssy"
+              alt="Physiq"
               className="w-28 mx-auto object-contain"
             />
             <h2 className="text-2xl md:text-3xl">
               Where Your Athletic Performance Comes First
             </h2>
             <p className="text-lg text-white/90 max-w-3xl mx-auto">
-              At Painssy, we understand that athletes are more than just
+              At Physiq, we understand that athletes are more than just
               competitors—they're dedicated individuals who deserve the best
               recovery and performance solutions. We specialize in premium sports
               health products that keep you moving, recovering, and performing at your best.
@@ -133,7 +133,7 @@ const About = () => {
                 </h2>
                 <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
                   <p>
-                    At Painssy, we understand that athletes are more than just
+                    At Physiq, we understand that athletes are more than just
                     competitors—they're dedicated individuals who need proper
                     recovery and performance solutions to thrive. Our passion for
                     sports health drives us to provide the highest quality
@@ -481,7 +481,7 @@ const About = () => {
 
           <div className="text-center mt-16 space-y-4">
             <h3 className="text-2xl font-bold">
-              Start Shopping with Painssy Today!
+              Start Shopping with Physiq Today!
             </h3>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Explore our wide range of sports health products and enjoy a shopping experience

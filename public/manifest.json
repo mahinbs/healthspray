@@ -1,6 +1,6 @@
 {
-  "name": "Painssy - Premium Sports Health",
-  "short_name": "Painssy",
+  "name": "Physiq - Premium Sports Health",
+  "short_name": "Physiq",
   "description": "Premium sports health and recovery products",
   "start_url": "/",
   "display": "standalone",
@@ -8,12 +8,12 @@
   "theme_color": "#6366f1",
   "icons": [
     {
-      "src": "https://res.cloudinary.com/dknafpppp/image/upload/v1758303779/ChatGPT_Image_Sep_20_2025_12_42_35_AM_xldlwd.png",
+      "src": "https://res.cloudinary.com/dknafpppp/image/upload/v1758305789/Physiq_Final_Logo_g1lpjl.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://res.cloudinary.com/dknafpppp/image/upload/v1758303779/ChatGPT_Image_Sep_20_2025_12_42_35_AM_xldlwd.png",
+      "src": "https://res.cloudinary.com/dknafpppp/image/upload/v1758305789/Physiq_Final_Logo_g1lpjl.png",
       "sizes": "512x512",
       "type": "image/png"
     }

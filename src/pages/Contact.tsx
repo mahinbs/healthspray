@@ -4,7 +4,7 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-sports-health-bg.webp";
-import logo from "../assets/painssy-logo-new.png";
+import logo from "../assets/physiq-final-logo-new.png";
 
 const Contact = () => {
   return (
@@ -23,7 +23,7 @@ const Contact = () => {
           <div className="max-w-4xl mx-auto flex flex-col gap-6">
             <img
               src={logo}
-              alt="Painssy"
+              alt="Physiq"
               className="w-28 mx-auto object-contain"
             />
             <h2 className="text-2xl md:text-3xl">
@@ -84,7 +84,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold">Email</h4>
-                      <p className="text-muted-foreground">info@painssy.com</p>
+                      <p className="text-muted-foreground">info@physiq.com</p>
                     </div>
                   </div>
 

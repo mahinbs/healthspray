@@ -41,7 +41,7 @@ const Terms = () => {
             <GlassCard className="p-8">
               <h2 className="text-3xl font-bold mb-6 text-primary">Agreement to Terms</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                These Terms of Service ("Terms") govern your use of the Painssy sports health platform and services. 
+                These Terms of Service ("Terms") govern your use of the Physiq sports health platform and services. 
                 By accessing or using our services, you agree to be bound by these Terms and our Privacy Policy.
               </p>
               <p className="text-muted-foreground leading-relaxed">
@@ -57,7 +57,7 @@ const Terms = () => {
               </div>
               
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Painssy provides premium sports health products and services, including:
+                Physiq provides premium sports health products and services, including:
               </p>
               
               <div className="grid md:grid-cols-2 gap-6">
@@ -262,7 +262,7 @@ const Terms = () => {
               <h2 className="text-3xl font-bold mb-6 text-primary">Limitation of Liability</h2>
               
               <p className="text-muted-foreground leading-relaxed mb-6">
-                To the maximum extent permitted by law, Painssy shall not be liable for any indirect, 
+                To the maximum extent permitted by law, Physiq shall not be liable for any indirect, 
                 incidental, special, consequential, or punitive damages arising from your use of our services.
               </p>
               
@@ -285,7 +285,7 @@ const Terms = () => {
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
                   <h4 className="font-semibold mb-2">Email</h4>
-                  <p className="text-muted-foreground">legal@painssy.com</p>
+                  <p className="text-muted-foreground">legal@physiq.com</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Phone</h4>

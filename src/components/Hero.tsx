@@ -41,7 +41,7 @@ const Hero = () => {
               </span>
             </h1>
 
-            <div className="bg-black/30 backdrop-blur-md rounded-3xl p-8 border border-white/30 max-w-4xl mx-auto shadow-2xl">
+            <div className="bg-orange-500/20 backdrop-blur-md rounded-3xl p-8 border border-orange-200/30 max-w-4xl mx-auto shadow-2xl">
               <p className="text-2xl md:text-3xl text-white leading-relaxed animate-slide-up drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] font-medium">
                 Scientifically designed pain relief and recovery solutions to keep you moving — before, during, and after every workout.
               </p>
@@ -60,12 +60,12 @@ const Hero = () => {
                 Shop Now
                 <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
               </Button>
-              <Button
-                onClick={() => navigate("/regimens")}
-                variant="outline"
-                size="lg"
-                className="group text-lg px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white hover:scale-105 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-              >
+            <Button
+              onClick={() => navigate("/regimens")}
+              variant="outline"
+              size="lg"
+              className="group text-lg px-8 py-4 rounded-2xl bg-orange-500/20 hover:bg-orange-500/30 backdrop-blur-md border border-orange-200/30 text-white hover:scale-105 transition-all duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+            >
                 Explore Regimens
                 <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
               </Button>

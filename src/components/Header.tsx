@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import painssyLogo from "@/assets/painssy-logo-new.png";
+import physiqLogo from "@/assets/physiq-final-logo-new.png";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -57,18 +57,18 @@ const Header = () => {
 
   return (
     <>
-      <header className="w-full backdrop-blur-3xl border-b border-slate-800/50 sticky top-0 z-50 bg-white/20">
+      <header className="w-full backdrop-blur-3xl border-b border-[#ef4e23]/30 sticky top-0 z-50 bg-gradient-to-r from-[#ef4e23]/20 via-[#ef4e23]/15 to-[#ef4e23]/20">
         <GlassCard
           intensity="heavy"
-          className="border-0 border-b border-slate-800/50 rounded-none backdrop-blur-xl shadow-lg"
+          className="border-0 border-b border-[#ef4e23]/40 rounded-none backdrop-blur-xl shadow-lg bg-white/5"
         >
-          <div className="container mx-auto px-4 py-6 flex items-center justify-between">
+          <div className="container mx-auto px-4 py-1 flex items-center justify-between">
             <div className="flex items-center">
               <Link to="/">
                 <img
-                  src={painssyLogo}
-                  alt="Painssy - Premium Sports Health"
-                  className="h-20 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer"
+                  src={physiqLogo}
+                  alt="Physiq - Premium Sports Health"
+                  className="h-24 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer"
                 />
               </Link>
             </div>
@@ -76,52 +76,52 @@ const Header = () => {
             <nav className="hidden md:flex items-center space-x-10">
               <Link
                 to="/"
-                className={`hover:text-blue-500 transition-all duration-300 font-medium text-lg relative group ${
-                  isActive("/") ? "text-blue-500" : ""
+                className={`hover:text-[#ef4e23] transition-all duration-300 font-medium text-lg relative group ${
+                  isActive("/") ? "text-[#ef4e23]" : "text-slate-800"
                 }`}
               >
                 Home
                 <span
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 ${
+                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] transition-all duration-300 ${
                     isActive("/") ? "w-full" : "w-0 group-hover:w-full"
                   }`}
                 ></span>
               </Link>
               <Link
                 to="/shop"
-                className={`hover:text-blue-500 transition-all duration-300 font-medium text-lg relative group ${
-                  isActive("/shop") ? "text-blue-500" : ""
+                className={`hover:text-[#ef4e23] transition-all duration-300 font-medium text-lg relative group ${
+                  isActive("/shop") ? "text-[#ef4e23]" : "text-slate-800"
                 }`}
               >
                 Products
                 <span
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 ${
+                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] transition-all duration-300 ${
                     isActive("/shop") ? "w-full" : "w-0 group-hover:w-full"
                   }`}
                 ></span>
               </Link>
               <Link
                 to="/about"
-                className={`hover:text-blue-500 transition-all duration-300 font-medium text-lg relative group ${
-                  isActive("/about") ? "text-blue-500" : ""
+                className={`hover:text-[#ef4e23] transition-all duration-300 font-medium text-lg relative group ${
+                  isActive("/about") ? "text-[#ef4e23]" : "text-slate-800"
                 }`}
               >
                 About
                 <span
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 ${
+                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] transition-all duration-300 ${
                     isActive("/about") ? "w-full" : "w-0 group-hover:w-full"
                   }`}
                 ></span>
               </Link>
               <Link
                 to="/contact"
-                className={`hover:text-blue-500 transition-all duration-300 font-medium text-lg relative group ${
-                  isActive("/contact") ? "text-blue-500" : ""
+                className={`hover:text-[#ef4e23] transition-all duration-300 font-medium text-lg relative group ${
+                  isActive("/contact") ? "text-[#ef4e23]" : "text-slate-800"
                 }`}
               >
                 Contact
                 <span
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 ${
+                  className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] transition-all duration-300 ${
                     isActive("/contact") ? "w-full" : "w-0 group-hover:w-full"
                   }`}
                 ></span>
@@ -133,11 +133,11 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate("/wishlist")}
-                className="sm:flex hidden relative bg-slate-200/50 hover:bg-slate-300/50 backdrop-blur-md border border-slate-700/50 rounded-full h-12 w-12 hover:text-red-400"
+                className="sm:flex hidden relative bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-[#ef4e23]"
               >
                 <Heart className="h-6 w-6" />
                 {wishlistState.count > 0 && (
-                  <span className="absolute -top-2 -right-2 h-5 w-5 bg-gradient-to-r from-red-400 to-pink-500 rounded-full text-xs text-white flex items-center justify-center animate-bounce">
+                  <span className="absolute -top-2 -right-2 h-5 w-5 bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] rounded-full text-xs text-white flex items-center justify-center animate-bounce">
                     {wishlistState.count > 99 ? "99+" : wishlistState.count}
                   </span>
                 )}
@@ -147,11 +147,11 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate("/cart")}
-                className="relative bg-slate-200/50 hover:bg-slate-300/50 backdrop-blur-md border border-slate-700/50 rounded-full h-12 w-12 hover:text-blue-500"
+                className="relative bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-[#ef4e23]"
               >
                 <ShoppingCart className="h-6 w-6" />
                 {state.itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 h-5 w-5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full text-xs text-white flex items-center justify-center animate-bounce">
+                  <span className="absolute -top-2 -right-2 h-5 w-5 bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] rounded-full text-xs text-white flex items-center justify-center animate-bounce">
                     {state.itemCount > 99 ? "99+" : state.itemCount}
                   </span>
                 )}
@@ -163,7 +163,7 @@ const Header = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="bg-slate-200/50 hover:bg-slate-300/50 backdrop-blur-md border border-slate-700/50 rounded-full h-12 w-12 hover:text-blue-500"
+                      className="bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-[#ef4e23]"
                     >
                       <User className="h-6 w-6" />
                     </Button>
@@ -202,13 +202,13 @@ const Header = () => {
                   <Button
                     variant="outline"
                     onClick={() => handleAuthClick("login")}
-                    className="bg-slate-200/50 hover:bg-slate-300/50 backdrop-blur-md border border-slate-700/50 text-slate-800 hover:text-blue-500"
+                    className="bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 text-slate-800 hover:text-[#ef4e23]"
                   >
                     Sign In
                   </Button>
                   <Button
                     onClick={() => handleAuthClick("register")}
-                    className="md:block hidden bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 px-4 py-2 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="md:block hidden bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] hover:from-[#ef4e23]/90 hover:to-[#ef4e23]/90 text-white border-0 px-4 py-2 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                   >
                     Sign Up
                   </Button>
@@ -219,7 +219,7 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setMobileMenuOpen(true)}
-                className="md:hidden bg-slate-200/50 hover:bg-slate-300/50 backdrop-blur-md border border-slate-700/50 rounded-full h-12 w-12 hover:text-blue-500"
+                className="md:hidden bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-[#ef4e23]"
               >
                 <Menu className="h-6 w-6" />
               </Button>
@@ -257,8 +257,8 @@ const Header = () => {
           }`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200/50">
-            <img src={painssyLogo} alt="Painssy" className="h-12 w-auto" />
+          <div className="flex items-center justify-between p-4 border-b border-orange-300/30 bg-gradient-to-r from-orange-500/10 via-orange-400/5 to-orange-500/10">
+            <img src={physiqLogo} alt="Physiq" className="h-20 w-auto" />
             <Button
               variant="ghost"
               size="icon"

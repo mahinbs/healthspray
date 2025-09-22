@@ -17,16 +17,16 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 10%;
 
-    --primary: 262 83% 58%;
+    --primary: 12 85% 54%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 262 10% 95%;
+    --secondary: 12 10% 95%;
     --secondary-foreground: 240 10% 10%;
 
-    --muted: 262 10% 95%;
+    --muted: 12 10% 95%;
     --muted-foreground: 240 10% 45%;
 
-    --accent: 25 95% 53%;
+    --accent: 12 85% 54%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,16 +34,16 @@ All colors MUST be HSL.
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 262 83% 58%;
+    --ring: 12 85% 54%;
 
     /* Custom design tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(226, 83%, 58%, 0.95), hsl(210, 100%, 70%));
-    --gradient-accent: linear-gradient(135deg, hsl(25 95% 53%), hsl(45 95% 60%));
-    --gradient-hero: linear-gradient(135deg, hsla(226, 83%, 58%, 0.95), hsla(205, 100%, 70%, 0.85), hsla(216, 95%, 53%, 0.75));
+    --gradient-primary: linear-gradient(135deg, hsl(12, 85%, 54%, 0.95), hsl(12, 90%, 60%));
+    --gradient-accent: linear-gradient(135deg, hsl(12 85% 54%), hsl(12 90% 60%));
+    --gradient-hero: linear-gradient(135deg, hsla(12, 85%, 54%, 0.95), hsla(12, 90%, 60%, 0.85), hsla(12, 85%, 55%, 0.75));
     --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-    --gradient-mesh: radial-gradient(circle at 20% 50%, hsl(262 83% 58% / 0.3) 0%, transparent 50%),
-                     radial-gradient(circle at 80% 20%, hsl(280 100% 70% / 0.3) 0%, transparent 50%),
-                     radial-gradient(circle at 40% 80%, hsl(25 95% 53% / 0.3) 0%, transparent 50%);
+    --gradient-mesh: radial-gradient(circle at 20% 50%, hsl(12 85% 54% / 0.3) 0%, transparent 50%),
+                     radial-gradient(circle at 80% 20%, hsl(12 90% 60% / 0.3) 0%, transparent 50%),
+                     radial-gradient(circle at 40% 80%, hsl(12 85% 55% / 0.3) 0%, transparent 50%);
     
     /* Glass morphism effects */
     --glass-bg: rgba(255, 255, 255, 0.1);
@@ -106,7 +106,7 @@ All colors MUST be HSL.
 
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 262 83% 58%;
+    --ring: 12 85% 54%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 0 0% 98%;

@@ -224,7 +224,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         key: orderData.keyId,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'Painssy - Premium Sports Health',
+        name: 'Physiq - Premium Sports Health',
         description: `Order for ${items.length} item${items.length > 1 ? 's' : ''}`,
         // Only include order_id if we have one from Razorpay (Edge Function response)
         ...(orderData.orderId && { order_id: orderData.orderId }),

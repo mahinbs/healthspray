@@ -103,7 +103,7 @@ export function Register({ onSwitchToLogin, onClose }: RegisterProps) {
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
         <CardDescription>
-          Join Painssy for the best sports health products
+          Join Physiq for the best sports health products
         </CardDescription>
       </CardHeader>
       <CardContent>
