@@ -1,10 +1,25 @@
-import { Facebook, Twitter, Instagram, Mail, ExternalLink, MapPin, Phone, Clock, ArrowRight, Heart, Shield, Award, Zap } from "lucide-react";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Mail,
+  ExternalLink,
+  MapPin,
+  Phone,
+  Clock,
+  ArrowRight,
+  Heart,
+  Shield,
+  Award,
+  Zap,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 // Using Cloudinary logo URL
-const physiqLogo = "https://res.cloudinary.com/dknafpppp/image/upload/v1758605608/Physiq_Final_Logo_3_mlnzyt.png";
+const physiqLogo =
+  "https://res.cloudinary.com/dknafpppp/image/upload/v1758605608/Physiq_Final_Logo_3_mlnzyt.png";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
@@ -31,45 +46,47 @@ const Footer = () => {
     }
   };
   return (
-        <footer className="relative bg-gradient-to-br from-[#d43a1a] via-[#c83215] to-[#b52a0f] text-white overflow-hidden">
+    <footer className="relative bg-gradient-to-br from-[#EF4E23] via-[#EF4E23] to-[#EF4E23] text-white overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-mesh opacity-30" />
-      <div className="absolute inset-0 bg-white/10 backdrop-blur-3xl" />
-      
+      {/* <div className="absolute inset-0 bg-white/10 backdrop-blur-3xl" /> */}
+
       {/* Animated Background Elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-[#d43a1a]/30 to-[#c83215]/20 rounded-full opacity-20 blur-3xl animate-float" />
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-br from-[#c83215]/25 to-[#b52a0f]/15 rounded-full opacity-15 blur-3xl animate-float" style={{ animationDelay: "2s" }} />
-      
+      <div
+        className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-br from-[#c83215]/25 to-[#b52a0f]/15 rounded-full opacity-15 blur-3xl animate-float"
+        style={{ animationDelay: "2s" }}
+      />
+
       <div className="relative z-10">
         {/* Main Footer Content */}
         <div className="container mx-auto px-4 py-20">
           <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-12">
-            
             {/* Company Info */}
             <div className="space-y-6">
               <div className="space-y-4">
                 <Link to="/" className="inline-block">
-                        <img
-                          src={physiqLogo}
-                          alt="Physiq - Premium Sports Health"
-                          className="h-24 w-auto transition-transform duration-300 hover:scale-105"
-                        />
+                  <img
+                    src={physiqLogo}
+                    alt="Physiq - Premium Sports Health"
+                    className="h-24 w-auto transition-transform duration-300 hover:scale-105"
+                  />
                 </Link>
                 <p className="text-slate-300 leading-relaxed max-w-sm">
-                  The smarter way to shop for sports health. Cutting-edge science
-                  meets peak performance for athletes worldwide.
+                  The smarter way to shop for sports health. Cutting-edge
+                  science meets peak performance for athletes worldwide.
                 </p>
               </div>
-              
+
               {/* Social Media */}
               <div className="space-y-4">
                 <h4 className="text-lg font-semibold text-white">Follow Us</h4>
                 <div className="flex space-x-4">
-                          <button
-                            onClick={() => handleSocialClick("facebook")}
-                            className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 hover:scale-110 backdrop-blur-md border border-white/20"
-                            title="Facebook"
-                          >
+                  <button
+                    onClick={() => handleSocialClick("facebook")}
+                    className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 hover:scale-110 backdrop-blur-md border border-white/20"
+                    title="Facebook"
+                  >
                     <Facebook className="h-5 w-5" />
                   </button>
                   <button
@@ -172,7 +189,7 @@ const Footer = () => {
             {/* Newsletter & Contact */}
             <div className="space-y-6">
               <h4 className="text-lg font-semibold text-white">Stay Updated</h4>
-              
+
               {/* Newsletter */}
               <div className="space-y-4">
                 <p className="text-slate-300 text-sm">
@@ -184,7 +201,7 @@ const Footer = () => {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-md"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-md"
                     required
                   />
                   <Button
@@ -203,18 +220,18 @@ const Footer = () => {
 
               {/* Contact Info */}
               <div className="space-y-3 pt-4 border-t border-white/20">
-                        <div className="flex items-center text-slate-300">
-                          <MapPin className="h-4 w-4 mr-3 text-white" />
-                          <span className="text-sm">Mumbai, Maharashtra</span>
-                        </div>
-                        <div className="flex items-center text-slate-300">
-                          <Phone className="h-4 w-4 mr-3 text-white" />
-                          <span className="text-sm">+91 9876543210</span>
-                        </div>
-                        <div className="flex items-center text-slate-300">
-                          <Clock className="h-4 w-4 mr-3 text-white" />
-                          <span className="text-sm">24/7 Support</span>
-                        </div>
+                <div className="flex items-center text-slate-300">
+                  <MapPin className="h-4 w-4 mr-3 text-white" />
+                  <span className="text-sm">Mumbai, Maharashtra</span>
+                </div>
+                <div className="flex items-center text-slate-300">
+                  <Phone className="h-4 w-4 mr-3 text-white" />
+                  <span className="text-sm">+91 9876543210</span>
+                </div>
+                <div className="flex items-center text-slate-300">
+                  <Clock className="h-4 w-4 mr-3 text-white" />
+                  <span className="text-sm">24/7 Support</span>
+                </div>
               </div>
             </div>
           </div>
@@ -222,21 +239,27 @@ const Footer = () => {
           {/* Trust Indicators */}
           <div className="mt-16 pt-8 border-t border-white/20">
             <div className="grid md:grid-cols-3 gap-8">
-                      <GlassCard className="p-6 text-center" intensity="light">
-                        <Shield className="h-8 w-8 text-white mx-auto mb-3" />
-                        <h5 className="font-semibold mb-2">Secure & Safe</h5>
-                        <p className="text-sm text-slate-300">Your data and payments are protected</p>
-                      </GlassCard>
-                      <GlassCard className="p-6 text-center" intensity="light">
-                        <Award className="h-8 w-8 text-white/80 mx-auto mb-3" />
-                        <h5 className="font-semibold mb-2">Premium Quality</h5>
-                        <p className="text-sm text-slate-300">Professional-grade sports health products</p>
-                      </GlassCard>
-                      <GlassCard className="p-6 text-center" intensity="light">
-                        <Zap className="h-8 w-8 text-white mx-auto mb-3" />
-                        <h5 className="font-semibold mb-2">Fast Delivery</h5>
-                        <p className="text-sm text-slate-300">Quick shipping for urgent recovery needs</p>
-                      </GlassCard>
+              <GlassCard className="p-6 text-center" intensity="light">
+                <Shield className="h-8 w-8 text-white mx-auto mb-3" />
+                <h5 className="font-semibold mb-2">Secure & Safe</h5>
+                <p className="text-sm text-slate-300">
+                  Your data and payments are protected
+                </p>
+              </GlassCard>
+              <GlassCard className="p-6 text-center" intensity="light">
+                <Award className="h-8 w-8 text-white/80 mx-auto mb-3" />
+                <h5 className="font-semibold mb-2">Premium Quality</h5>
+                <p className="text-sm text-slate-300">
+                  Professional-grade sports health products
+                </p>
+              </GlassCard>
+              <GlassCard className="p-6 text-center" intensity="light">
+                <Zap className="h-8 w-8 text-white mx-auto mb-3" />
+                <h5 className="font-semibold mb-2">Fast Delivery</h5>
+                <p className="text-sm text-slate-300">
+                  Quick shipping for urgent recovery needs
+                </p>
+              </GlassCard>
             </div>
           </div>
         </div>
@@ -247,8 +270,9 @@ const Footer = () => {
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <div className="text-center md:text-left">
                 <p className="text-slate-300 text-sm">
-                  &copy; {new Date().getFullYear()} Physiq. All rights reserved. Made
-                  with <Heart className="inline h-4 w-4 text-red-500" /> for athletes and fitness enthusiasts everywhere.
+                  &copy; {new Date().getFullYear()} Physiq. All rights reserved.
+                  Made with <Heart className="inline h-4 w-4 text-red-500" />{" "}
+                  for athletes and fitness enthusiasts everywhere.
                 </p>
               </div>
               <div className="flex space-x-6">
