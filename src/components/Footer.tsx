@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
+
 // Using Cloudinary logo URL
 const physiqLogo =
   "https://res.cloudinary.com/dknafpppp/image/upload/v1758605608/Physiq_Final_Logo_3_mlnzyt.png";
@@ -69,7 +70,7 @@ const Footer = () => {
                   <img
                     src={physiqLogo}
                     alt="Physiq - Premium Sports Health"
-                    className="h-24 w-auto transition-transform duration-300 hover:scale-105"
+                    className="h-36 scale-125 w-auto"
                   />
                 </Link>
                 <p className="text-slate-300 leading-relaxed max-w-sm">

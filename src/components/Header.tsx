@@ -68,7 +68,7 @@ const Header = () => {
                 <img
                   src={physiqLogo}
                   alt="Physiq - Premium Sports Health"
-                  className="h-24 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer"
+                  className="h-16 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer"
                 />
               </Link>
             </div>
