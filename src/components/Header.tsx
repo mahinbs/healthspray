@@ -57,10 +57,10 @@ const Header = () => {
 
   return (
     <>
-      <header className="w-full backdrop-blur-3xl border-b border-[#ef4e23]/30 sticky top-0 z-50 bg-gradient-to-r from-[#ef4e23]/20 via-[#ef4e23]/15 to-[#ef4e23]/20">
+      <header className="w-full backdrop-blur-3xl border-b border-[#ef4e23]/30 sticky top-0 z-50 bg-white">
         <GlassCard
           intensity="heavy"
-          className="border-0 border-b border-[#ef4e23]/40 rounded-none backdrop-blur-xl shadow-lg bg-white/5"
+          className="border-0 border-b border-[#ef4e23]/40 rounded-none backdrop-blur-xl shadow-lg bg-white/95"
         >
           <div className="container mx-auto px-4 py-1 flex items-center justify-between">
             <div className="flex items-center">
