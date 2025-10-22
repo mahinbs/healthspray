@@ -65,6 +65,9 @@ import AdminSettings from "@/components/AdminSettings";
 import AdminOrderStats from "@/components/AdminOrderStats";
 import VideoManagement from "@/components/VideoManagement";
 import CouponsManager from "@/components/CouponsManager";
+import { FeaturedProductsManager } from "@/components/FeaturedProductsManager";
+import { HeroSectionManager } from "@/components/HeroSectionManager";
+import { HeroCarouselManager } from "@/components/HeroCarouselManager";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
 
@@ -682,8 +685,9 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="products" className="space-y-6">
-        <TabsList>
+          <TabsList>
             <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="featured">Featured</TabsTrigger>
             <TabsTrigger value="videos">Videos</TabsTrigger>
             <TabsTrigger value="coupons">Coupons</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
@@ -1432,6 +1436,14 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="featured" className="space-y-6">
+            <div className="space-y-8">
+              <HeroCarouselManager />
+              <HeroSectionManager />
+              <FeaturedProductsManager />
+            </div>
           </TabsContent>
 
           <TabsContent value="videos" className="space-y-6">

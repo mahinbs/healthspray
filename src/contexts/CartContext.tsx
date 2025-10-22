@@ -29,6 +29,15 @@ interface CartState {
   total: number;
   itemCount: number;
   isSyncing: boolean;
+  couponApplied: {
+    id: string;
+    code: string;
+    type: 'percentage' | 'fixed';
+    value: number;
+    max_discount: number | null;
+    discountAmount: number;
+  } | null;
+  finalTotal: number;
 }
 
 type CartAction =
@@ -37,7 +46,9 @@ type CartAction =
   | { type: 'UPDATE_QUANTITY'; payload: { productId: string; quantity: number } }
   | { type: 'CLEAR_CART' }
   | { type: 'LOAD_CART'; payload: CartItem[] }
-  | { type: 'SET_SYNCING'; payload: boolean };
+  | { type: 'SET_SYNCING'; payload: boolean }
+  | { type: 'APPLY_COUPON'; payload: { id: string; code: string; type: 'percentage' | 'fixed'; value: number; max_discount: number | null; discountAmount: number } }
+  | { type: 'REMOVE_COUPON' };
 
 // Initial state
 const initialState: CartState = {
@@ -45,6 +56,8 @@ const initialState: CartState = {
   total: 0,
   itemCount: 0,
   isSyncing: false,
+  couponApplied: null,
+  finalTotal: 0,
 };
 
 // Cart reducer
@@ -65,6 +78,9 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           items: updatedItems,
           total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
           itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+          finalTotal: state.couponApplied 
+            ? Math.max(1, updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0) - state.couponApplied.discountAmount)
+            : updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
         };
       } else {
         const newItem: CartItem = { product: action.payload, quantity: 1 };
@@ -75,6 +91,9 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           items: updatedItems,
           total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
           itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+          finalTotal: state.couponApplied 
+            ? Math.max(1, updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0) - state.couponApplied.discountAmount)
+            : updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
         };
       }
     }
@@ -111,6 +130,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         items: [],
         total: 0,
         itemCount: 0,
+        couponApplied: null,
+        finalTotal: 0,
       };
     
     case 'LOAD_CART': {
@@ -130,6 +151,23 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       };
     }
     
+    case 'APPLY_COUPON': {
+      const finalTotal = Math.max(1, state.total - action.payload.discountAmount);
+      return {
+        ...state,
+        couponApplied: action.payload,
+        finalTotal,
+      };
+    }
+    
+    case 'REMOVE_COUPON': {
+      return {
+        ...state,
+        couponApplied: null,
+        finalTotal: state.total,
+      };
+    }
+    
     default:
       return state;
   }
@@ -146,6 +184,8 @@ interface CartContextType {
   getItemQuantity: (productId: string) => number;
   syncCart: () => Promise<void>;
   forceSyncCart: () => Promise<void>;
+  applyCoupon: (coupon: { id: string; code: string; type: 'percentage' | 'fixed'; value: number; max_discount: number | null; discountAmount: number }) => void;
+  removeCoupon: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -296,6 +336,14 @@ const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     return item ? item.quantity : 0;
   };
 
+  const applyCoupon = (coupon: { id: string; code: string; type: 'percentage' | 'fixed'; value: number; max_discount: number | null; discountAmount: number }) => {
+    dispatch({ type: 'APPLY_COUPON', payload: coupon });
+  };
+
+  const removeCoupon = () => {
+    dispatch({ type: 'REMOVE_COUPON' });
+  };
+
   const syncCart = async () => {
     if (user) {
       // Force sync by resetting the cooldown
@@ -322,6 +370,8 @@ const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     getItemQuantity,
     syncCart,
     forceSyncCart,
+    applyCoupon,
+    removeCoupon,
   };
 
   return (

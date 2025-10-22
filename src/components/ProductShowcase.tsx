@@ -31,14 +31,37 @@ const ProductShowcase = () => {
       try {
         setLoading(true);
         
-        // Fetch active products from database
-        const dbProducts = await productsService.getActiveProducts();
-        const formattedProducts = dbProducts.map(convertToFrontendProduct);
+        // First try to get featured products
+        const featuredProducts = await productsService.getFeaturedProducts();
         
-        // Show only first 4 products for featured section
-        setProducts(formattedProducts.slice(0, 4));
+        if (featuredProducts.length > 0) {
+          // Convert featured products to frontend format
+          const formattedFeatured = featuredProducts.map(fp => {
+            if (fp.product) {
+              return convertToFrontendProduct(fp.product);
+            }
+            return null;
+          }).filter(Boolean);
+          
+          setProducts(formattedFeatured);
+        } else {
+          // Fallback to regular products if no featured products
+          const dbProducts = await productsService.getActiveProducts();
+          const formattedProducts = dbProducts.map(convertToFrontendProduct);
+          
+          // Show only first 4 products for featured section
+          setProducts(formattedProducts.slice(0, 4));
+        }
       } catch (error) {
         console.error("Error fetching products:", error);
+        // Fallback to regular products on error
+        try {
+          const dbProducts = await productsService.getActiveProducts();
+          const formattedProducts = dbProducts.map(convertToFrontendProduct);
+          setProducts(formattedProducts.slice(0, 4));
+        } catch (fallbackError) {
+          console.error("Error fetching fallback products:", fallbackError);
+        }
       } finally {
         setLoading(false);
       }
