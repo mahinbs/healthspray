@@ -135,7 +135,7 @@ const ShopByVideo = () => {
         </div>
 
         {/* Video Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {loading ? (
             // Loading skeleton
             Array.from({ length: 6 }).map((_, index) => (
@@ -163,7 +163,7 @@ const ShopByVideo = () => {
                 >
                   {/* Video Thumbnail */}
                   <div 
-                    className="relative aspect-[3/4] overflow-hidden flex-shrink-0 cursor-pointer"
+                    className="relative aspect-square overflow-hidden flex-shrink-0 cursor-pointer"
                     onClick={() => handleVideoClick(product)}
                     onMouseEnter={() => {
                       const v = videoRefs.current[product.id];

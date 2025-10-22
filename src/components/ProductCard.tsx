@@ -43,7 +43,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           <img 
             src={product.image} 
             alt={product.name}
-            className={`w-full object-cover aspect-square transition-all duration-700 ${
+            className={`w-full object-cover aspect-square h-full transition-all duration-700 ${
               isHovered ? 'scale-110 brightness-110' : 'scale-100'
             }`}
           />
@@ -51,7 +51,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           {/* Floating Badges */}
           <div className="absolute z-10 top-4 left-4 flex flex-col gap-2">
             {product.isNew && (
-              <Badge className="bg-gradient-primary text-white shadow-glow animate-pulse-slow">
+              <Badge className="bg-purple-500 text-white shadow-glow">
                 ✨ New
               </Badge>
             )}
@@ -79,12 +79,12 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           </button>
           
           {/* Overlay on Hover */}
-          <div className={`absolute inset-0 bg-gradient-primary/20 backdrop-blur-sm transition-opacity duration-300 ${
+          <div className={`absolute inset-0 bg-gradient-primary/20 transition-opacity duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`} />
         </div>
         
-        <div className="p-4 flex flex-col h-full">
+        <div className="p-4 flex flex-col">
           <div className="space-y-2 flex-grow">
             <p className="text-xs text-primary font-semibold uppercase tracking-wider">{product.category}</p>
             <h3 className="text-lg font-bold leading-tight group-hover:text-primary transition-colors duration-300 min-h-[2.5rem] flex items-center">
