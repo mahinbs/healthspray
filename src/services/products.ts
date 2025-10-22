@@ -58,6 +58,29 @@ export const productsService = {
     }
   },
 
+  // Fetch products with videos for Shop by Video section
+  async getProductsWithVideos(): Promise<AdminProduct[]> {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .eq('has_video', true)
+        .not('video_url', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching products with videos:', error);
+        throw new Error(error.message);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getProductsWithVideos:', error);
+      throw error;
+    }
+  },
+
   // Add a new product
   async addProduct(product: Omit<ProductInsert, 'id' | 'created_at' | 'updated_at'>): Promise<AdminProduct> {
     try {

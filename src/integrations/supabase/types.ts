@@ -106,6 +106,9 @@ export type Database = {
           reviews: number
           stock: number
           updated_at: string
+          video_url: string | null
+          video_thumbnail: string | null
+          has_video: boolean
         }
         Insert: {
           category: string
@@ -123,6 +126,9 @@ export type Database = {
           reviews?: number
           stock?: number
           updated_at?: string
+          video_url?: string | null
+          video_thumbnail?: string | null
+          has_video?: boolean
         }
         Update: {
           category?: string
@@ -140,6 +146,9 @@ export type Database = {
           reviews?: number
           stock?: number
           updated_at?: string
+          video_url?: string | null
+          video_thumbnail?: string | null
+          has_video?: boolean
         }
         Relationships: []
       }

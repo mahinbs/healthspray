@@ -63,6 +63,7 @@ import OrderManagement from "@/components/OrderManagement";
 import AdminAnalytics from "@/components/AdminAnalytics";
 import AdminSettings from "@/components/AdminSettings";
 import AdminOrderStats from "@/components/AdminOrderStats";
+import VideoManagement from "@/components/VideoManagement";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
 
@@ -682,6 +683,7 @@ const Admin = () => {
         <Tabs defaultValue="products" className="space-y-6">
         <TabsList>
             <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="videos">Videos</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -1428,6 +1430,13 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="videos" className="space-y-6">
+            <VideoManagement 
+              products={products} 
+              onVideoUploaded={loadData}
+            />
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6">

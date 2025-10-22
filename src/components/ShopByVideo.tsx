@@ -18,15 +18,15 @@ const ShopByVideo = () => {
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
-  // Load products from database
+  // Load products with videos from database
   useEffect(() => {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const activeProducts = await productsService.getActiveProducts();
-        setProducts(activeProducts.slice(0, 6)); // Show first 6 products
+        const productsWithVideos = await productsService.getProductsWithVideos();
+        setProducts(productsWithVideos.slice(0, 6)); // Show first 6 products with videos
       } catch (error) {
-        console.error('Error loading products:', error);
+        console.error('Error loading products with videos:', error);
         toast.error('Failed to load products');
       } finally {
         setLoading(false);
@@ -36,38 +36,7 @@ const ShopByVideo = () => {
     loadProducts();
   }, []);
 
-  // Intersection Observer for automatic video playback
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const video = entry.target as HTMLVideoElement;
-          if (entry.isIntersecting) {
-            video.play().catch((e) => console.log("Video autoplay prevented:", e));
-          } else {
-            video.pause();
-          }
-        });
-      },
-      { threshold: 0.5 } // Play when 50% of the video is visible
-    );
-
-    // Observe all video elements
-    Object.values(videoRefs.current).forEach((video) => {
-      if (video) {
-        observer.observe(video);
-      }
-    });
-
-    // Cleanup observer on component unmount
-    return () => {
-      Object.values(videoRefs.current).forEach((video) => {
-        if (video) {
-          observer.unobserve(video);
-        }
-      });
-    };
-  }, [products]); // Re-run when products change
+  // No autoplay: play only on hover; pause/reset on mouse leave
 
   const handleAddToCart = (product: AdminProduct) => {
     try {
@@ -80,9 +49,7 @@ const ShopByVideo = () => {
         description: product.description,
         rating: product.rating,
         reviews: product.reviews,
-        isNew: product.is_new,
-        stock: product.stock,
-        isActive: product.is_active
+        isNew: product.is_new
       });
       toast.success(`${product.name} added to cart!`);
     } catch (error) {
@@ -102,9 +69,7 @@ const ShopByVideo = () => {
         description: product.description,
         rating: product.rating,
         reviews: product.reviews,
-        isNew: product.is_new,
-        stock: product.stock,
-        isActive: product.is_active
+        isNew: product.is_new
       };
       
       toggleWishlist(productData);
@@ -148,6 +113,11 @@ const ShopByVideo = () => {
   };
 
 
+  // Don't render the section if there are no products with videos (and not loading)
+  if (!loading && products.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-20 bg-gradient-to-br from-slate-50 to-slate-100 relative overflow-hidden">
       {/* Background Effects */}
@@ -179,10 +149,6 @@ const ShopByVideo = () => {
                 </div>
               </GlassCard>
             ))
-          ) : products.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-slate-600 text-lg">No products available. Please add products in the admin panel.</p>
-            </div>
           ) : (
             products.map((product) => {
               const discount = product.original_price 
@@ -199,23 +165,47 @@ const ShopByVideo = () => {
                   <div 
                     className="relative aspect-[3/4] overflow-hidden flex-shrink-0 cursor-pointer"
                     onClick={() => handleVideoClick(product)}
+                    onMouseEnter={() => {
+                      const v = videoRefs.current[product.id];
+                      if (v) {
+                        v.currentTime = 0;
+                        v.play().catch(() => {});
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      const v = videoRefs.current[product.id];
+                      if (v) {
+                        v.pause();
+                        v.currentTime = 0;
+                      }
+                    }}
                   >
-                    <video
-                      ref={(el) => (videoRefs.current[product.id] = el)}
-                      src="https://res.cloudinary.com/dknafpppp/video/upload/v1758567061/c4994f2634e2490ba295e54dcf9a92d7_vc8htt.mp4"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                    />
-                    
-                    {/* Play Overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="bg-white/90 rounded-full p-4 shadow-2xl">
-                        <Play className="h-8 w-8 text-[#ef4e23]" />
+                    {/* Thumbnail shows when not hovering; we stack image under the video and fade */}
+                    {product.video_thumbnail && (
+                      <img
+                        src={product.video_thumbnail}
+                        alt={product.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )}
+                    {product.video_url ? (
+                      <video
+                        ref={(el) => (videoRefs.current[product.id] = el)}
+                        src={product.video_url}
+                        className="relative w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        style={{ backgroundColor: product.video_thumbnail ? 'transparent' : '#e5e7eb' }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500">No video available</span>
                       </div>
-                    </div>
+                    )}
+                    
+                    {/* No play overlay in card view */}
                     
                     {/* Video Title Overlay */}
                     <div className="absolute bottom-4 left-4 right-4">
@@ -312,15 +302,21 @@ const ShopByVideo = () => {
 
             {/* Video Container */}
             <div className="relative aspect-video bg-black">
-              <video
-                ref={modalVideoRef}
-                src="https://res.cloudinary.com/dknafpppp/video/upload/v1758567061/c4994f2634e2490ba295e54dcf9a92d7_vc8htt.mp4"
-                className="w-full h-full object-cover"
-                loop
-                playsInline
-                onPlay={() => setIsVideoPlaying(true)}
-                onPause={() => setIsVideoPlaying(false)}
-              />
+              {selectedProduct.video_url ? (
+                <video
+                  ref={modalVideoRef}
+                  src={selectedProduct.video_url}
+                  className="w-full h-full object-cover"
+                  loop
+                  playsInline
+                  onPlay={() => setIsVideoPlaying(true)}
+                  onPause={() => setIsVideoPlaying(false)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white">
+                  <span>No video available</span>
+                </div>
+              )}
               
               {/* Play/Pause Overlay */}
               <div className="absolute inset-0 flex items-center justify-center">
