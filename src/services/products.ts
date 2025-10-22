@@ -58,6 +58,30 @@ export const productsService = {
     }
   },
 
+  // Featured Products Functions
+  async getFeaturedProducts(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('featured_products')
+        .select(`
+          *,
+          product:products(id, name, price, image, category, description)
+        `)
+        .eq('is_active', true)
+        .order('order_index', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching featured products:', error);
+        throw new Error(error.message);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getFeaturedProducts:', error);
+      throw error;
+    }
+  },
+
   // Fetch products with videos for Shop by Video section
   async getProductsWithVideos(): Promise<AdminProduct[]> {
     try {
