@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +36,20 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPopupGuide, setShowPopupGuide] = useState(false);
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [couponApplied, setCouponApplied] = useState<null | {
+    id: string;
+    code: string;
+    type: 'percentage' | 'fixed';
+    value: number;
+    max_discount: number | null;
+    discountAmount: number;
+  }>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
+  const [showCouponsPopup, setShowCouponsPopup] = useState(false);
   
   const idempotencyKeyRef = useRef(
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -55,6 +69,42 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const handleInputChange = (field: keyof DeliveryAddress, value: string) => {
     setAddress(prev => ({ ...prev, [field]: value }));
   };
+
+  // Load available coupons
+  const loadAvailableCoupons = async () => {
+    if (!user) return;
+    
+    setLoadingCoupons(true);
+    try {
+      const { data: coupons, error } = await supabase
+        .from('coupons' as any)
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Filter coupons that are currently valid
+      const now = new Date();
+      const validCoupons = (coupons as any[])?.filter((coupon: any) => {
+        const startDate = new Date((coupon as any).starts_at);
+        const endDate = new Date((coupon as any).ends_at);
+        return now >= startDate && now <= endDate;
+      }) || [];
+
+      setAvailableCoupons(validCoupons);
+    } catch (error) {
+      console.error('Error loading coupons:', error);
+    } finally {
+      setLoadingCoupons(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && user) {
+      loadAvailableCoupons();
+    }
+  }, [isOpen, user]);
 
   const validateForm = () => {
     if (!address.fullName.trim()) {
@@ -93,6 +143,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           items: items,
           deliveryAddress: address,
           idempotency_key: idempotencyKeyRef.current,
+          // pass coupon metadata (if any)
+          coupon: couponApplied
+            ? {
+                code: couponApplied.code,
+                type: couponApplied.type,
+                value: couponApplied.value,
+                discount: couponApplied.discountAmount,
+              }
+            : null,
         },
       });
 
@@ -105,6 +164,201 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     } catch (error) {
       console.error('Error creating order:', error);
       throw error;
+    }
+  };
+
+  // Apply coupon from available list
+  const handleApplyCouponFromList = async (coupon: any) => {
+    if (!user) {
+      toast.error('Login to apply a coupon');
+      return;
+    }
+    
+    setApplyingCoupon(true);
+    try {
+      // Check minimum cart value
+      const subtotal = items.reduce((acc, item) => {
+        const price = Number(item.product.price) || 0;
+        const quantity = Number(item.quantity) || 0;
+        return acc + (price * quantity);
+      }, 0);
+      
+      if (isNaN(subtotal) || subtotal <= 0) {
+        throw new Error('Invalid cart total');
+      }
+      
+      if ((coupon as any).min_cart_value && subtotal < (coupon as any).min_cart_value) {
+        throw new Error(`Minimum cart value of ₹${(coupon as any).min_cart_value} required for this coupon`);
+      }
+
+      // Check per-user usage
+      const { count: userCount } = await supabase
+        .from('coupon_usages' as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('coupon_id', (coupon as any).id)
+        .eq('user_id', user.id);
+
+      if ((userCount || 0) >= ((coupon as any).usage_limit_per_user ?? 1)) {
+        throw new Error('You have already used this coupon');
+      }
+
+      // Compute discount
+      let discount = 0;
+      
+      // Validate coupon value
+      const couponValue = Number((coupon as any).value);
+      if (isNaN(couponValue) || couponValue <= 0) {
+        throw new Error('Invalid coupon value');
+      }
+      
+      // Validate coupon type
+      const couponType = (coupon as any).type;
+      if (!couponType || (couponType !== 'percentage' && couponType !== 'fixed')) {
+        throw new Error('Invalid coupon type');
+      }
+      
+      if (couponType === 'percentage') {
+        discount = (subtotal * couponValue) / 100;
+        if ((coupon as any).max_discount) {
+          const maxDiscount = Number((coupon as any).max_discount);
+          if (!isNaN(maxDiscount) && maxDiscount > 0) {
+            discount = Math.min(discount, maxDiscount);
+          }
+        }
+      } else {
+        discount = couponValue;
+      }
+      
+      // Ensure discount doesn't exceed subtotal
+      discount = Math.min(discount, subtotal);
+      
+      // Ensure discount is a valid number
+      if (isNaN(discount) || discount < 0) {
+        throw new Error('Invalid discount calculation');
+      }
+
+      setCouponApplied({
+        id: (coupon as any).id,
+        code: (coupon as any).code,
+        type: (coupon as any).type,
+        value: Number((coupon as any).value),
+        max_discount: (coupon as any).max_discount ? Number((coupon as any).max_discount) : null,
+        discountAmount: Number(discount.toFixed(2)),
+      });
+      setCouponCode((coupon as any).code);
+      toast.success('Coupon applied');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to apply coupon');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  // Apply coupon
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error('Enter a coupon code');
+      return;
+    }
+    if (!user) {
+      toast.error('Login to apply a coupon');
+      return;
+    }
+    setApplyingCoupon(true);
+    try {
+      const { data: coupon, error } = await supabase
+        .from('coupons' as any)
+        .select('*')
+        .eq('code', couponCode.trim().toUpperCase())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error || !coupon) {
+        throw new Error('Invalid coupon');
+      }
+
+      // Date window
+      const now = new Date();
+      if (now < new Date((coupon as any).starts_at) || now > new Date((coupon as any).ends_at)) {
+        throw new Error('Coupon is not active');
+      }
+
+      // Check minimum cart value
+      const subtotal = Number(total) || 0;
+      
+      if (isNaN(subtotal) || subtotal <= 0) {
+        throw new Error('Invalid cart total');
+      }
+      
+      if ((coupon as any).min_cart_value && subtotal < (coupon as any).min_cart_value) {
+        throw new Error(`Minimum cart value of ₹${(coupon as any).min_cart_value} required for this coupon`);
+      }
+
+      // Total usage limit
+      if ((coupon as any).total_usage_limit !== null && (coupon as any).total_usage >= (coupon as any).total_usage_limit) {
+        throw new Error('Coupon usage limit reached');
+      }
+
+      // Per-user usage
+      const { count: userCount } = await supabase
+        .from('coupon_usages' as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('coupon_id', (coupon as any).id)
+        .eq('user_id', user.id);
+
+      if ((userCount || 0) >= ((coupon as any).usage_limit_per_user ?? 1)) {
+        throw new Error('You have already used this coupon');
+      }
+
+      // Compute discount
+      let discount = 0;
+      
+      // Validate coupon value
+      const couponValue = Number((coupon as any).value);
+      if (isNaN(couponValue) || couponValue <= 0) {
+        throw new Error('Invalid coupon value');
+      }
+      
+      // Validate coupon type
+      const couponType = (coupon as any).type;
+      if (!couponType || (couponType !== 'percentage' && couponType !== 'fixed')) {
+        throw new Error('Invalid coupon type');
+      }
+      
+      if (couponType === 'percentage') {
+        discount = (subtotal * couponValue) / 100;
+        if ((coupon as any).max_discount) {
+          const maxDiscount = Number((coupon as any).max_discount);
+          if (!isNaN(maxDiscount) && maxDiscount > 0) {
+            discount = Math.min(discount, maxDiscount);
+          }
+        }
+      } else {
+        discount = couponValue;
+      }
+      
+      // Ensure discount doesn't exceed subtotal
+      discount = Math.min(discount, subtotal);
+      
+      // Ensure discount is a valid number
+      if (isNaN(discount) || discount < 0) {
+        throw new Error('Invalid discount calculation');
+      }
+
+      setCouponApplied({
+        id: (coupon as any).id,
+        code: (coupon as any).code,
+        type: (coupon as any).type,
+        value: Number((coupon as any).value),
+        max_discount: (coupon as any).max_discount ? Number((coupon as any).max_discount) : null,
+        discountAmount: Number(discount.toFixed(2)),
+      });
+      toast.success('Coupon applied');
+    } catch (e: any) {
+      setCouponApplied(null);
+      toast.error(e?.message || 'Failed to apply coupon');
+    } finally {
+      setApplyingCoupon(false);
     }
   };
 
@@ -313,7 +567,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
     try {
       // Calculate final amount (free shipping for all orders)
-      const finalAmount = total;
+      const finalAmount = Math.max(1, total - (isNaN(couponApplied?.discountAmount) ? 0 : couponApplied?.discountAmount || 0));
 
       // Create order via Edge Function
       const orderData = await createOrder(finalAmount);
@@ -468,7 +722,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     }
   };
 
-  const finalAmount = total;
+  const finalAmount = Math.max(1, total - (isNaN(couponApplied?.discountAmount) ? 0 : couponApplied?.discountAmount || 0));
 
   return (
     <>
@@ -556,6 +810,46 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <span>Subtotal ({items.length} items)</span>
                 <span>₹{total.toFixed(2)}</span>
               </div>
+              {/* Available Coupons */}
+              {availableCoupons.length > 0 && (
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCouponsPopup(true)}
+                    className="h-7 px-3 text-xs"
+                  >
+                    View Coupons ({availableCoupons.length})
+                  </Button>
+                </div>
+              )}
+
+              {/* Coupon input */}
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label htmlFor="coupon">Coupon Code</Label>
+                  <Input
+                    id="coupon"
+                    placeholder="ENTER CODE"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    disabled={!!couponApplied}
+                  />
+                </div>
+                {couponApplied ? (
+                  <Button variant="outline" onClick={() => setCouponApplied(null)}>Remove</Button>
+                ) : (
+                  <Button onClick={handleApplyCoupon} disabled={applyingCoupon}>
+                    {applyingCoupon ? 'Applying...' : 'Apply'}
+                  </Button>
+                )}
+              </div>
+              {couponApplied && (
+                <div className="flex justify-between text-green-600">
+                  <span>Coupon ({couponApplied.code})</span>
+                  <span>-₹{isNaN(couponApplied.discountAmount) ? '0.00' : couponApplied.discountAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span>FREE</span>
@@ -593,6 +887,47 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         handlePayment();
       }}
     />
-    </>
-  );
+
+    {/* Coupons Popup */}
+    <Dialog open={showCouponsPopup} onOpenChange={setShowCouponsPopup}>
+      <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Available Coupons</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          {availableCoupons.map((coupon) => (
+            <div key={(coupon as any).id} className="border rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="font-semibold text-lg">{(coupon as any).code}</div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    handleApplyCouponFromList(coupon);
+                    setShowCouponsPopup(false);
+                  }}
+                  disabled={applyingCoupon || !!couponApplied}
+                >
+                  Apply
+                </Button>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {(coupon as any).type === 'percentage' ? `${(coupon as any).value}% off` : `₹${(coupon as any).value} off`}
+                {(coupon as any).max_discount && ` (max ₹${(coupon as any).max_discount})`}
+              </div>
+              {coupon.description && (
+                <div className="text-sm text-gray-600">
+                  {coupon.description}
+                </div>
+              )}
+              <div className="text-xs text-muted-foreground">
+                Valid until: {new Date((coupon as any).ends_at).toLocaleDateString()}
+                {(coupon as any).min_cart_value && ` • Min cart: ₹${(coupon as any).min_cart_value}`}
+              </div>
+            </div>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
+);
 };

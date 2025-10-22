@@ -11,6 +11,12 @@ interface CreateOrderRequest {
   items: any[];
   deliveryAddress: any;
   idempotency_key?: string;
+  coupon?: {
+    code: string;
+    type: 'percentage' | 'fixed';
+    value: number;
+    discount: number;
+  } | null;
 }
 
 serve(async (req) => {
@@ -50,7 +56,7 @@ serve(async (req) => {
       throw new Error("Invalid JSON in request body");
     }
 
-    const { amount, items, deliveryAddress, idempotency_key } = body;
+    let { amount, items, deliveryAddress, idempotency_key, coupon } = body;
 
     // Validate input
     if (!amount || amount <= 0) {
@@ -63,6 +69,73 @@ serve(async (req) => {
 
     if (!deliveryAddress) {
       throw new Error("Delivery address is required");
+    }
+
+    // If coupon provided, validate on server and recompute discounted amount from items
+    if (coupon && coupon.code) {
+      console.log("Validating coupon on server:", coupon.code);
+      // Fetch coupon
+      const { data: dbCoupon, error: couponErr } = await supabaseClient
+        .from('coupons')
+        .select('*')
+        .eq('code', coupon.code)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (couponErr || !dbCoupon) {
+        throw new Error('Invalid coupon');
+      }
+
+      const now = new Date();
+      if (now < new Date(dbCoupon.starts_at) || now > new Date(dbCoupon.ends_at)) {
+        throw new Error('Coupon is not active');
+      }
+
+      if (dbCoupon.total_usage_limit !== null && dbCoupon.total_usage >= dbCoupon.total_usage_limit) {
+        throw new Error('Coupon usage limit reached');
+      }
+
+      // Per-user usage count
+      const { count: usedCount } = await supabaseClient
+        .from('coupon_usages')
+        .select('id', { count: 'exact', head: true })
+        .eq('coupon_id', dbCoupon.id)
+        .eq('user_id', user.id);
+
+      if ((usedCount || 0) >= (dbCoupon.usage_limit_per_user ?? 1)) {
+        throw new Error('Coupon already used by this user');
+      }
+
+      // Compute subtotal from items
+      const subtotal = items.reduce((acc: number, it: any) => {
+        const price = Number(it.price ?? 0);
+        const qty = Number(it.quantity ?? 1);
+        return acc + price * qty;
+      }, 0);
+
+      let discount = 0;
+      if (dbCoupon.type === 'percentage') {
+        discount = (subtotal * Number(dbCoupon.value)) / 100;
+        if (dbCoupon.max_discount) {
+          discount = Math.min(discount, Number(dbCoupon.max_discount));
+        }
+      } else { // fixed
+        discount = Number(dbCoupon.value);
+      }
+      discount = Math.min(discount, subtotal);
+
+      // Override amount with validated computation
+      amount = subtotal - discount;
+      // Ensure non-negative and rounded to 2 decimals for paise conversion later
+      amount = Math.max(0, Number(amount.toFixed(2)));
+
+      // sync coupon payload to what we computed
+      coupon = {
+        code: dbCoupon.code,
+        type: dbCoupon.type,
+        value: Number(dbCoupon.value),
+        discount: Number(discount.toFixed(2)),
+      };
     }
 
     console.log("Creating order for amount:", amount);
@@ -144,6 +217,10 @@ serve(async (req) => {
         delivery_address: deliveryAddress,
         status: "pending",
         idempotency_key: idempotency_key || null,
+        coupon_code: coupon?.code || null,
+        coupon_type: coupon?.type || null,
+        coupon_value: coupon?.value ?? null,
+        coupon_discount: coupon?.discount ?? null,
       })
       .select()
       .single();

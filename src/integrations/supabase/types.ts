@@ -44,9 +44,96 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_usages: {
+        Row: {
+          coupon_id: string
+          id: string
+          order_id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          id?: string
+          order_id: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          id?: string
+          order_id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_usages_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string
+          id: string
+          is_active: boolean
+          max_discount: number | null
+          starts_at: string
+          total_usage: number
+          total_usage_limit: number | null
+          type: string
+          usage_limit_per_user: number
+          value: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          max_discount?: number | null
+          starts_at: string
+          total_usage?: number
+          total_usage_limit?: number | null
+          type: string
+          usage_limit_per_user?: number
+          value: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          max_discount?: number | null
+          starts_at?: string
+          total_usage?: number
+          total_usage_limit?: number | null
+          type?: string
+          usage_limit_per_user?: number
+          value?: number
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount: number
+          coupon_code: string | null
+          coupon_discount: number | null
+          coupon_type: string | null
+          coupon_value: number | null
           created_at: string
           currency: string | null
           delivery_address: Json
@@ -61,6 +148,10 @@ export type Database = {
         }
         Insert: {
           amount: number
+          coupon_code?: string | null
+          coupon_discount?: number | null
+          coupon_type?: string | null
+          coupon_value?: number | null
           created_at?: string
           currency?: string | null
           delivery_address: Json
@@ -75,6 +166,10 @@ export type Database = {
         }
         Update: {
           amount?: number
+          coupon_code?: string | null
+          coupon_discount?: number | null
+          coupon_type?: string | null
+          coupon_value?: number | null
           created_at?: string
           currency?: string | null
           delivery_address?: Json
@@ -95,6 +190,7 @@ export type Database = {
           created_at: string
           description: string | null
           features: string[]
+          has_video: boolean | null
           id: string
           image: string[] | null
           is_active: boolean
@@ -106,15 +202,15 @@ export type Database = {
           reviews: number
           stock: number
           updated_at: string
-          video_url: string | null
           video_thumbnail: string | null
-          has_video: boolean
+          video_url: string | null
         }
         Insert: {
           category: string
           created_at?: string
           description?: string | null
           features?: string[]
+          has_video?: boolean | null
           id?: string
           image?: string[] | null
           is_active?: boolean
@@ -126,15 +222,15 @@ export type Database = {
           reviews?: number
           stock?: number
           updated_at?: string
-          video_url?: string | null
           video_thumbnail?: string | null
-          has_video?: boolean
+          video_url?: string | null
         }
         Update: {
           category?: string
           created_at?: string
           description?: string | null
           features?: string[]
+          has_video?: boolean | null
           id?: string
           image?: string[] | null
           is_active?: boolean
@@ -146,9 +242,8 @@ export type Database = {
           reviews?: number
           stock?: number
           updated_at?: string
-          video_url?: string | null
           video_thumbnail?: string | null
-          has_video?: boolean
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -157,10 +252,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

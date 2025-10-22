@@ -121,6 +121,26 @@ serve(async (req) => {
 
     console.log("Order status updated to paid:", order.id);
 
+    // If coupon used, record usage and increment totals
+    if (order.coupon_code) {
+      console.log("Recording coupon usage for:", order.coupon_code);
+      // Fetch coupon id by code
+      const { data: coupon } = await supabaseService
+        .from('coupons')
+        .select('id')
+        .eq('code', order.coupon_code)
+        .maybeSingle();
+
+      if (coupon?.id) {
+        await supabaseService.from('coupon_usages').insert({
+          coupon_id: coupon.id,
+          user_id: user.id,
+          order_id: order.id,
+        });
+        await supabaseService.rpc('increment_coupon_total_usage', { code: order.coupon_code }).catch(() => {});
+      }
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 

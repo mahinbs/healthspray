@@ -64,6 +64,7 @@ import AdminAnalytics from "@/components/AdminAnalytics";
 import AdminSettings from "@/components/AdminSettings";
 import AdminOrderStats from "@/components/AdminOrderStats";
 import VideoManagement from "@/components/VideoManagement";
+import CouponsManager from "@/components/CouponsManager";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
 
@@ -684,6 +685,7 @@ const Admin = () => {
         <TabsList>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="videos">Videos</TabsTrigger>
+            <TabsTrigger value="coupons">Coupons</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -1437,6 +1439,19 @@ const Admin = () => {
               products={products} 
               onVideoUploaded={loadData}
             />
+          </TabsContent>
+
+          {/* Coupons Management - simple list/create */}
+          <TabsContent value="coupons" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Coupons</CardTitle>
+                <CardDescription>Create and manage discount coupons</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CouponsManager />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6">
