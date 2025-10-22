@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -88,9 +88,7 @@ const stats = [
 ];
 const About = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <Layout>
       {/* Hero Section */}
       <section className="relative py-32 bg-gradient-hero overflow-hidden">
         <div
@@ -499,7 +497,7 @@ const About = () => {
       </section>
 
       <Footer />
-    </div>
+    </Layout>
   );
 };
 export default About;

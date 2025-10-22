@@ -1,12 +1,12 @@
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { GlassCard } from "@/components/ui/glass-card";
 import { FileText, Scale, AlertTriangle, CheckCircle } from "lucide-react";
 
 const Terms = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <Layout>
+      
       
       {/* Hero Section */}
       <section className="relative py-32 bg-gradient-hero overflow-hidden">
@@ -17,8 +17,8 @@ const Terms = () => {
             <div className="flex justify-center mb-6">
               <div className="p-4 bg-white/10 backdrop-blur-md rounded-full">
                 <FileText className="h-12 w-12 text-blue-400" />
-              </div>
-            </div>
+              </Layout>
+            </Layout>
             <h1 className="text-4xl md:text-6xl font-bold">
               Terms of Service
             </h1>
@@ -28,8 +28,8 @@ const Terms = () => {
             <p className="text-sm text-white/70">
               Last updated: December 2024
             </p>
-          </div>
-        </div>
+          </Layout>
+        </Layout>
       </section>
 
       {/* Content Section */}
@@ -54,7 +54,7 @@ const Terms = () => {
               <div className="flex items-center mb-6">
                 <CheckCircle className="h-8 w-8 text-green-500 mr-3" />
                 <h2 className="text-3xl font-bold text-primary">Our Services</h2>
-              </div>
+              </Layout>
               
               <p className="text-muted-foreground leading-relaxed mb-6">
                 Physiq provides premium sports health products and services, including:
@@ -69,7 +69,7 @@ const Terms = () => {
                     <li>Warm-up and cooldown solutions</li>
                     <li>Sports injury prevention products</li>
                   </ul>
-                </div>
+                </Layout>
                 
                 <div className="space-y-4">
                   <h3 className="text-xl font-semibold">Support Services</h3>
@@ -79,8 +79,8 @@ const Terms = () => {
                     <li>Educational content and training resources</li>
                     <li>Warranty and product support services</li>
                   </ul>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* User Accounts */}
@@ -100,7 +100,7 @@ const Terms = () => {
                     <li>Notify us immediately of any unauthorized use</li>
                     <li>You are responsible for all activities under your account</li>
                   </ul>
-                </div>
+                </Layout>
                 
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Account Termination</h3>
@@ -108,8 +108,8 @@ const Terms = () => {
                     We reserve the right to terminate or suspend your account at any time for violations 
                     of these Terms or for any other reason at our sole discretion.
                   </p>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* Payment Terms */}
@@ -117,7 +117,7 @@ const Terms = () => {
               <div className="flex items-center mb-6">
                 <Scale className="h-8 w-8 text-blue-500 mr-3" />
                 <h2 className="text-3xl font-bold text-primary">Payment & Billing</h2>
-              </div>
+              </Layout>
               
               <div className="space-y-6">
                 <div>
@@ -128,19 +128,19 @@ const Terms = () => {
                   </p>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="text-center p-3 bg-slate-800/50 rounded-lg">
-                      <div className="text-xl mb-2">💳</div>
+                      <div className="text-xl mb-2">💳</Layout>
                       <p className="text-sm">Credit/Debit Cards</p>
-                    </div>
+                    </Layout>
                     <div className="text-center p-3 bg-slate-800/50 rounded-lg">
-                      <div className="text-xl mb-2">📱</div>
+                      <div className="text-xl mb-2">📱</Layout>
                       <p className="text-sm">Digital Wallets</p>
-                    </div>
+                    </Layout>
                     <div className="text-center p-3 bg-slate-800/50 rounded-lg">
-                      <div className="text-xl mb-2">🏦</div>
+                      <div className="text-xl mb-2">🏦</Layout>
                       <p className="text-sm">Bank Transfers</p>
-                    </div>
-                  </div>
-                </div>
+                    </Layout>
+                  </Layout>
+                </Layout>
                 
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Pricing & Taxes</h3>
@@ -150,8 +150,8 @@ const Terms = () => {
                     <li>Prices are subject to change without notice</li>
                     <li>Free shipping on all orders</li>
                   </ul>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* Shipping Policy */}
@@ -167,7 +167,7 @@ const Terms = () => {
                     <li>Tracking information provided via email and SMS</li>
                     <li>Express delivery available for urgent recovery needs</li>
                   </ul>
-                </div>
+                </Layout>
                 
                 <div className="space-y-4">
                   <h3 className="text-xl font-semibold">No Return Policy</h3>
@@ -179,9 +179,9 @@ const Terms = () => {
                       <li>Please review your order carefully before confirming</li>
                       <li>Contact customer support for any issues with damaged or defective sports health products</li>
                     </ul>
-                  </div>
-                </div>
-              </div>
+                  </Layout>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* Prohibited Uses */}
@@ -189,7 +189,7 @@ const Terms = () => {
               <div className="flex items-center mb-6">
                 <AlertTriangle className="h-8 w-8 text-red-500 mr-3" />
                 <h2 className="text-3xl font-bold text-primary">Prohibited Uses</h2>
-              </div>
+              </Layout>
               
               <p className="text-muted-foreground leading-relaxed mb-6">
                 You agree not to use our services for any unlawful purpose or in any way that could damage, 
@@ -205,7 +205,7 @@ const Terms = () => {
                     <li>Interfering with service functionality</li>
                     <li>Harassing or threatening other users</li>
                   </ul>
-                </div>
+                </Layout>
                 
                 <div className="space-y-4">
                   <h3 className="text-xl font-semibold">Content Restrictions</h3>
@@ -215,8 +215,8 @@ const Terms = () => {
                     <li>Violating intellectual property rights</li>
                     <li>Spamming or excessive messaging</li>
                   </ul>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* Sports Health Product Usage */}
@@ -224,7 +224,7 @@ const Terms = () => {
               <div className="flex items-center mb-6">
                 <AlertTriangle className="h-8 w-8 text-orange-500 mr-3" />
                 <h2 className="text-3xl font-bold text-primary">Sports Health Product Usage</h2>
-              </div>
+              </Layout>
               
               <div className="space-y-6">
                 <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-6 rounded-lg">
@@ -240,7 +240,7 @@ const Terms = () => {
                     <li>Keep products out of reach of children</li>
                     <li>Store products in a cool, dry place as directed</li>
                   </ul>
-                </div>
+                </Layout>
                 
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Product Recommendations</h3>
@@ -253,8 +253,8 @@ const Terms = () => {
                     <li>Monitoring your body's response to products</li>
                     <li>Seeking professional medical advice when needed</li>
                   </ul>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* Limitation of Liability */}
@@ -272,7 +272,7 @@ const Terms = () => {
                   Our total liability to you for any claims arising from these Terms or your use of our 
                   services shall not exceed the amount you paid to us in the 12 months preceding the claim.
                 </p>
-              </div>
+              </Layout>
             </GlassCard>
 
             {/* Contact Information */}
@@ -286,23 +286,23 @@ const Terms = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Email</h4>
                   <p className="text-muted-foreground">legal@physiq.com</p>
-                </div>
+                </Layout>
                 <div>
                   <h4 className="font-semibold mb-2">Phone</h4>
                   <p className="text-muted-foreground">+91 9876543210</p>
-                </div>
+                </Layout>
                 <div>
                   <h4 className="font-semibold mb-2">Address</h4>
                   <p className="text-muted-foreground">123 Sports Health Plaza, Fitness District, Mumbai, Maharashtra -400001</p>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
-          </div>
-        </div>
+          </Layout>
+        </Layout>
       </section>
 
       <Footer />
-    </div>
+    </Layout>
   );
 };
 

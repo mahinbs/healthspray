@@ -68,6 +68,7 @@ import CouponsManager from "@/components/CouponsManager";
 import { FeaturedProductsManager } from "@/components/FeaturedProductsManager";
 import { HeroSectionManager } from "@/components/HeroSectionManager";
 import { HeroCarouselManager } from "@/components/HeroCarouselManager";
+import PromotionalBannerManager from "@/components/PromotionalBannerManager";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
 
@@ -1438,13 +1439,14 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="featured" className="space-y-6">
-            <div className="space-y-8">
-              <HeroCarouselManager />
-              <HeroSectionManager />
-              <FeaturedProductsManager />
-            </div>
-          </TabsContent>
+         <TabsContent value="featured" className="space-y-6">
+           <div className="space-y-8">
+             <PromotionalBannerManager />
+             <HeroCarouselManager />
+             <HeroSectionManager />
+             <FeaturedProductsManager />
+           </div>
+         </TabsContent>
 
           <TabsContent value="videos" className="space-y-6">
             <VideoManagement 

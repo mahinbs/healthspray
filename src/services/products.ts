@@ -242,6 +242,7 @@ export const convertToFrontendProduct = (dbProduct: Product) => ({
   rating: dbProduct.rating,
   reviews: dbProduct.reviews,
   isNew: dbProduct.is_new,
+  stock: dbProduct.stock,
 });
 
 // Helper function to convert frontend product to database format

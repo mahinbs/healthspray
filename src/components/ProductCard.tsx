@@ -19,6 +19,8 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const handleAddToCart = async () => {
+    if (isOutOfStock) return;
+    
     setIsAddingToCart(true);
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -29,6 +31,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   const cartQuantity = getItemQuantity(product.id);
   const isInCartState = isInCart(product.id);
   const isLiked = isInWishlist(product.id);
+  const isOutOfStock = (product.stock ?? 0) <= 0;
 
   return (
     <GlassCard 
@@ -50,17 +53,22 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           
           {/* Floating Badges */}
           <div className="absolute z-10 top-4 left-4 flex flex-col gap-2">
-            {product.isNew && (
+            {isOutOfStock && (
+              <Badge className="bg-gray-500 text-white shadow-glow">
+                Out of Stock
+              </Badge>
+            )}
+            {!isOutOfStock && product.isNew && (
               <Badge className="bg-purple-500 text-white shadow-glow">
                 ✨ New
               </Badge>
             )}
-            {product.originalPrice && (
+            {!isOutOfStock && product.originalPrice && (
               <Badge variant="destructive" className="shadow-glow">
                 Sale
               </Badge>
             )}
-            {isInCartState && (
+            {!isOutOfStock && isInCartState && (
               <Badge className="bg-green-500 text-white shadow-glow">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 In Cart ({cartQuantity})
@@ -129,12 +137,21 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
             </Button>
             <Button 
               onClick={handleAddToCart}
-              disabled={isAddingToCart}
-              className={`flex-1 group bg-gradient-primary hover:shadow-glow text-white border-0 py-1.5 px-2 font-semibold rounded-lg transition-all duration-300 hover:scale-105 text-xs ${
-                isInCartState ? 'bg-green-600 hover:bg-green-700' : ''
+              disabled={isAddingToCart || isOutOfStock}
+              className={`flex-1 group border-0 py-1.5 px-2 font-semibold rounded-lg transition-all duration-300 text-xs ${
+                isOutOfStock 
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                  : isInCartState 
+                    ? 'bg-green-600 hover:bg-green-700 hover:shadow-glow text-white' 
+                    : 'bg-gradient-primary hover:shadow-glow text-white hover:scale-105'
               }`}
             >
-              {isAddingToCart ? (
+              {isOutOfStock ? (
+                <>
+                  <span className="mr-1">❌</span>
+                  Out of Stock
+                </>
+              ) : isAddingToCart ? (
                 <>
                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1" />
                   Adding...

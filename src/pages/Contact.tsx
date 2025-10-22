@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -8,9 +8,7 @@ import logo from "../assets/physiq-final-logo-new.png";
 
 const Contact = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <Layout>
       {/* Hero Section */}
       <section className="relative py-32 bg-gradient-hero overflow-hidden">
         <div
@@ -117,7 +115,7 @@ const Contact = () => {
       </section>
 
       <Footer />
-    </div>
+    </Layout>
   );
 };
 

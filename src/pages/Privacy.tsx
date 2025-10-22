@@ -1,12 +1,12 @@
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Shield, Lock, Eye, Database } from "lucide-react";
 
 const Privacy = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <Layout>
+      
       
       {/* Hero Section */}
       <section className="relative py-32 bg-gradient-hero overflow-hidden">
@@ -17,8 +17,8 @@ const Privacy = () => {
             <div className="flex justify-center mb-6">
               <div className="p-4 bg-white/10 backdrop-blur-md rounded-full">
                 <Shield className="h-12 w-12 text-blue-400" />
-              </div>
-            </div>
+              </Layout>
+            </Layout>
             <h1 className="text-4xl md:text-6xl font-bold">
               Privacy Policy
             </h1>
@@ -28,8 +28,8 @@ const Privacy = () => {
             <p className="text-sm text-white/70">
               Last updated: December 2024
             </p>
-          </div>
-        </div>
+          </Layout>
+        </Layout>
       </section>
 
       {/* Content Section */}
@@ -55,7 +55,7 @@ const Privacy = () => {
               <div className="flex items-center mb-6">
                 <Database className="h-8 w-8 text-blue-500 mr-3" />
                 <h2 className="text-3xl font-bold text-primary">Information We Collect</h2>
-              </div>
+              </Layout>
               
               <div className="space-y-6">
                 <div>
@@ -66,7 +66,7 @@ const Privacy = () => {
                     <li>Account credentials and preferences</li>
                     <li>Communication history with our support team</li>
                   </ul>
-                </div>
+                </Layout>
                 
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Usage Information</h3>
@@ -76,8 +76,8 @@ const Privacy = () => {
                     <li>IP address and location data</li>
                     <li>Cookies and similar tracking technologies</li>
                   </ul>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* How We Use Information */}
@@ -85,7 +85,7 @@ const Privacy = () => {
               <div className="flex items-center mb-6">
                 <Eye className="h-8 w-8 text-green-500 mr-3" />
                 <h2 className="text-3xl font-bold text-primary">How We Use Your Information</h2>
-              </div>
+              </Layout>
               
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
@@ -96,7 +96,7 @@ const Privacy = () => {
                     <li>Send order confirmations and updates</li>
                     <li>Manage your account and preferences</li>
                   </ul>
-                </div>
+                </Layout>
                 
                 <div className="space-y-4">
                   <h3 className="text-xl font-semibold">Improvement & Communication</h3>
@@ -106,8 +106,8 @@ const Privacy = () => {
                     <li>Analyze website usage and trends</li>
                     <li>Prevent fraud and ensure security</li>
                   </ul>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* Data Protection */}
@@ -115,7 +115,7 @@ const Privacy = () => {
               <div className="flex items-center mb-6">
                 <Lock className="h-8 w-8 text-red-500 mr-3" />
                 <h2 className="text-3xl font-bold text-primary">Data Protection & Security</h2>
-              </div>
+              </Layout>
               
               <p className="text-muted-foreground leading-relaxed mb-6">
                 We implement appropriate technical and organizational measures to protect your personal information 
@@ -124,23 +124,23 @@ const Privacy = () => {
               
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center p-4 bg-slate-800/50 rounded-lg">
-                  <div className="text-2xl mb-2">🔒</div>
+                  <div className="text-2xl mb-2">🔒</Layout>
                   <h4 className="font-semibold mb-2">Encryption</h4>
                   <p className="text-sm text-muted-foreground">All data is encrypted in transit and at rest</p>
-                </div>
+                </Layout>
                 
                 <div className="text-center p-4 bg-slate-800/50 rounded-lg">
-                  <div className="text-2xl mb-2">🛡️</div>
+                  <div className="text-2xl mb-2">🛡️</Layout>
                   <h4 className="font-semibold mb-2">Access Control</h4>
                   <p className="text-sm text-muted-foreground">Strict access controls and authentication</p>
-                </div>
+                </Layout>
                 
                 <div className="text-center p-4 bg-slate-800/50 rounded-lg">
-                  <div className="text-2xl mb-2">📊</div>
+                  <div className="text-2xl mb-2">📊</Layout>
                   <h4 className="font-semibold mb-2">Monitoring</h4>
                   <p className="text-sm text-muted-foreground">24/7 security monitoring and alerts</p>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* Your Rights */}
@@ -156,7 +156,7 @@ const Privacy = () => {
                     <li>Request deletion of your data</li>
                     <li>Opt-out of marketing communications</li>
                   </ul>
-                </div>
+                </Layout>
                 
                 <div className="space-y-4">
                   <h3 className="text-xl font-semibold">Data Portability</h3>
@@ -166,8 +166,8 @@ const Privacy = () => {
                     <li>Restrict processing of your data</li>
                     <li>Object to certain data processing</li>
                   </ul>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* Contact Information */}
@@ -182,23 +182,23 @@ const Privacy = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Email</h4>
                   <p className="text-muted-foreground">privacy@physiq.com</p>
-                </div>
+                </Layout>
                 <div>
                   <h4 className="font-semibold mb-2">Phone</h4>
                   <p className="text-muted-foreground">+91 6367189188</p>
-                </div>
+                </Layout>
                 <div>
                   <h4 className="font-semibold mb-2">Address</h4>
                   <p className="text-muted-foreground">123 Pet Street, Tech City, TC 12345</p>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
-          </div>
-        </div>
+          </Layout>
+        </Layout>
       </section>
 
       <Footer />
-    </div>
+    </Layout>
   );
 };
 

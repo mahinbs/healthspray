@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Package, Truck, CheckCircle, Calendar, MapPin, Phone, User } from 'lucide-react';
-import Header from '@/components/Header';
+import Layout from '@/components/Layout';
 import Footer from '@/components/Footer';
 import { formatPrice } from '@/services/api';
 import { toast } from 'sonner';
@@ -83,8 +83,7 @@ const Orders = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
+      <Layout>
         <div className="container mx-auto px-4 py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
@@ -92,16 +91,14 @@ const Orders = () => {
           </div>
         </div>
         <Footer />
-      </div>
+      </Layout>
     );
   }
 
   // Single order view
   if (selectedOrder) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        
+      <Layout>
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center mb-8">
             <Button 
@@ -235,15 +232,13 @@ const Orders = () => {
         </div>
         
         <Footer />
-      </div>
+      </Layout>
     );
   }
 
   // Orders list view
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
+    <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center mb-8">
           <Button 
@@ -314,7 +309,7 @@ const Orders = () => {
       </div>
       
       <Footer />
-    </div>
+    </Layout>
   );
 };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import ProductDetailModal from "@/components/ProductDetailModal";
@@ -92,8 +92,7 @@ const Shop = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
+      <Layout>
         <div className="container mx-auto px-4 py-20">
           <div className="text-center">
             <div
@@ -104,13 +103,12 @@ const Shop = () => {
           </div>
         </div>
         <Footer />
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <Layout>
       <section className="relative h-[60vh] flex items-center justify-center text-center text-white overflow-hidden">
         <img
           src={heroImage}
@@ -256,7 +254,7 @@ const Shop = () => {
         onClose={() => setIsModalOpen(false)}
       />
       <Footer />
-    </div>
+    </Layout>
   );
 };
 export default Shop;

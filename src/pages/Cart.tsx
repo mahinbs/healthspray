@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/services/api";
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { CheckoutModal } from "@/components/CheckoutModal";
 import { CouponSection } from "@/components/CouponSection";
@@ -83,9 +83,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
+    <Layout>
       <div className="container mx-auto px-4 py-4 sm:py-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
@@ -331,7 +329,7 @@ const Cart = () => {
         onClose={() => setShowCheckoutModal(false)}
         onSuccess={handleOrderSuccess}
       />
-    </div>
+    </Layout>
   );
 };
 

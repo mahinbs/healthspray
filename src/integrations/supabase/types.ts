@@ -381,6 +381,39 @@ export type Database = {
         }
         Relationships: []
       }
+      promotional_banner: {
+        Row: {
+          animation_speed: number
+          background_color: string
+          created_at: string
+          id: string
+          is_active: boolean
+          text: string
+          text_color: string
+          updated_at: string
+        }
+        Insert: {
+          animation_speed?: number
+          background_color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          text: string
+          text_color?: string
+          updated_at?: string
+        }
+        Update: {
+          animation_speed?: number
+          background_color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          text?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
