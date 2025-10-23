@@ -236,6 +236,8 @@ export const convertToFrontendProduct = (dbProduct: Product) => ({
     ? dbProduct.image[0] 
     : (typeof dbProduct.image === 'string' ? dbProduct.image : '/src/assets/robot-toy-premium.jpg'),
   images: Array.isArray(dbProduct.image) ? dbProduct.image : (dbProduct.image ? [dbProduct.image] : []),
+  mainImage: dbProduct.main_image || undefined,
+  secondaryImage: dbProduct.secondary_image || undefined,
   category: dbProduct.category,
   description: dbProduct.description || '',
   features: dbProduct.features || [],
@@ -253,6 +255,8 @@ export const convertToDatabaseProduct = (frontendProduct: any) => ({
   image: Array.isArray(frontendProduct.image) 
     ? frontendProduct.image 
     : (frontendProduct.image ? [frontendProduct.image] : []),
+  main_image: frontendProduct.mainImage || frontendProduct.main_image,
+  secondary_image: frontendProduct.secondaryImage || frontendProduct.secondary_image,
   category: frontendProduct.category,
   description: frontendProduct.description,
   features: frontendProduct.features,

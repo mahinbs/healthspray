@@ -125,6 +125,8 @@ const Admin = () => {
     reviews: "0",
     features: [""],
     images: [""],
+    mainImage: "",
+    secondaryImage: "",
   };
 
   // Form state for adding/editing products
@@ -196,6 +198,8 @@ const Admin = () => {
           ? parseFloat(formData.originalPrice)
           : undefined,
         image: formData.images.filter((img) => img.trim() !== ""),
+        mainImage: formData.mainImage,
+        secondaryImage: formData.secondaryImage,
         category: formData.category,
         description: formData.description,
         features: formData.features.filter((f) => f.trim() !== ""),
@@ -237,6 +241,8 @@ const Admin = () => {
           ? parseFloat(formData.originalPrice)
           : undefined,
         image: formData.images.filter((img) => img.trim() !== ""),
+        mainImage: formData.mainImage,
+        secondaryImage: formData.secondaryImage,
         category: formData.category,
         description: formData.description,
         features: formData.features.filter((f) => f.trim() !== ""),
@@ -311,6 +317,8 @@ const Admin = () => {
         : product.image
         ? [product.image]
         : [""],
+      mainImage: product.main_image || "",
+      secondaryImage: product.secondary_image || "",
     });
     setImagePreviews(
       Array.isArray(product.image)
@@ -932,11 +940,11 @@ const Admin = () => {
                         ))}
 
                         <p className="text-sm text-muted-foreground">
-                          Enter direct links to images (JPG, PNG, WebP
-                          supported). First image will be the main product
-                          image.
+                          Enter direct links to images (JPG, PNG, WebP supported). 
+                          Hover over uploaded images below to set main and secondary images.
                         </p>
                       </div>
+
 
                       {/* Multiple File Upload */}
                       {imageUploadMethod === "file" && (
@@ -975,21 +983,39 @@ const Admin = () => {
                           <Label>Image Previews</Label>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                             {imagePreviews.map((preview, index) => (
-                              <div key={index} className="relative">
+                              <div key={index} className="relative group">
                                 <img
                                   src={preview}
                                   alt={`Product preview ${index + 1}`}
-                                  className="w-full h-24 sm:h-32 object-cover rounded-lg border"
+                                  className="w-full h-24 sm:h-32 object-cover rounded-lg border cursor-pointer transition-all duration-200 hover:ring-2 hover:ring-primary"
                                   onError={(e) => {
                                     e.currentTarget.src =
                                       "/src/assets/robot-toy-premium.jpg";
                                   }}
                                 />
-                                {index === 0 && (
-                                  <Badge className="absolute top-1 left-1 text-xs">
-                                    Main
-                                  </Badge>
-                                )}
+                                
+                                {/* Selection buttons */}
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center gap-2">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant={formData.mainImage === preview ? "default" : "secondary"}
+                                    onClick={() => setFormData(prev => ({ ...prev, mainImage: preview }))}
+                                    className="text-xs"
+                                  >
+                                    {formData.mainImage === preview ? "✓ Main" : "Set Main"}
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant={formData.secondaryImage === preview ? "default" : "secondary"}
+                                    onClick={() => setFormData(prev => ({ ...prev, secondaryImage: preview }))}
+                                    className="text-xs"
+                                  >
+                                    {formData.secondaryImage === preview ? "✓ Secondary" : "Set Secondary"}
+                                  </Button>
+                                </div>
+                                
                                 <Button
                                   type="button"
                                   variant="outline"
@@ -1001,6 +1027,35 @@ const Admin = () => {
                                 </Button>
                               </div>
                             ))}
+                          </div>
+                          
+                          {/* Current Selection Display */}
+                          <div className="mt-4 p-3 bg-muted rounded-lg">
+                            <div className="text-sm font-medium mb-2">Current Selection:</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium">Main Image:</span>
+                                {formData.mainImage ? (
+                                  <div className="flex items-center gap-2">
+                                    <img src={formData.mainImage} alt="Main" className="w-8 h-8 object-cover rounded" />
+                                    <span className="text-xs text-green-600">✓ Selected</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">Not selected</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium">Secondary Image:</span>
+                                {formData.secondaryImage ? (
+                                  <div className="flex items-center gap-2">
+                                    <img src={formData.secondaryImage} alt="Secondary" className="w-8 h-8 object-cover rounded" />
+                                    <span className="text-xs text-green-600">✓ Selected</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">Not selected</span>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -1685,10 +1740,11 @@ const Admin = () => {
                 ))}
 
                 <p className="text-sm text-muted-foreground">
-                  Enter direct links to images (JPG, PNG, WebP supported). First
-                  image will be the main product image.
+                  Enter direct links to images (JPG, PNG, WebP supported). 
+                  Hover over uploaded images below to set main and secondary images.
                 </p>
               </div>
+
 
               {/* Multiple File Upload */}
               {imageUploadMethod === "file" && (
@@ -1726,21 +1782,39 @@ const Admin = () => {
                   <Label>Image Previews</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                     {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative">
+                      <div key={index} className="relative group">
                         <img
                           src={preview}
                           alt={`Product preview ${index + 1}`}
-                          className="w-full h-24 sm:h-32 object-cover rounded-lg border"
+                          className="w-full h-24 sm:h-32 object-cover rounded-lg border cursor-pointer transition-all duration-200 hover:ring-2 hover:ring-primary"
                           onError={(e) => {
                             e.currentTarget.src =
                               "/src/assets/robot-toy-premium.jpg";
                           }}
                         />
-                        {index === 0 && (
-                          <Badge className="absolute top-1 left-1 text-xs">
-                            Main
-                          </Badge>
-                        )}
+                        
+                        {/* Selection buttons */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={formData.mainImage === preview ? "default" : "secondary"}
+                            onClick={() => setFormData(prev => ({ ...prev, mainImage: preview }))}
+                            className="text-xs"
+                          >
+                            {formData.mainImage === preview ? "✓ Main" : "Set Main"}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={formData.secondaryImage === preview ? "default" : "secondary"}
+                            onClick={() => setFormData(prev => ({ ...prev, secondaryImage: preview }))}
+                            className="text-xs"
+                          >
+                            {formData.secondaryImage === preview ? "✓ Secondary" : "Set Secondary"}
+                          </Button>
+                        </div>
+                        
                         <Button
                           type="button"
                           variant="outline"
@@ -1752,6 +1826,35 @@ const Admin = () => {
                         </Button>
                       </div>
                     ))}
+                  </div>
+                  
+                  {/* Current Selection Display */}
+                  <div className="mt-4 p-3 bg-muted rounded-lg">
+                    <div className="text-sm font-medium mb-2">Current Selection:</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium">Main Image:</span>
+                        {formData.mainImage ? (
+                          <div className="flex items-center gap-2">
+                            <img src={formData.mainImage} alt="Main" className="w-8 h-8 object-cover rounded" />
+                            <span className="text-xs text-green-600">✓ Selected</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Not selected</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium">Secondary Image:</span>
+                        {formData.secondaryImage ? (
+                          <div className="flex items-center gap-2">
+                            <img src={formData.secondaryImage} alt="Secondary" className="w-8 h-8 object-cover rounded" />
+                            <span className="text-xs text-green-600">✓ Selected</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Not selected</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

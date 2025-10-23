@@ -43,13 +43,25 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
     >
       <div className="p-0 flex flex-col h-full">
         <div className="relative overflow-hidden rounded-t-2xl">
+          {/* Main Image */}
           <img 
-            src={product.image} 
+            src={product.mainImage || product.image} 
             alt={product.name}
             className={`w-full object-cover aspect-square h-full transition-all duration-700 ${
               isHovered ? 'scale-110 brightness-110' : 'scale-100'
             }`}
           />
+          
+          {/* Secondary Image on Hover */}
+          {product.secondaryImage && (
+            <img 
+              src={product.secondaryImage} 
+              alt={`${product.name} - Secondary view`}
+              className={`absolute inset-0 w-full object-cover aspect-square h-full transition-all duration-700 ${
+                isHovered ? 'opacity-100 scale-110 brightness-110' : 'opacity-0 scale-100'
+              }`}
+            />
+          )}
           
           {/* Floating Badges */}
           <div className="absolute z-10 top-4 left-4 flex flex-col gap-2">

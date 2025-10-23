@@ -195,11 +195,13 @@ export type Database = {
           image: string[] | null
           is_active: boolean
           is_new: boolean
+          main_image: string | null
           name: string
           original_price: number | null
           price: number
           rating: number
           reviews: number
+          secondary_image: string | null
           stock: number
           updated_at: string
           video_thumbnail: string | null
@@ -215,11 +217,13 @@ export type Database = {
           image?: string[] | null
           is_active?: boolean
           is_new?: boolean
+          main_image?: string | null
           name: string
           original_price?: number | null
           price: number
           rating?: number
           reviews?: number
+          secondary_image?: string | null
           stock?: number
           updated_at?: string
           video_thumbnail?: string | null
@@ -235,11 +239,13 @@ export type Database = {
           image?: string[] | null
           is_active?: boolean
           is_new?: boolean
+          main_image?: string | null
           name?: string
           original_price?: number | null
           price?: number
           rating?: number
           reviews?: number
+          secondary_image?: string | null
           stock?: number
           updated_at?: string
           video_thumbnail?: string | null

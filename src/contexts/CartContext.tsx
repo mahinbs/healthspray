@@ -11,6 +11,8 @@ export interface Product {
   originalPrice?: number;
   image: string;
   images?: string[];
+  mainImage?: string;
+  secondaryImage?: string;
   category: string;
   description?: string;
   features?: string[];
