@@ -19,6 +19,8 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addItem, isInCart, getItemQuantity } = useCart();
+  const isOutOfStock = (product?.stock ?? 0) <= 0;
+  console.log({product})
 
   const images = product?.images || (product?.image ? [product.image] : []);
   const currentImage = images[currentImageIndex] || product?.image;
@@ -243,7 +245,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 </div>
               </div>
               
-              <Button 
+              {/* <Button 
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
                 className={`w-full ${
@@ -268,7 +270,40 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                     Add to Cart
                   </>
                 )}
-              </Button>
+              </Button> */}
+              <Button 
+              onClick={handleAddToCart}
+              disabled={isAddingToCart || isOutOfStock}
+              className={`flex-1 group border-0 py-1.5 px-2 font-semibold rounded-lg transition-all duration-300 text-xs ${
+                isOutOfStock 
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                  : isInCartState 
+                    ? 'bg-green-600 hover:bg-green-700 hover:shadow-glow text-white' 
+                    : 'bg-gradient-primary hover:shadow-glow text-white hover:scale-105'
+              }`}
+            >
+              {isOutOfStock ? (
+                <>
+                  <span className="mr-1">❌</span>
+                  Out of Stock
+                </>
+              ) : isAddingToCart ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1" />
+                  Adding...
+                </>
+              ) : isInCartState ? (
+                <>
+                  <CheckCircle className="mr-1 h-3 w-3" />
+                  In Cart
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="mr-1 h-3 w-3 group-hover:scale-110 transition-transform duration-300" />
+                  Add to Cart
+                </>
+              )}
+            </Button>
             </GlassCard>
           </div>
         </div>

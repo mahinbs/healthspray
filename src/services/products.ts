@@ -58,6 +58,30 @@ export const productsService = {
     }
   },
 
+  // Featured Products Functions
+  async getFeaturedProducts(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('featured_products')
+        .select(`
+          *,
+          product:products(*)
+        `)
+        .eq('is_active', true)
+        .order('order_index', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching featured products:', error);
+        throw new Error(error.message);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getFeaturedProducts:', error);
+      throw error;
+    }
+  },
+
   // Fetch products with videos for Shop by Video section
   async getProductsWithVideos(): Promise<AdminProduct[]> {
     try {
@@ -207,17 +231,18 @@ export const convertToFrontendProduct = (dbProduct: Product) => ({
   id: dbProduct.id,
   name: dbProduct.name,
   price: dbProduct.price,
-  originalPrice: dbProduct.original_price,
+  originalPrice: dbProduct.original_price || undefined,
   image: Array.isArray(dbProduct.image) && dbProduct.image.length > 0 
     ? dbProduct.image[0] 
     : (typeof dbProduct.image === 'string' ? dbProduct.image : '/src/assets/robot-toy-premium.jpg'),
   images: Array.isArray(dbProduct.image) ? dbProduct.image : (dbProduct.image ? [dbProduct.image] : []),
   category: dbProduct.category,
-  description: dbProduct.description,
-  features: dbProduct.features,
-  rating: dbProduct.rating,
-  reviews: dbProduct.reviews,
-  isNew: dbProduct.is_new,
+  description: dbProduct.description || '',
+  features: dbProduct.features || [],
+  rating: dbProduct.rating || 0,
+  reviews: dbProduct.reviews || 0,
+  isNew: dbProduct.is_new || false,
+  stock: dbProduct.stock || 0,
 });
 
 // Helper function to convert frontend product to database format

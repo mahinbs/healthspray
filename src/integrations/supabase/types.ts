@@ -247,6 +247,173 @@ export type Database = {
         }
         Relationships: []
       }
+      featured_products: {
+        Row: {
+          created_at: string
+          hero_description: string | null
+          hero_image_url: string | null
+          hero_title: string | null
+          id: string
+          is_active: boolean
+          order_index: number
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hero_description?: string | null
+          hero_image_url?: string | null
+          hero_title?: string | null
+          id?: string
+          is_active?: boolean
+          order_index: number
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hero_description?: string | null
+          hero_image_url?: string | null
+          hero_title?: string | null
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      hero_section: {
+        Row: {
+          background_image_url: string | null
+          background_video_url: string | null
+          cta_primary_text: string | null
+          cta_primary_url: string | null
+          cta_secondary_text: string | null
+          cta_secondary_url: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          section_type: string
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          background_image_url?: string | null
+          background_video_url?: string | null
+          cta_primary_text?: string | null
+          cta_primary_url?: string | null
+          cta_secondary_text?: string | null
+          cta_secondary_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          section_type: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          background_image_url?: string | null
+          background_video_url?: string | null
+          cta_primary_text?: string | null
+          cta_primary_url?: string | null
+          cta_secondary_text?: string | null
+          cta_secondary_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          section_type?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hero_carousel_images: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          is_active: boolean
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order: number
+          id?: string
+          image_url: string
+          is_active?: boolean
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      promotional_banner: {
+        Row: {
+          animation_speed: number
+          background_color: string
+          created_at: string
+          id: string
+          is_active: boolean
+          text: string
+          text_color: string
+          updated_at: string
+        }
+        Insert: {
+          animation_speed?: number
+          background_color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          text: string
+          text_color?: string
+          updated_at?: string
+        }
+        Update: {
+          animation_speed?: number
+          background_color?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          text?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

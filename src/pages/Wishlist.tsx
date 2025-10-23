@@ -1,7 +1,7 @@
 import { useWishlist } from "@/contexts/WishlistContext";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { Heart, ShoppingCart, Trash2, ArrowLeft, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -30,9 +30,7 @@ const Wishlist = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <Layout>
       {/* Hero Section */}
       <section className="relative h-[40vh] flex items-center justify-center text-center text-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-mesh" />
@@ -174,7 +172,7 @@ const Wishlist = () => {
       </main>
 
       <Footer />
-    </div>
+    </Layout>
   );
 };
 

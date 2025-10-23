@@ -19,6 +19,8 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const handleAddToCart = async () => {
+    if (isOutOfStock) return;
+    
     setIsAddingToCart(true);
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -29,6 +31,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   const cartQuantity = getItemQuantity(product.id);
   const isInCartState = isInCart(product.id);
   const isLiked = isInWishlist(product.id);
+  const isOutOfStock = (product.stock ?? 0) <= 0;
 
   return (
     <GlassCard 
@@ -50,18 +53,23 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           
           {/* Floating Badges */}
           <div className="absolute z-10 top-4 left-4 flex flex-col gap-2">
-            {product.isNew && (
-              <Badge className="bg-[#ef4e23] text-white shadow-glow">
-                ✨ New
+            {isOutOfStock && (
+              <Badge className="bg-gray-500 text-white shadow-glow">
+                Out of Stock
               </Badge>
             )}
-            {product.originalPrice && (
+             {!isOutOfStock && (product.isNew || false) && (
+               <Badge className="bg-[#ef4e23] text-white shadow-glow">
+                 ✨ New
+               </Badge>
+             )}
+            {!isOutOfStock && product.originalPrice && (
               <Badge variant="destructive" className="shadow-glow">
                 Sale
               </Badge>
             )}
-            {isInCartState && (
-              <Badge className="bg-black text-white shadow-glow">
+            {!isOutOfStock && isInCartState && (
+              <Badge className="bg-green-500 text-white shadow-glow">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 In Cart ({cartQuantity})
               </Badge>
@@ -98,12 +106,12 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
                 <Star 
                   key={i} 
                   className={`h-4 w-4 transition-colors duration-300 ${
-                    i < product.rating ? 'fill-[#ef4e23] text-[#ef4e23]' : 'text-gray-400'
+                    i < (product.rating || 0) ? 'fill-[#ef4e23] text-[#ef4e23]' : 'text-gray-400'
                   }`} 
                 />
               ))}
             </div>
-            <span className="text-xs text-muted-foreground font-medium">({product.reviews} reviews)</span>
+            <span className="text-xs text-muted-foreground font-medium">({product.reviews || 0} reviews)</span>
           </div>
           
           <div className="flex items-center justify-between mb-3">
@@ -129,12 +137,21 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
             </Button>
             <Button 
               onClick={handleAddToCart}
-              disabled={isAddingToCart}
-              className={`flex-1 group bg-gradient-primary hover:shadow-glow text-white border-0 py-1.5 px-2 font-semibold rounded-lg transition-all duration-300 hover:scale-105 text-xs ${
-                isInCartState ? 'bg-black hover:bg-gray-800' : ''
+              disabled={isAddingToCart || isOutOfStock}
+              className={`flex-1 group border-0 py-1.5 px-2 font-semibold rounded-lg transition-all duration-300 text-xs ${
+                isOutOfStock 
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                  : isInCartState 
+                    ? 'bg-green-600 hover:bg-green-700 hover:shadow-glow text-white' 
+                    : 'bg-gradient-primary hover:shadow-glow text-white hover:scale-105'
               }`}
             >
-              {isAddingToCart ? (
+              {isOutOfStock ? (
+                <>
+                  <span className="mr-1">❌</span>
+                  Out of Stock
+                </>
+              ) : isAddingToCart ? (
                 <>
                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1" />
                   Adding...

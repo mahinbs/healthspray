@@ -163,7 +163,7 @@ const Header = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-[#ef4e23]"
+                      className="bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-white"
                     >
                       <User className="h-6 w-6" />
                     </Button>

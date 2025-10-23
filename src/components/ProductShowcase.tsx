@@ -31,14 +31,58 @@ const ProductShowcase = () => {
       try {
         setLoading(true);
         
-        // Fetch active products from database
-        const dbProducts = await productsService.getActiveProducts();
-        const formattedProducts = dbProducts.map(convertToFrontendProduct);
+        // First try to get featured products
+        console.log("ProductShowcase: Fetching featured products...");
+        const featuredProducts = await productsService.getFeaturedProducts();
+        console.log("ProductShowcase: Featured products from DB:", featuredProducts);
         
-        // Show only first 4 products for featured section
-        setProducts(formattedProducts.slice(0, 4));
+        if (featuredProducts && featuredProducts.length > 0) {
+          // Convert featured products to frontend format
+          const formattedFeatured = featuredProducts.map(fp => {
+            if (fp && fp.product) {
+              console.log("ProductShowcase: Converting featured product:", fp.product);
+              return convertToFrontendProduct(fp.product);
+            }
+            return null;
+          }).filter(Boolean);
+          
+          console.log("ProductShowcase: Formatted featured products:", formattedFeatured);
+          
+          if (formattedFeatured.length > 0) {
+            setProducts(formattedFeatured);
+            return;
+          }
+        }
+        
+        // Fallback to regular products if no featured products
+        console.log("ProductShowcase: No featured products, fetching active products...");
+        const dbProducts = await productsService.getActiveProducts();
+        console.log("ProductShowcase: Active products from DB:", dbProducts);
+        
+        if (dbProducts && dbProducts.length > 0) {
+          const formattedProducts = dbProducts.map(convertToFrontendProduct);
+          console.log("ProductShowcase: Formatted active products:", formattedProducts);
+          // Show only first 4 products for featured section
+          setProducts(formattedProducts.slice(0, 4));
+        } else {
+          console.warn("No products found");
+          setProducts([]);
+        }
       } catch (error) {
         console.error("Error fetching products:", error);
+        // Fallback to regular products on error
+        try {
+          const dbProducts = await productsService.getActiveProducts();
+          if (dbProducts && dbProducts.length > 0) {
+            const formattedProducts = dbProducts.map(convertToFrontendProduct);
+            setProducts(formattedProducts.slice(0, 4));
+          } else {
+            setProducts([]);
+          }
+        } catch (fallbackError) {
+          console.error("Error fetching fallback products:", fallbackError);
+          setProducts([]);
+        }
       } finally {
         setLoading(false);
       }
@@ -82,20 +126,28 @@ const ProductShowcase = () => {
             Discover our premium pain relief and recovery solutions designed to keep you moving at your best.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 max-w-7xl mx-auto">
-          {products.map((product, index) => (
-            <div 
-              key={product.id} 
-              className="animate-slide-up"
-              style={{ animationDelay: `${index * 0.2}s` }}
-            >
-              <ProductCard 
-                product={product} 
-                onViewDetails={() => handleViewDetails(product)} 
-              />
-            </div>
-          ))}
-        </div>
+        {products.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 max-w-7xl mx-auto">
+            {products.map((product, index) => (
+              <div 
+                key={product.id} 
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 0.2}s` }}
+              >
+                <ProductCard 
+                  product={product} 
+                  onViewDetails={() => handleViewDetails(product)} 
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-2xl font-bold text-slate-700 mb-2">No Featured Products</h3>
+            <p className="text-slate-500">Check back soon for our latest products!</p>
+          </div>
+        )}
       </div>
       <ProductDetailModal 
         product={selectedProduct}

@@ -16,9 +16,11 @@ import {
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/services/api";
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { CheckoutModal } from "@/components/CheckoutModal";
+import { CouponSection } from "@/components/CouponSection";
+import Header from "@/components/Header";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -82,9 +84,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
+    <Layout>
       <div className="container mx-auto px-4 py-4 sm:py-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8">
@@ -116,19 +116,30 @@ const Cart = () => {
                 <span className="text-sm sm:text-base text-foreground">{formatPrice(state.total)}</span>
               </div>
               
+              {/* Coupon Section */}
+              <CouponSection />
+              
+              {/* Coupon Discount Display */}
+              {state.couponApplied && (
+                <div className="flex justify-between text-green-600">
+                  <span className="text-sm sm:text-base">Coupon ({state.couponApplied.code})</span>
+                  <span className="text-sm sm:text-base">-₹{state.couponApplied.discountAmount.toFixed(2)}</span>
+                </div>
+              )}
+              
               <div className="flex justify-between">
                 <span className="text-sm sm:text-base text-muted-foreground">Shipping</span>
                 <span className="text-sm sm:text-base text-green-600 dark:text-green-400">Free</span>
               </div>
               
-                              <div className="border-t border-border pt-3 sm:pt-4">
-                  <div className="flex justify-between">
-                    <span className="text-base sm:text-lg font-semibold text-foreground">Total</span>
-                    <span className="text-lg sm:text-xl font-bold text-primary">
-                      {formatPrice(state.total)}
-                    </span>
-                  </div>
+              <div className="border-t border-border pt-3 sm:pt-4">
+                <div className="flex justify-between">
+                  <span className="text-base sm:text-lg font-semibold text-foreground">Total</span>
+                  <span className="text-lg sm:text-xl font-bold text-primary">
+                    {formatPrice(state.finalTotal)}
+                  </span>
                 </div>
+              </div>
             </div>
             
             {/* Checkout Button */}
@@ -256,6 +267,17 @@ const Cart = () => {
                   <span className="text-foreground">{formatPrice(state.total)}</span>
                 </div>
                 
+                {/* Coupon Section */}
+                <CouponSection />
+                
+                {/* Coupon Discount Display */}
+                {state.couponApplied && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Coupon ({state.couponApplied.code})</span>
+                    <span>-₹{state.couponApplied.discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+                
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
                   <span className="text-green-600 dark:text-green-400">Free</span>
@@ -265,7 +287,7 @@ const Cart = () => {
                   <div className="flex justify-between">
                     <span className="text-lg font-semibold text-foreground">Total</span>
                     <span className="text-xl font-bold text-primary">
-                      {formatPrice(state.total)}
+                      {formatPrice(state.finalTotal)}
                     </span>
                   </div>
                   <p className="text-gray-500">*Inclusive of all taxes</p>
@@ -308,7 +330,7 @@ const Cart = () => {
         onClose={() => setShowCheckoutModal(false)}
         onSuccess={handleOrderSuccess}
       />
-    </div>
+    </Layout>
   );
 };
 

@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Hero from "@/components/Hero";
 import ProductShowcase from "@/components/ProductShowcase";
 import CategoryShowcase from "@/components/CategoryShowcase";
@@ -12,20 +12,18 @@ import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <Hero />
-        <ProductShowcase />
-        <CategoryShowcase />
-        <ConcernShowcase />
-        <ShopByVideo />
-        <About />
-        <Testimonials />
-        <BlogSection />
-      </main>
+    <Layout>
+      <Hero />
+      <ProductShowcase />
+      <CategoryShowcase />
+      <ConcernShowcase />
+      <ShopByVideo />
+      <About />
+      <Testimonials />
+      <Statistics />
+      <BlogSection />
       <Footer />
-    </div>
+    </Layout>
   );
 };
 

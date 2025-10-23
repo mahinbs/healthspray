@@ -1,12 +1,12 @@
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Ban } from "lucide-react";
 
 const Returns = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <Layout>
+      
       
       {/* Hero Section */}
       <section className="relative py-32 bg-gradient-hero overflow-hidden">
@@ -17,16 +17,16 @@ const Returns = () => {
             <div className="flex justify-center mb-6">
               <div className="p-4 bg-white/10 backdrop-blur-md rounded-full">
                 <Ban className="h-12 w-12 text-red-400" />
-              </div>
-            </div>
+              </Layout>
+            </Layout>
             <h1 className="text-4xl md:text-6xl font-bold">
               No Returns Policy
             </h1>
             <p className="text-xl text-white/90">
               All sales are final. We do not accept returns or exchanges.
             </p>
-          </div>
-        </div>
+          </Layout>
+        </Layout>
       </section>
 
       {/* Content Section */}
@@ -39,7 +39,7 @@ const Returns = () => {
               <div className="flex items-center mb-6">
                 <Ban className="h-8 w-8 text-red-500 mr-3" />
                 <h2 className="text-3xl font-bold text-primary">Final Sale Policy</h2>
-              </div>
+              </Layout>
               
               <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 p-6 rounded-lg border border-red-500/30">
                 <h3 className="text-xl font-semibold mb-3 text-red-400">All Sales Are Final</h3>
@@ -47,7 +47,7 @@ const Returns = () => {
                   Due to the nature of our products and hygiene considerations for pet items, we do not accept returns or exchanges. 
                   Please carefully review your order before purchasing.
                 </p>
-              </div>
+              </Layout>
             </GlassCard>
 
             {/* Quality Assurance */}
@@ -64,7 +64,7 @@ const Returns = () => {
                     <li>Safe materials for pets</li>
                     <li>Products match advertised specifications</li>
                   </ul>
-                </div>
+                </Layout>
                 
                 <div className="space-y-6">
                   <h3 className="text-xl font-semibold text-blue-400">📞 Customer Support</h3>
@@ -73,8 +73,8 @@ const Returns = () => {
                     <li>Product usage guidance</li>
                     <li>Technical support for smart products</li>
                   </ul>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
 
             {/* Contact Information */}
@@ -88,23 +88,23 @@ const Returns = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Email</h4>
                   <p className="text-muted-foreground">support@zippty.com</p>
-                </div>
+                </Layout>
                 <div>
                   <h4 className="font-semibold mb-2">Phone</h4>
                   <p className="text-muted-foreground">+91 6367189188</p>
-                </div>
+                </Layout>
                 <div>
                   <h4 className="font-semibold mb-2">Live Chat</h4>
                   <p className="text-muted-foreground">Available 24/7</p>
-                </div>
-              </div>
+                </Layout>
+              </Layout>
             </GlassCard>
-          </div>
-        </div>
+          </Layout>
+        </Layout>
       </section>
 
       <Footer />
-    </div>
+    </Layout>
   );
 };
 
