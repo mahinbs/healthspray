@@ -9,32 +9,32 @@ const Statistics = () => {
       value: 2000, 
       suffix: "+",
       icon: Heart,
-      color: "text-red-400",
-      bgColor: "bg-red-400/10"
+      color: "text-[#ef4e23]",
+      bgColor: "bg-[#ef4e23]/10"
     },
     { 
       label: "Brands", 
       value: 72, 
       suffix: "",
       icon: Award,
-      color: "text-blue-400",
-      bgColor: "bg-blue-400/10"
+      color: "text-black",
+      bgColor: "bg-black/10"
     },
     { 
       label: "Products", 
       value: 1800, 
       suffix: "+",
       icon: Package,
-      color: "text-green-400",
-      bgColor: "bg-green-400/10"
+      color: "text-[#ef4e23]",
+      bgColor: "bg-[#ef4e23]/10"
     },
     { 
       label: "Years in Business", 
       value: 28, 
       suffix: "",
       icon: Calendar,
-      color: "text-purple-400",
-      bgColor: "bg-purple-400/10"
+      color: "text-black",
+      bgColor: "bg-black/10"
     },
   ];
 
@@ -42,13 +42,13 @@ const Statistics = () => {
     <section className="relative py-32 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-mesh opacity-50" />
-      <div className="absolute inset-0 bg-background/90 backdrop-blur-2xl" />
+      <div className="absolute inset-0 bg-white/90 backdrop-blur-2xl" />
       
       <div className="relative container mx-auto px-4">
         <div className="text-center mb-20 animate-fade-in">
           <h2 className="text-5xl md:text-6xl font-bold mb-6">
             Our{" "}
-            <span className="bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-[#ef4e23] font-bold">
               Impact
             </span>
           </h2>
@@ -70,7 +70,7 @@ const Statistics = () => {
                   <IconComponent className={`h-8 w-8 ${stat.color}`} />
                 </div>
                 
-                <div className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+                <div className="text-5xl md:text-6xl font-bold mb-4 text-[#ef4e23]">
                   <AnimatedCounter 
                     end={stat.value} 
                     suffix={stat.suffix}

@@ -119,7 +119,7 @@ const ShopByVideo = () => {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-50 to-slate-100 relative overflow-hidden">
+    <section className="py-20 bg-white relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-mesh opacity-20" />
       
@@ -127,7 +127,7 @@ const ShopByVideo = () => {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
-            Shop by <span className="bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] bg-clip-text text-transparent">Video</span>
+            Shop by <span className="text-[#ef4e23] font-bold">Video</span>
           </h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
             See our products in action. Watch real athletes using our sports health solutions for peak performance.
@@ -140,12 +140,12 @@ const ShopByVideo = () => {
             // Loading skeleton
             Array.from({ length: 6 }).map((_, index) => (
               <GlassCard key={index} intensity="medium" className="animate-pulse">
-                <div className="aspect-[3/4] bg-slate-200 rounded-2xl"></div>
+                <div className="aspect-[3/4] bg-gray-100 rounded-2xl"></div>
                 <div className="p-6 space-y-4">
-                  <div className="h-6 bg-slate-200 rounded"></div>
-                  <div className="h-4 bg-slate-200 rounded"></div>
-                  <div className="h-4 bg-slate-200 rounded w-2/3"></div>
-                  <div className="h-8 bg-slate-200 rounded"></div>
+                  <div className="h-6 bg-gray-100 rounded"></div>
+                  <div className="h-4 bg-gray-100 rounded"></div>
+                  <div className="h-4 bg-gray-100 rounded w-2/3"></div>
+                  <div className="h-8 bg-gray-100 rounded"></div>
                 </div>
               </GlassCard>
             ))
@@ -200,7 +200,7 @@ const ShopByVideo = () => {
                         style={{ backgroundColor: product.video_thumbnail ? 'transparent' : '#e5e7eb' }}
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                         <span className="text-gray-500">No video available</span>
                       </div>
                     )}
@@ -264,7 +264,7 @@ const ShopByVideo = () => {
                         onClick={() => handleToggleWishlist(product)}
                         className={`${
                           isInWishlist(product.id)
-                            ? "bg-red-500 border-red-500 text-white hover:bg-red-600 hover:border-red-600"
+                            ? "bg-[#ef4e23] border-[#ef4e23] text-white hover:bg-[#ef4e23]/90 hover:border-[#ef4e23]/90"
                             : "border-[#ef4e23] text-[#ef4e23] hover:bg-[#ef4e23] hover:text-white"
                         } rounded-xl transition-all duration-300 hover:scale-105`}
                       >
@@ -281,7 +281,7 @@ const ShopByVideo = () => {
         {/* View All Button */}
         <div className="text-center mt-12">
           <Button
-            className="bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] hover:from-[#ef4e23]/90 hover:to-[#ef4e23]/90 text-white border-0 px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+            className="bg-gradient-to-r from-[#ef4e23] to-[#ef4e23] hover:from-[#ef4e23]/90 hover:to-[#ef4e23]/90 text-white border-0 px-10 py-6 rounded-2xl font-semibold text-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
           >
             View All Videos
           </Button>
@@ -378,7 +378,7 @@ const ShopByVideo = () => {
                   onClick={() => handleToggleWishlist(selectedProduct)}
                   className={`${
                     isInWishlist(selectedProduct.id)
-                      ? "bg-red-500 border-red-500 text-white hover:bg-red-600 hover:border-red-600"
+                      ? "bg-[#ef4e23] border-[#ef4e23] text-white hover:bg-[#ef4e23]/90 hover:border-[#ef4e23]/90"
                       : "border-[#ef4e23] text-[#ef4e23] hover:bg-[#ef4e23] hover:text-white"
                   } rounded-xl transition-all duration-300 hover:scale-105 px-6`}
                 >

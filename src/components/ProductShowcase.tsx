@@ -56,7 +56,7 @@ const ProductShowcase = () => {
     return (
       <section id="products" className="relative py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-mesh opacity-30" />
-        <div className="absolute inset-0 bg-muted/50 backdrop-blur-3xl" />
+        <div className="absolute inset-0 bg-white/50 backdrop-blur-3xl" />
         
         <div className="relative container mx-auto px-4">
           <div className="text-center">
@@ -71,7 +71,7 @@ const ProductShowcase = () => {
   return (
     <section id="products" className="relative py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-mesh opacity-30" />
-      <div className="absolute inset-0 bg-muted/50 backdrop-blur-3xl" />
+      <div className="absolute inset-0 bg-white/50 backdrop-blur-3xl" />
       
       <div className="relative container mx-auto px-4">
         <div className="text-center mb-16">

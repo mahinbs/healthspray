@@ -37,7 +37,7 @@ const About = () => {
             <div className="space-y-4">
               <h2 className="text-4xl font-bold">
                 Where{" "}
-                <span className="bg-gradient-accent bg-clip-text text-transparent">
+                <span className="text-[#ef4e23] font-bold">
                   science
                 </span>{" "}
                 meets performance
@@ -70,6 +70,7 @@ const About = () => {
               variant="hero" 
               size="lg"
               onClick={() => window.open('/about', '_blank')}
+              className="px-10 py-6"
             >
               Learn More About Our Mission
             </Button>

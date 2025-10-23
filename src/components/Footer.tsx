@@ -19,8 +19,7 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 
 // Using Cloudinary logo URL
-const physiqLogo =
-  "https://res.cloudinary.com/dknafpppp/image/upload/v1758605608/Physiq_Final_Logo_3_mlnzyt.png";
+const physiqLogo = "/logo-white.png";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
@@ -70,7 +69,7 @@ const Footer = () => {
                   <img
                     src={physiqLogo}
                     alt="Physiq - Premium Sports Health"
-                    className="h-36 scale-125 w-auto"
+                    className="h-28 w-auto object-contain -translate-y-1"
                   />
                 </Link>
                 <p className="text-slate-300 leading-relaxed max-w-sm">
@@ -123,29 +122,29 @@ const Footer = () => {
                   to="/shop"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  <ArrowRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   Pain Relief
+                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
                 <Link
                   to="/shop"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  <ArrowRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   Recovery Products
+                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
                 <Link
                   to="/shop"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  <ArrowRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   Compression Wear
+                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
                 <Link
                   to="/shop"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  <ArrowRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   Warm-up Products
+                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
               </div>
             </div>
@@ -158,31 +157,31 @@ const Footer = () => {
                   to="/contact"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  <ArrowRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   Contact Us
+                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
                 <button
                   onClick={() => window.open("/shipping", "_blank")}
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group w-full text-left"
                 >
-                  <ArrowRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   Shipping Info
+                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <ExternalLink className="h-3 w-3 ml-2" />
                 </button>
                 <button
                   onClick={() => window.open("/warranty", "_blank")}
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group w-full text-left"
                 >
-                  <ArrowRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   Warranty
+                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <ExternalLink className="h-3 w-3 ml-2" />
                 </button>
                 <Link
                   to="/terms"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  <ArrowRight className="h-4 w-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   Terms of Service
+                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
               </div>
             </div>
@@ -202,12 +201,12 @@ const Footer = () => {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-md"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-md"
                     required
                   />
                   <Button
                     type="submit"
-                    className="w-full bg-[#d43a1a] hover:bg-[#c83215] text-white border-0 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="w-full bg-[#d43a1a] hover:bg-[#c83215] text-white border-2 border-white/90 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                   >
                     {isSubscribed ? "Subscribed!" : "Subscribe"}
                   </Button>

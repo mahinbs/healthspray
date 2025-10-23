@@ -46,13 +46,13 @@ const CategoryShowcase = () => {
   return (
     <section className="relative py-20 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-mesh opacity-20" />
-      <div className="absolute inset-0 bg-muted/30 backdrop-blur-3xl" />
+      <div className="absolute inset-0 bg-white/30 backdrop-blur-3xl" />
       
       <div className="relative container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-5xl font-bold mb-4 drop-shadow-lg">
             Shop by{" "}
-            <span className="bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-[#ef4e23] font-bold">
               Category
             </span>
           </h2>

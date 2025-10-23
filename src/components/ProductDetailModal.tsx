@@ -249,7 +249,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
                 className={`w-full ${
                   isInCartState 
                     ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                    : 'bg-gradient-to-r from-orange-600 to-orange-600 hover:from-orange-700 hover:to-orange-700'
                 } text-white py-3 font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50`}
               >
                 {isAddingToCart ? (

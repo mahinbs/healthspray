@@ -39,7 +39,7 @@ const Wishlist = () => {
         <div className="absolute inset-0 bg-black/30" />
         <div className="relative z-10 max-w-4xl mx-auto space-y-6 px-4">
           <div className="flex items-center justify-center gap-4 mb-6">
-            <Heart className="h-12 w-12 text-red-400 fill-current animate-pulse" />
+            <Heart className="h-12 w-12 text-[#ef4e23] fill-current animate-pulse" />
             <h1 className="text-4xl md:text-6xl font-bold drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
               My Wishlist
             </h1>
@@ -120,7 +120,7 @@ const Wishlist = () => {
                     {/* Remove from wishlist button */}
                     <button
                       onClick={() => handleRemoveFromWishlist(product.id)}
-                      className="absolute top-3 right-3 p-2 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors duration-200 backdrop-blur-sm"
+                      className="absolute top-3 right-3 p-2 rounded-full bg-[#ef4e23]/20 text-[#ef4e23] hover:bg-[#ef4e23]/30 transition-colors duration-200 backdrop-blur-sm"
                     >
                       <Heart className="h-4 w-4 fill-current" />
                     </button>
@@ -138,7 +138,7 @@ const Wishlist = () => {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                        <span className="text-xl font-bold text-[#ef4e23]">
                           {formatPrice(product.price)}
                         </span>
                         {product.originalPrice && (

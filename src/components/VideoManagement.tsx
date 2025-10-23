@@ -349,7 +349,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ products, onVideoUplo
           <div className="space-y-4">
             {/* Product Info */}
             {selectedProduct && (
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-gray-100 rounded-lg">
                 <h3 className="font-semibold">{selectedProduct.name}</h3>
                 <p className="text-sm text-gray-600">{selectedProduct.category}</p>
               </div>
@@ -420,7 +420,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ products, onVideoUplo
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm">Uploading video...</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-100 rounded-full h-2">
                   <div 
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}

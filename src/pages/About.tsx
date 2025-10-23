@@ -20,7 +20,6 @@ import aboutRecoveryProducts from "@/assets/about-recovery-products.jpg";
 import aboutCompressionWear from "@/assets/about-compression-wear.jpg";
 import aboutSportsInjury from "@/assets/about-sports-injury.jpg";
 import aboutWarmupCooldown from "@/assets/about-warmup-cooldown.jpg";
-import logo from "../assets/physiq-final-logo-new.png";
 
 const features = [
   {
@@ -102,7 +101,7 @@ const About = () => {
         <div className="relative z-10 container mx-auto px-4 text-center text-white">
           <div className="max-w-4xl mx-auto space-y-6">
             <img
-              src={logo}
+              src='/logo-white.png'
               alt="Physiq"
               className="w-28 mx-auto object-contain"
             />
@@ -127,7 +126,7 @@ const About = () => {
               <div>
                 <h2 className="text-4xl font-bold mb-6">
                   About our{" "}
-                  <span className="bg-gradient-primary bg-clip-text text-transparent">
+                  <span className="text-[#ef4e23] font-bold">
                     mission
                   </span>
                 </h2>
@@ -169,7 +168,7 @@ const About = () => {
       </section>
 
       {/* Statistics Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {stats.map((stat, index) => (
@@ -192,7 +191,7 @@ const About = () => {
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-4xl font-bold">
               Our{" "}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
+              <span className="text-[#ef4e23] font-bold">
                 Product Categories
               </span>
             </h2>
@@ -254,12 +253,12 @@ const About = () => {
       </section>
 
       {/* Athletes in Action Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-4xl font-bold">
               Athletes in{" "}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
+              <span className="text-[#ef4e23] font-bold">
                 Action
               </span>
             </h2>
@@ -319,7 +318,7 @@ const About = () => {
               <div className="space-y-6">
                 <h2 className="text-4xl font-bold">
                   Injury{" "}
-                  <span className="bg-gradient-primary bg-clip-text text-transparent">
+                  <span className="text-[#ef4e23] font-bold">
                     Prevention
                   </span>
                 </h2>
@@ -365,7 +364,7 @@ const About = () => {
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-4xl font-bold">
               Why Choose{" "}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
+              <span className="text-[#ef4e23] font-bold">
                 Us?
               </span>
             </h2>
@@ -389,7 +388,7 @@ const About = () => {
       </section>
 
       {/* Our Mission Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -405,7 +404,7 @@ const About = () => {
               <div className="order-1 lg:order-2 space-y-6">
                 <h2 className="text-4xl font-bold">
                   Our{" "}
-                  <span className="bg-gradient-primary bg-clip-text text-transparent">
+                  <span className="text-[#ef4e23] font-bold">
                     Mission
                   </span>
                 </h2>
@@ -445,6 +444,7 @@ const About = () => {
                     variant="hero" 
                     size="lg"
                     onClick={() => window.open('/contact', '_blank')}
+                    className="px-10 py-6"
                   >
                     Join Our Community
                   </Button>
@@ -461,7 +461,7 @@ const About = () => {
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-4xl font-bold">
               Why Choose Our{" "}
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
+              <span className="text-[#ef4e23] font-bold">
                 Services?
               </span>
             </h2>
@@ -491,6 +491,7 @@ const About = () => {
               variant="hero" 
               size="lg"
               onClick={() => window.open('/shop', '_blank')}
+              className="px-10 py-6"
             >
               Explore Products
             </Button>

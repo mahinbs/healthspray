@@ -97,7 +97,7 @@ const Shop = () => {
         <div className="container mx-auto px-4 py-20">
           <div className="text-center">
             <div
-              className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 
+              className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ef4e23] 
             mx-auto mb-4"
             ></div>
             <p className="text-slate-400">Loading products...</p>
@@ -123,7 +123,7 @@ const Shop = () => {
           <div className="animate-fade-in">
             <h1 className="text-5xl md:text-7xl font-bold drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] mb-4">
               Shop Our{" "}
-              <span className="bg-gradient-accent bg-clip-text text-transparent">
+              <span className="text-white font-bold">
                 Products
               </span>
             </h1>

@@ -37,7 +37,7 @@ const BlogSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-50 to-slate-100 relative overflow-hidden">
+    <section className="py-20 bg-white relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-mesh opacity-20" />
       
@@ -54,7 +54,7 @@ const BlogSection = () => {
           </div>
           <Button
             variant="outline"
-            className="hidden md:flex items-center space-x-2 bg-black text-white hover:bg-gray-800 border-black"
+            className="hidden md:flex items-center space-x-2 bg-orange-600 text-white"
           >
             <span>View all</span>
             <ArrowRight className="h-4 w-4" />
@@ -124,7 +124,7 @@ const BlogSection = () => {
         <div className="text-center mt-8 md:hidden">
           <Button
             variant="outline"
-            className="bg-black text-white hover:bg-gray-800 border-black"
+            className="bg-gray-900 text-white hover:bg-gray-800 border-gray-900"
           >
             View all
             <ArrowRight className="ml-2 h-4 w-4" />

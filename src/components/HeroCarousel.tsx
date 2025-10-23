@@ -57,7 +57,7 @@ const HeroCarousel = () => {
           key={index}
           className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 transform ${
             index === currentIndex
-              ? "opacity-70 scale-100"
+              ? "opacity-100 scale-100"
               : "opacity-0 scale-110"
           }`}
           style={{ backgroundImage: `url(${image.src})` }}
@@ -65,7 +65,7 @@ const HeroCarousel = () => {
       ))}
 
       {/* Dark Overlay for Better Text Contrast */}
-      <div className="absolute inset-0 bg-black/40" />
+      {/* <div className="absolute inset-0 bg-black/40" /> */}
 
       {/* Navigation Controls */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">

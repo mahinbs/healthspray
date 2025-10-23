@@ -133,7 +133,7 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate("/wishlist")}
-                className="sm:flex hidden relative bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-[#ef4e23]"
+                className="sm:flex hidden relative bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-white"
               >
                 <Heart className="h-6 w-6" />
                 {wishlistState.count > 0 && (
@@ -147,7 +147,7 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate("/cart")}
-                className="relative bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-[#ef4e23]"
+                className="relative bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 rounded-full h-12 w-12 hover:text-white"
               >
                 <ShoppingCart className="h-6 w-6" />
                 {state.itemCount > 0 && (
@@ -202,7 +202,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     onClick={() => handleAuthClick("login")}
-                    className="bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 text-slate-800 hover:text-[#ef4e23]"
+                    className="bg-gradient-to-r from-[#ef4e23]/20 to-[#ef4e23]/30 hover:from-[#ef4e23]/30 hover:to-[#ef4e23]/40 backdrop-blur-md border border-[#ef4e23]/50 text-slate-800 hover:text-white"
                   >
                     Sign In
                   </Button>
@@ -263,7 +263,7 @@ const Header = () => {
               variant="ghost"
               size="icon"
               onClick={handleMobileMenuClose}
-              className="rounded-full h-10 w-10 hover:bg-slate-100"
+              className="rounded-full h-10 w-10 hover:bg-gray-100"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -275,13 +275,13 @@ const Header = () => {
               onClick={() => handleMobileNavClick("/")}
               className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-300 ${
                 isActive("/")
-                  ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 border border-blue-200/50"
+                  ? "bg-gradient-to-r from-[#ef4e23]/10 to-[#ef4e23]/20 text-[#ef4e23] border border-[#ef4e23]/50"
                   : "hover:bg-slate-100/50"
               }`}
             >
               <div
                 className={`w-2 h-2 rounded-full ${
-                  isActive("/") ? "bg-blue-500" : "bg-slate-300"
+                  isActive("/") ? "bg-[#ef4e23]" : "bg-gray-300"
                 }`}
               />
               <span className="font-medium text-lg">Home</span>
@@ -291,7 +291,7 @@ const Header = () => {
               onClick={() => handleMobileNavClick("/shop")}
               className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-300 ${
                 isActive("/shop")
-                  ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 border border-blue-200/50"
+                  ? "bg-gradient-to-r from-[#ef4e23]/10 to-[#ef4e23]/20 text-[#ef4e23] border border-[#ef4e23]/50"
                   : "hover:bg-slate-100/50"
               }`}
             >
@@ -307,7 +307,7 @@ const Header = () => {
               onClick={() => handleMobileNavClick("/about")}
               className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-300 ${
                 isActive("/about")
-                  ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 border border-blue-200/50"
+                  ? "bg-gradient-to-r from-[#ef4e23]/10 to-[#ef4e23]/20 text-[#ef4e23] border border-[#ef4e23]/50"
                   : "hover:bg-slate-100/50"
               }`}
             >
@@ -323,7 +323,7 @@ const Header = () => {
               onClick={() => handleMobileNavClick("/contact")}
               className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-all duration-300 ${
                 isActive("/contact")
-                  ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 border border-blue-200/50"
+                  ? "bg-gradient-to-r from-[#ef4e23]/10 to-[#ef4e23]/20 text-[#ef4e23] border border-[#ef4e23]/50"
                   : "hover:bg-slate-100/50"
               }`}
             >

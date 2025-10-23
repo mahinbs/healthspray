@@ -51,7 +51,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           {/* Floating Badges */}
           <div className="absolute z-10 top-4 left-4 flex flex-col gap-2">
             {product.isNew && (
-              <Badge className="bg-purple-500 text-white shadow-glow">
+              <Badge className="bg-[#ef4e23] text-white shadow-glow">
                 ✨ New
               </Badge>
             )}
@@ -61,7 +61,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
               </Badge>
             )}
             {isInCartState && (
-              <Badge className="bg-green-500 text-white shadow-glow">
+              <Badge className="bg-black text-white shadow-glow">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 In Cart ({cartQuantity})
               </Badge>
@@ -72,7 +72,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           <button
             onClick={() => toggleWishlist(product)}
             className={`absolute z-10 top-4 right-4 p-3 rounded-full backdrop-blur-md border border-white/20 transition-all duration-300 ${
-              isLiked ? 'bg-red-500/20 text-red-400' : 'bg-white/10 text-white hover:bg-white/20'
+              isLiked ? 'bg-[#ef4e23]/20 text-[#ef4e23]' : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
             <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
@@ -98,7 +98,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
                 <Star 
                   key={i} 
                   className={`h-4 w-4 transition-colors duration-300 ${
-                    i < product.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'
+                    i < product.rating ? 'fill-[#ef4e23] text-[#ef4e23]' : 'text-gray-400'
                   }`} 
                 />
               ))}
@@ -109,7 +109,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           <div className="flex items-center justify-between mb-3">
             <div className="space-y-1">
               <div className="flex items-center space-x-2">
-                <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                <span className="text-2xl font-bold text-[#ef4e23]">
                   {formatPrice(product.price)}
                 </span>
                 {product.originalPrice && (
@@ -131,7 +131,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
               onClick={handleAddToCart}
               disabled={isAddingToCart}
               className={`flex-1 group bg-gradient-primary hover:shadow-glow text-white border-0 py-1.5 px-2 font-semibold rounded-lg transition-all duration-300 hover:scale-105 text-xs ${
-                isInCartState ? 'bg-green-600 hover:bg-green-700' : ''
+                isInCartState ? 'bg-black hover:bg-gray-800' : ''
               }`}
             >
               {isAddingToCart ? (

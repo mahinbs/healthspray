@@ -52,7 +52,7 @@ const Testimonials = () => {
     <section className="relative py-32 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-mesh opacity-40" />
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-3xl" />
+      <div className="absolute inset-0 bg-white/80 backdrop-blur-3xl" />
       
       <div className="relative container mx-auto px-4">
         <div className="text-center mb-20 animate-fade-in">
@@ -62,7 +62,7 @@ const Testimonials = () => {
           
           <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
             What our{" "}
-            <span className="bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-[#ef4e23] font-bold">
               Customers Say
             </span>
           </h2>
@@ -80,7 +80,7 @@ const Testimonials = () => {
                 {[...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
-                    className="h-8 w-8 fill-yellow-400 text-yellow-400 mx-1 animate-pulse-slow" 
+                    className="h-8 w-8 fill-[#ef4e23] text-[#ef4e23] mx-1 animate-pulse-slow" 
                     style={{ animationDelay: `${i * 0.1}s` }}
                   />
                 ))}
@@ -89,7 +89,7 @@ const Testimonials = () => {
               {/* Testimonial Text */}
               <blockquote className="text-2xl md:text-3xl mb-12 text-foreground leading-relaxed text-center font-medium">
                 "The Cryo Recovery Gel has been a{" "}
-                <span className="bg-gradient-primary bg-clip-text text-transparent font-bold">
+                <span className="text-[#ef4e23] font-bold">
                   game-changer
                 </span>{" "}
                 for my post-workout recovery! After intense training sessions, I apply it to my sore muscles and feel instant relief. The cooling effect is incredible and helps reduce inflammation significantly."

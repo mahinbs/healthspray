@@ -34,7 +34,7 @@ const Contact = () => {
               and recovery products.
             </p>
             <Link to="/shop">
-              <Button variant="hero" size="lg">
+              <Button variant="hero" size="lg" className="px-10 py-6 border-2 border-white/90 rounded-xl">
                 Shop Now →
               </Button>
             </Link>
@@ -50,7 +50,7 @@ const Contact = () => {
             <div className="text-center space-y-4">
               <h2 className="text-3xl font-bold">
                 Get in{" "}
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
+                <span className="text-[#ef4e23] font-bold">
                   touch with us
                 </span>
               </h2>

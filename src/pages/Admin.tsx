@@ -1249,7 +1249,7 @@ const Admin = () => {
                           {products.map((product) => (
                             <tr
                               key={product.id}
-                              className="border-b hover:bg-muted/50"
+                              className="border-b hover:bg-gray-50"
                             >
                               <td className="p-4">
                                 <div className="flex items-center space-x-3">
