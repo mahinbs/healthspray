@@ -17,16 +17,16 @@ const Returns = () => {
             <div className="flex justify-center mb-6">
               <div className="p-4 bg-white/10 backdrop-blur-md rounded-full">
                 <Ban className="h-12 w-12 text-red-400" />
-              </Layout>
-            </Layout>
+              </div>
+            </div>
             <h1 className="text-4xl md:text-6xl font-bold">
               No Returns Policy
             </h1>
             <p className="text-xl text-white/90">
               All sales are final. We do not accept returns or exchanges.
             </p>
-          </Layout>
-        </Layout>
+          </div>
+        </div>
       </section>
 
       {/* Content Section */}
@@ -39,7 +39,7 @@ const Returns = () => {
               <div className="flex items-center mb-6">
                 <Ban className="h-8 w-8 text-red-500 mr-3" />
                 <h2 className="text-3xl font-bold text-primary">Final Sale Policy</h2>
-              </Layout>
+              </div>
               
               <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 p-6 rounded-lg border border-red-500/30">
                 <h3 className="text-xl font-semibold mb-3 text-red-400">All Sales Are Final</h3>
@@ -47,7 +47,7 @@ const Returns = () => {
                   Due to the nature of our products and hygiene considerations for pet items, we do not accept returns or exchanges. 
                   Please carefully review your order before purchasing.
                 </p>
-              </Layout>
+              </div>
             </GlassCard>
 
             {/* Quality Assurance */}
@@ -64,7 +64,7 @@ const Returns = () => {
                     <li>Safe materials for pets</li>
                     <li>Products match advertised specifications</li>
                   </ul>
-                </Layout>
+                </div>
                 
                 <div className="space-y-6">
                   <h3 className="text-xl font-semibold text-blue-400">📞 Customer Support</h3>
@@ -73,8 +73,8 @@ const Returns = () => {
                     <li>Product usage guidance</li>
                     <li>Technical support for smart products</li>
                   </ul>
-                </Layout>
-              </Layout>
+                </div>
+              </div>
             </GlassCard>
 
             {/* Contact Information */}
@@ -88,19 +88,19 @@ const Returns = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Email</h4>
                   <p className="text-muted-foreground">support@zippty.com</p>
-                </Layout>
+                </div>
                 <div>
                   <h4 className="font-semibold mb-2">Phone</h4>
                   <p className="text-muted-foreground">+91 6367189188</p>
-                </Layout>
+                </div>
                 <div>
                   <h4 className="font-semibold mb-2">Live Chat</h4>
                   <p className="text-muted-foreground">Available 24/7</p>
-                </Layout>
-              </Layout>
+                </div>
+              </div>
             </GlassCard>
-          </Layout>
-        </Layout>
+          </div>
+        </div>
       </section>
 
       <Footer />
