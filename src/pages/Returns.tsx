@@ -44,7 +44,7 @@ const Returns = () => {
               <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 p-6 rounded-lg border border-red-500/30">
                 <h3 className="text-xl font-semibold mb-3 text-red-400">All Sales Are Final</h3>
                 <p className="text-muted-foreground leading-relaxed mb-4">
-                  Due to the nature of our products and hygiene considerations for pet items, we do not accept returns or exchanges. 
+                  Due to the nature of our sports health products and hygiene considerations, we do not accept returns or exchanges. 
                   Please carefully review your order before purchasing.
                 </p>
               </div>
@@ -61,7 +61,7 @@ const Returns = () => {
                     <li>High-quality, tested products</li>
                     <li>Products arrive in perfect condition</li>
                     <li>Accurate product descriptions</li>
-                    <li>Safe materials for pets</li>
+                    <li>Safe materials for athletes</li>
                     <li>Products match advertised specifications</li>
                   </ul>
                 </div>

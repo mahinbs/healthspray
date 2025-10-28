@@ -52,13 +52,13 @@ CREATE TRIGGER update_products_updated_at
 -- Insert sample products if table is empty
 INSERT INTO public.products (name, price, original_price, image, category, description, features, rating, reviews, is_new, stock, is_active)
 SELECT 
-    'SmartPlay Robot Companion',
+    'Cryo Recovery Gel',
     149.99,
     199.99,
     '/src/assets/robot-toy-premium.jpg',
-    'Interactive Robots',
-    'An advanced AI-powered robot companion that adapts to your pet''s behavior and provides hours of interactive entertainment.',
-    ARRAY['AI-powered adaptive play modes', 'Motion sensors and obstacle avoidance', 'LED light patterns for visual stimulation', 'Rechargeable battery (8+ hours)', 'Safe, durable materials', 'App connectivity for remote control'],
+    'Recovery Products',
+    'Advanced cooling gel that provides instant relief for sore muscles and reduces inflammation after intense workouts.',
+    ARRAY['Instant cooling sensation', 'Reduces muscle inflammation', 'Non-greasy formula', 'Long-lasting relief (6+ hours)', 'Athlete-safe ingredients', 'Easy application and absorption'],
     5,
     127,
     true,
@@ -68,32 +68,32 @@ WHERE NOT EXISTS (SELECT 1 FROM public.products LIMIT 1);
 
 INSERT INTO public.products (name, price, original_price, image, category, description, features, rating, reviews, is_new, stock, is_active)
 SELECT 
-    'FelineBot Interactive Cat Toy',
+    'Thermo Warm-up Balm',
     89.99,
     NULL,
     '/src/assets/cat-toy-premium.jpg',
-    'Cat Toys',
-    'A high-tech interactive toy designed specifically for cats, featuring feathers, motion sensors, and unpredictable movement patterns.',
-    ARRAY['Automatic motion detection', 'Replaceable feather attachments', 'Silent motor operation', 'Timer-based play sessions', 'Battery level indicator', 'Washable components'],
+    'Warm-up Products',
+    'Professional-grade warming balm designed to activate muscles and improve blood circulation before workouts.',
+    ARRAY['Deep muscle warming', 'Improved blood circulation', 'Prevents muscle strains', 'Quick absorption', 'Natural menthol formula', 'Portable and convenient'],
     5,
     89,
     false,
     15,
     true
-WHERE NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'FelineBot Interactive Cat Toy');
+WHERE NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'Thermo Warm-up Balm');
 
 INSERT INTO public.products (name, price, original_price, image, category, description, features, rating, reviews, is_new, stock, is_active)
 SELECT 
-    'BrainBoost Puzzle Feeder',
+    'Compression Recovery Sleeves',
     69.99,
     89.99,
     '/src/assets/puzzle-feeder-premium.jpg',
-    'Smart Feeders',
-    'Transform mealtime into a mental workout with this innovative puzzle feeder.',
-    ARRAY['Adjustable difficulty levels', 'Multiple feeding compartments', 'Non-slip base design', 'Easy to clean and fill', 'Slows down eating pace', 'Suitable for all pet sizes'],
+    'Compression Wear',
+    'High-performance compression sleeves that enhance recovery and provide muscle support during and after training.',
+    ARRAY['Targeted compression zones', 'Moisture-wicking fabric', 'Seamless construction', 'Multiple size options', 'Machine washable', 'Suitable for all sports'],
     4,
     203,
     false,
     30,
     true
-WHERE NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'BrainBoost Puzzle Feeder');
+WHERE NOT EXISTS (SELECT 1 FROM public.products WHERE name = 'Compression Recovery Sleeves');

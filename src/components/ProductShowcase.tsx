@@ -123,7 +123,7 @@ const ProductShowcase = () => {
             Featured Products
           </h2>
           <p className="text-lg max-w-2xl mx-auto">
-            Discover our premium pain relief and recovery solutions designed to keep you moving at your best.
+            Discover our premium sports health and recovery solutions designed to keep athletes moving at their best.
           </p>
         </div>
         {products.length > 0 ? (

@@ -196,7 +196,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
             <div>
               <h3 className="font-semibold mb-2">Description</h3>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {product.description || "This premium pet product is designed to provide endless entertainment and engagement for your beloved pets. Crafted with high-quality materials and innovative technology."}
+                {product.description || "This premium sports health product is designed to provide effective relief and performance enhancement for athletes. Crafted with high-quality materials and innovative technology."}
               </p>
             </div>
 
@@ -206,9 +206,9 @@ const ProductDetailModal = ({ product, isOpen, onClose }: ProductDetailModalProp
               <ul className="space-y-1">
                 {(product.features || [
                   "Premium quality materials",
-                  "Interactive technology",
-                  "Safe for all pets",
-                  "Easy to clean",
+                  "Professional-grade quality",
+                  "Safe for all athletes",
+                  "Easy to apply",
                   "Battery operated"
                 ]).map((feature, index) => (
                   <li key={index} className="text-muted-foreground flex items-center">

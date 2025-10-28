@@ -130,7 +130,7 @@ const ShopByVideo = () => {
             Shop by <span className="text-[#ef4e23] font-bold">Video</span>
           </h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            See our products in action. Watch real athletes using our sports health solutions for peak performance.
+            See our products in action. Watch real athletes using our sports health solutions for peak performance and recovery.
           </p>
         </div>
 
@@ -163,7 +163,7 @@ const ShopByVideo = () => {
                 >
                   {/* Video Thumbnail */}
                   <div 
-                    className="relative aspect-square overflow-hidden flex-shrink-0 cursor-pointer"
+                    className="relative aspect-[9/13] overflow-hidden flex-shrink-0 cursor-pointer"
                     onClick={() => handleVideoClick(product)}
                     onMouseEnter={() => {
                       const v = videoRefs.current[product.id];
@@ -231,9 +231,6 @@ const ShopByVideo = () => {
                         {product.name}
                       </h4>
                       
-                      <p className="text-slate-600 text-sm min-h-[2.5rem] flex items-start">
-                        {product.description}
-                      </p>
 
                       {/* Price */}
                       <div className="flex items-center space-x-3">

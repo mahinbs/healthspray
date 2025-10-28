@@ -55,7 +55,7 @@ const Cart = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">Your Cart is Empty</h1>
               <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 px-4">
                 Looks like you haven't added any products to your cart yet. 
-                Start shopping to find amazing pet products!
+                Start shopping to find amazing sports health products!
               </p>
             </div>
             

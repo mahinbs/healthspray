@@ -42,6 +42,7 @@ const Shop = () => {
         // Fetch active products from database
         const dbProducts = await productsService.getActiveProducts();
         const formattedProducts = dbProducts.map(convertToFrontendProduct);
+        console.log({ formattedProducts });
 
         setProducts(formattedProducts);
         setFilteredProducts(formattedProducts);
@@ -120,16 +121,15 @@ const Shop = () => {
         <div className="relative z-10 max-w-5xl mx-auto space-y-8 px-4">
           <div className="animate-fade-in">
             <h1 className="text-5xl md:text-7xl font-bold drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] mb-4">
-              Shop Our{" "}
-              <span className="text-white font-bold">
-                Products
-              </span>
+              Shop Our <span className="text-white font-bold">Products</span>
             </h1>
             <h2 className="text-2xl md:text-3xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-medium mb-6">
-              Premium pet care products for your beloved companions
+              Premium sports health products for peak performance
             </h2>
             <p className="text-lg md:text-xl text-white/95 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] max-w-4xl mx-auto leading-relaxed">
-              Discover our collection of innovative pet toys and interactive toys designed to keep your pets happy, healthy, and entertained.
+              Discover our collection of innovative recovery and performance
+              solutions designed to keep athletes moving, recovering, and
+              performing at their best.
             </p>
           </div>
         </div>
@@ -153,7 +153,7 @@ const Shop = () => {
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <input
                     type="text"
-                    placeholder="Search for the perfect pet toy..."
+                    placeholder="Search for sports health products..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-12 pr-6 py-4 bg-card/50 hover:bg-card/70 backdrop-blur-md border border-border/50 rounded-2xl hover:border-primary/30 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-300 placeholder-muted-foreground text-foreground"
@@ -196,7 +196,7 @@ const Shop = () => {
               {filteredProducts.length > 0 && (
                 <div className="text-sm text-muted-foreground">
                   Found {filteredProducts.length} amazing product
-                  {filteredProducts.length !== 1 ? "s" : ""} for your pet
+                  {filteredProducts.length !== 1 ? "s" : ""} for athletes
                 </div>
               )}
             </div>
@@ -215,7 +215,7 @@ const Shop = () => {
                 </h3>
                 <p className="text-muted-foreground mb-8 text-lg">
                   Try adjusting your search or filter criteria to find the
-                  perfect toy for your pet
+                  perfect sports health product for your needs
                 </p>
                 <Button
                   onClick={() => {

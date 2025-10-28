@@ -15,19 +15,19 @@ app.use(express.json());
 let products = [
   {
     id: '1',
-    name: 'SmartPlay Robot Companion',
+    name: 'Cryo Recovery Gel',
     price: 149.99,
     originalPrice: 199.99,
     image: '/api/images/robot-toy-premium.jpg',
-    category: 'Interactive Robots',
-    description: 'An advanced AI-powered robot companion that adapts to your pet\'s behavior.',
+    category: 'Recovery Products',
+    description: 'Advanced cooling gel that provides instant relief for sore muscles and reduces inflammation after intense workouts.',
     features: [
-      'AI-powered adaptive play modes',
-      'Motion sensors and obstacle avoidance',
-      'LED light patterns for visual stimulation',
-      'Rechargeable battery (8+ hours)',
-      'Safe, durable materials',
-      'App connectivity for remote control'
+      'Instant cooling sensation',
+      'Reduces muscle inflammation',
+      'Non-greasy formula',
+      'Long-lasting relief (6+ hours)',
+      'Athlete-safe ingredients',
+      'Easy application and absorption'
     ],
     rating: 5,
     reviews: 127,
@@ -35,18 +35,18 @@ let products = [
   },
   {
     id: '2',
-    name: 'FelineBot Interactive Cat Toy',
+    name: 'Thermo Warm-up Balm',
     price: 89.99,
     image: '/api/images/cat-toy-premium.jpg',
-    category: 'Cat Toys',
-    description: 'A high-tech interactive toy designed specifically for cats.',
+    category: 'Warm-up Products',
+    description: 'Professional-grade warming balm designed to activate muscles and improve blood circulation before workouts.',
     features: [
-      'Automatic motion detection',
-      'Replaceable feather attachments',
-      'Silent motor operation',
-      'Timer-based play sessions',
-      'Battery level indicator',
-      'Washable components'
+      'Deep muscle warming',
+      'Improved blood circulation',
+      'Prevents muscle strains',
+      'Quick absorption',
+      'Natural menthol formula',
+      'Portable and convenient'
     ],
     rating: 5,
     reviews: 89,

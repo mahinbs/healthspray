@@ -114,9 +114,9 @@ const Hero = () => {
                 <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
               </Button> */}
             </div>
-            {/* <div className="text-lg text-white/90 animate-bounce-slow drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-medium">
+            {/*             <div className="text-lg text-white/90 animate-bounce-slow drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-medium">
               <p className="">
-                ✨ {heroContent?.description || "Professional-grade solutions for peak performance"} ✨
+                ✨ {heroContent?.description || "Professional-grade sports health solutions for peak performance"} ✨
               </p>
             </div> */}
           </div>
@@ -134,7 +134,7 @@ const Hero = () => {
                 2k+
               </div>
               <div className="text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                Happy Pets
+                Active Athletes
               </div>
             </GlassCard>
 
@@ -164,7 +164,7 @@ const Hero = () => {
                 50+
               </div>
               <div className="text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                Smart Toys
+                Recovery Products
               </div>
             </GlassCard>
           </div> */}

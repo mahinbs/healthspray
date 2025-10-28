@@ -36,7 +36,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   return (
     <GlassCard 
       intensity="medium" 
-      animated
+      // animated
       className="group overflow-hidden transition-all duration-500 hover:shadow-float h-full flex flex-col"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -107,7 +107,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
         <div className="p-4 flex flex-col">
           <div className="space-y-2 flex-grow">
             <p className="text-xs text-primary font-semibold uppercase tracking-wider">{product.category}</p>
-            <h3 className="text-lg font-bold leading-tight group-hover:text-primary transition-colors duration-300 min-h-[2.5rem] flex items-center">
+            <h3 className="text-lg font-bold leading-tight transition-colors duration-300 min-h-[2.5rem] flex items-center">
               {product.name}
             </h3>
           </div>

@@ -189,7 +189,7 @@ const Privacy = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Address</h4>
-                  <p className="text-muted-foreground">123 Pet Street, Tech City, TC 12345</p>
+                  <p className="text-muted-foreground">123 Sports Health Avenue, Tech City, TC 12345</p>
                 </div>
               </div>
             </GlassCard>
