@@ -60,7 +60,7 @@ const Hero = () => {
       <div className="relative z-20 container mx-auto px-4 text-center text-white">
         <div className="max-w-6xl mx-auto space-y-12">
           {/* Animated Main Heading */}
-          <div className="space-y-6 animate-fade-in">
+          {/* <div className="space-y-6 animate-fade-in">
             <h1 className="text-6xl md:text-8xl font-bold leading-tight tracking-tight drop-shadow-2xl">
               {heroContent?.title ? (
                 <span className="text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
@@ -90,7 +90,7 @@ const Hero = () => {
                 {heroContent?.subtitle || "Scientifically designed pain relief and recovery solutions to keep you moving — before, during, and after every workout."}
               </p>
             </div>
-          </div>
+          </div> */}
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-8 justify-center items-center animate-scale-in pb-20">

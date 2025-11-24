@@ -37,7 +37,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
     <GlassCard 
       intensity="medium" 
       // animated
-      className="group overflow-hidden transition-all duration-500 hover:shadow-float h-full flex flex-col"
+      className="group w-full overflow-hidden transition-all duration-500 hover:shadow-float h-full flex flex-col"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

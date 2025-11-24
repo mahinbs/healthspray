@@ -5,35 +5,45 @@ import { useNavigate } from "react-router-dom";
 import warmupBg from "@/assets/warmup-cooldown-bg.jpg";
 import compressionBg from "@/assets/compression-wear-bg.jpg";
 import painReliefBg from "@/assets/pain-relief-bg.webp";
+import stiffBeforeWorkoutBg from "@/assets/stiff-before-workout-bg.jpg";
 
 const categories = [
   {
     id: "warmup-cooldown",
-    name: "Warm-up & Cooldown",
+    name: "Warm-Up & Cool-Down",
     description: "Pre and post workout solutions",
     icon: Dumbbell,
     gradient: "from-orange-500 to-red-600",
     bgImage: warmupBg,
-    products: ["Thermo Gel", "Cryo Gel", "Recovery Tools"]
+    products: ["Thermo Gel", "Cryo Gel", "Recovery Tools"],
   },
   {
-    id: "compression-wear",
-    name: "Compression Wear",
-    description: "Performance enhancing apparel",
-    icon: Shirt,
-    gradient: "from-blue-500 to-purple-600",
-    bgImage: compressionBg,
-    products: ["Compression Sleeves", "Recovery Shirts", "Support Gear"]
-  },
-  {
-    id: "pain-relief",
-    name: "Pain Relief",
+    id: "strain-pain-relief",
+    name: "Strain & Pain Relief",
     description: "Instant relief solutions",
     icon: Zap,
     gradient: "from-yellow-500 to-orange-600",
     bgImage: painReliefBg,
-    products: ["Cryo Spray", "Pain Relief Gel", "Recovery Balms"]
-  }
+    products: ["Cryo Spray", "Pain Relief Gel", "Recovery Balms"],
+  },
+  {
+    id: "performance-essentials",
+    name: "Performance Essentials",
+    description: "Gear to boost every session",
+    icon: Shirt,
+    gradient: "from-blue-500 to-purple-600",
+    bgImage: compressionBg,
+    products: ["Compression Sleeves", "Recovery Shirts", "Support Gear"],
+  },
+  {
+    id: "active-body-care",
+    name: "Active Body Care Rang",
+    description: "Daily care for active lifestyles",
+    icon: Dumbbell,
+    gradient: "from-teal-500 to-emerald-600",
+    bgImage: stiffBeforeWorkoutBg,
+    products: ["Body Wash", "Muscle Balm", "Care Kits"],
+  },
 ];
 
 const CategoryShowcase = () => {
@@ -57,11 +67,11 @@ const CategoryShowcase = () => {
             </span>
           </h2>
           <p className="text-lg max-w-2xl mx-auto text-muted-foreground">
-            Discover our specialized product categories designed for every aspect of your fitness journey
+            Fuel every phase of your fitness — from warm-up to recovery.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-8xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-8xl mx-auto">
           {categories.map((category, index) => {
             const IconComponent = category.icon;
             return (
@@ -87,11 +97,11 @@ const CategoryShowcase = () => {
                   </div>
 
                   {/* Category Icon */}
-                  <div className="absolute top-10 left-10">
+                  {/* <div className="absolute top-10 left-10">
                     <div className={`p-5 rounded-2xl bg-gradient-to-r ${category.gradient} shadow-xl`}>
                       <IconComponent className="h-10 w-10 text-white" />
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Category Title */}
                   <div className="absolute bottom-10 left-10 right-10">
