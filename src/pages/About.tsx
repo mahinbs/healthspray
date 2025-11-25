@@ -9,80 +9,34 @@ import {
   Shield,
   Award,
   Users,
-  Clock,
   Star,
 } from "lucide-react";
-import heroImage from "@/assets/hero-sports-health-bg.webp";
-import aboutTeam from "@/assets/about-sports-team.jpg";
 import aboutStore from "@/assets/about-sports-facility.jpg";
-import aboutAthletesTraining from "@/assets/about-athletes-training.jpg";
-import aboutRecoveryProducts from "@/assets/about-recovery-products.jpg";
-import aboutCompressionWear from "@/assets/about-compression-wear.jpg";
-import aboutSportsInjury from "@/assets/about-sports-injury.jpg";
-import aboutWarmupCooldown from "@/assets/about-warmup-cooldown.jpg";
 
 const features = [
   {
     icon: Award,
     title: "Premium Quality",
     description:
-      "We specialize in high-quality sports health products that help athletes recover faster, perform better, and stay injury-free.",
-  },
-  {
-    icon: Shield,
-    title: "Athlete-Safe Materials",
-    description:
-      "We believe athletes deserve only the safest, most effective products. That's why we offer sports health solutions from trusted brands you can rely on.",
+      "Crafted with precision and backed by science, our formulations deliver performance-driven results for faster recovery and consistent progress.",
   },
   {
     icon: Zap,
-    title: "For Every Athlete",
+    title: "For Every Active Individual",
     description:
-      "Whether you're a professional athlete, weekend warrior, or fitness enthusiast, we have the perfect recovery and performance solutions for your needs.",
+      "Whether you’re training daily, balancing work and workouts, or chasing weekend goals, Physiq supports your body’s recovery, performance, and consistency.",
+  },
+  {
+    icon: Cpu,
+    title: "Science-Driven Innovation",
+    description:
+      "Our R² philosophy — Recover & Recharge — combines proven research and smart formulation to help your body repair faster and perform stronger.",
   },
   {
     icon: Users,
     title: "Expert Guidance",
     description:
-      "Finding the right sports health products has never been easier. Our team of experts provides personalized recommendations for your specific needs.",
-  },
-];
-const services = [
-  {
-    icon: Clock,
-    title: "Fast Recovery",
-    description:
-      "Fast, reliable shipping so you can get your sports health products right when you need them for training and recovery.",
-  },
-  {
-    icon: Star,
-    title: "Expert Advice",
-    description:
-      "We offer the guidance and resources you need to optimize your athletic performance and recovery.",
-  },
-  {
-    icon: Heart,
-    title: "Affordable Quality",
-    description:
-      "Premium sports health products at competitive prices, ensuring you get the best performance without breaking the bank.",
-  },
-];
-const stats = [
-  {
-    number: "5k+",
-    label: "Active Athletes",
-  },
-  {
-    number: "15+",
-    label: "Premium Brands",
-  },
-  {
-    number: "50+",
-    label: "Recovery Products",
-  },
-  {
-    number: "3",
-    label: "Years of Innovation",
+      "Recovery isn’t one-size-fits-all. Our team brings years of formulation and fitness experience to help you choose the right solutions for your active lifestyle — simple, effective, and backed by science.",
   },
 ];
 const About = () => {
@@ -104,13 +58,13 @@ const About = () => {
               className="w-28 mx-auto object-contain"
             />
             <h2 className="text-2xl md:text-3xl">
-              Where Your Athletic Performance Comes First
+              Built for the Everyday Performer
             </h2>
             <p className="text-lg text-white/90 max-w-3xl mx-auto">
-              At Physiq, we understand that athletes are more than just
-              competitors—they're dedicated individuals who deserve the best
-              recovery and performance solutions. We specialize in premium sports
-              health products that keep you moving, recovering, and performing at your best.
+              At Physiq, we understand what it takes to stay consistent — the early mornings, the late workouts,
+              and the drive to show up no matter what. For those who make time for fitness amid a busy life, our
+              recovery and performance solutions are built to help you recharge faster, move better, and keep
+              performing every day.
             </p>
           </div>
         </div>
@@ -130,24 +84,20 @@ const About = () => {
                 </h2>
                 <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
                   <p>
-                    At Physiq, we understand that athletes are more than just
-                    competitors—they're dedicated individuals who need proper
-                    recovery and performance solutions to thrive. Our passion for
-                    sports health drives us to provide the highest quality
-                    recovery products that keep you moving, recovering, and performing at your best.
-                  </p>
-
-                  <p>
-                    Whether you're a professional athlete, weekend warrior, or
-                    fitness enthusiast, we're here to offer innovative
-                    solutions that support your training, recovery, and performance goals.
-                  </p>
-
-                  <p>
-                    From advanced recovery gels to compression wear and pain relief solutions,
-                    every product in our collection is carefully selected and
-                    tested to ensure the highest quality and safety standards
-                    for athletes at every level.
+                    Physiq was born out of a shared obsession of a HUSBAND-and-WIFE DUO for movement
+                    and the constant pursuit of balance. As a husband and wife who live active, demanding lives,
+                    we knew the struggle of showing up for workouts after long days, pushing through fatigue,
+                    and finding the energy to stay consistent. Fitness was our escape, our reset but we realized
+                    recovery was the missing piece. <br /><br />
+                    Between training sessions and busy schedules, we searched for products that could truly
+                    support an active lifestyle something clean, effective, and rooted in science. When we
+                    couldn’t find what we were looking for, we decided to create it ourselves.<br /><br />
+                    That’s how Physiq came to life built on the philosophy of R²: Recover & Recharge.
+                    It’s not just about faster recovery; it’s about empowering people like us those who hustle
+                    hard, train with purpose, and aim for consistency every day to take care of their bodies the
+                    smarter way.<br /><br />
+                    Today, Physiq stands as a reminder that recovery is strength, consistency is performance, and
+                    taking care of yourself is the ultimate discipline.
                   </p>
                 </div>
               </div>
@@ -159,197 +109,6 @@ const About = () => {
                     className="w-full h-96 object-cover"
                   />
                 </GlassCard>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Statistics Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center space-y-2">
-                <div className="text-4xl md:text-5xl font-bold text-primary">
-                  {stat.number}
-                </div>
-                <div className="text-muted-foreground font-medium">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Our Products Gallery Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-4xl font-bold">
-              Our{" "}
-              <span className="text-[#ef4e23] font-bold">
-                Product Categories
-              </span>
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Comprehensive sports health solutions for every athlete
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {/* Recovery Products */}
-            <GlassCard className="overflow-hidden" animated>
-              <div className="relative">
-                <img
-                  src={aboutRecoveryProducts}
-                  alt="Recovery products for athletes"
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <h3 className="text-2xl font-bold mb-2">Recovery Products</h3>
-                  <p className="text-sm opacity-90">Advanced recovery gels, balms, and cooling solutions</p>
-                </div>
-              </div>
-            </GlassCard>
-
-            {/* Compression Wear */}
-            <GlassCard className="overflow-hidden" animated>
-              <div className="relative">
-                <img
-                  src={aboutCompressionWear}
-                  alt="Compression wear for athletes"
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <h3 className="text-2xl font-bold mb-2">Compression Wear</h3>
-                  <p className="text-sm opacity-90">Performance-enhancing compression sleeves and apparel</p>
-                </div>
-              </div>
-            </GlassCard>
-
-            {/* Warm-up & Cooldown */}
-            <GlassCard className="overflow-hidden" animated>
-              <div className="relative">
-                <img
-                  src={aboutWarmupCooldown}
-                  alt="Warm-up and cooldown products"
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <h3 className="text-2xl font-bold mb-2">Warm-up & Cooldown</h3>
-                  <p className="text-sm opacity-90">Pre and post-workout preparation and recovery</p>
-                </div>
-              </div>
-            </GlassCard>
-          </div>
-        </div>
-      </section>
-
-      {/* Athletes in Action Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-4xl font-bold">
-              Athletes in{" "}
-              <span className="text-[#ef4e23] font-bold">
-                Action
-              </span>
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              See how our products help athletes perform at their best
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <h3 className="text-2xl font-bold">Training & Performance</h3>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  Our products are designed to enhance your training sessions, 
-                  improve performance, and help you reach your athletic goals. 
-                  From warm-up preparations to recovery solutions, we've got you covered.
-                </p>
-              </div>
-              
-              <div className="space-y-4">
-                <h3 className="text-2xl font-bold">Injury Prevention & Recovery</h3>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  Stay injury-free with our comprehensive range of products 
-                  designed to prevent common sports injuries and accelerate 
-                  recovery when they do occur.
-                </p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <GlassCard className="overflow-hidden" animated>
-                <img
-                  src={aboutAthletesTraining}
-                  alt="Athletes training with sports health products"
-                  className="w-full h-96 object-cover"
-                />
-              </GlassCard>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sports Injury Prevention Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="relative">
-                <GlassCard className="overflow-hidden" animated>
-                  <img
-                    src={aboutSportsInjury}
-                    alt="Sports injury prevention and treatment"
-                    className="w-full h-96 object-cover"
-                  />
-                </GlassCard>
-              </div>
-              <div className="space-y-6">
-                <h2 className="text-4xl font-bold">
-                  Injury{" "}
-                  <span className="text-[#ef4e23] font-bold">
-                    Prevention
-                  </span>
-                </h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  Our comprehensive approach to sports health focuses on preventing 
-                  injuries before they happen. Through proper warm-up, recovery, and 
-                  targeted treatments, we help athletes stay in the game longer.
-                </p>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  From compression wear that improves circulation to recovery gels 
-                  that reduce inflammation, every product is designed with your 
-                  long-term athletic success in mind.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-primary" />
-                    <span className="text-muted-foreground">
-                      Evidence-based injury prevention
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Zap className="w-5 h-5 text-primary" />
-                    <span className="text-muted-foreground">
-                      Quick recovery solutions
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Heart className="w-5 h-5 text-primary" />
-                    <span className="text-muted-foreground">
-                      Long-term athlete health
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -393,9 +152,9 @@ const About = () => {
               <div className="relative order-2 lg:order-1">
                 <GlassCard className="overflow-hidden" animated>
                   <img
-                    src={aboutTeam}
+                    src='/our-mission.png'
                     alt="Happy team of sports health professionals with athletes"
-                    className="w-full h-96 object-cover"
+                    className="w-full h-96 object-contain"
                   />
                 </GlassCard>
               </div>
@@ -407,15 +166,12 @@ const About = () => {
                   </span>
                 </h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  To revolutionize sports health through innovative technology and
-                  evidence-based solutions, creating products that not only enhance
-                  performance but also contribute to the health and wellbeing of athletes
-                  worldwide.
+                  At Physiq, we’re on a mission to make recovery smarter and performance sustainable.
                 </p>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  We're committed to safety, efficacy, and the wellbeing
-                  of all athletes. Every purchase supports our mission to make
-                  the world a better place for athletes and their performance goals.
+                  We believe that true strength lies in consistency — and through our R² philosophy (Recover
+                  & Recharge), we help active individuals balance effort with recovery, so they can keep
+                  performing at their best every day.
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
@@ -438,8 +194,8 @@ const About = () => {
                   </div>
                 </div>
                 <div className="pt-4">
-                  <Button 
-                    variant="hero" 
+                  <Button
+                    variant="hero"
                     size="lg"
                     onClick={() => window.open('/contact', '_blank')}
                     className="px-10 py-6"
@@ -449,50 +205,6 @@ const About = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Our Services Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-4xl font-bold">
-              Why Choose Our{" "}
-              <span className="text-[#ef4e23] font-bold">
-                Services?
-              </span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {services.map((service, index) => (
-              <div key={index} className="text-center space-y-4">
-                <div className="bg-accent/10 p-4 rounded-lg w-16 h-16 flex items-center justify-center mx-auto">
-                  <service.icon className="h-8 w-8 text-accent" />
-                </div>
-                <h3 className="font-semibold text-lg">{service.title}</h3>
-                <p className="text-muted-foreground">{service.description}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-16 space-y-4">
-            <h3 className="text-2xl font-bold">
-              Start Shopping with Physiq Today!
-            </h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore our wide range of sports health products and enjoy a shopping experience
-              that's as convenient and satisfying as it is helpful for your athletic performance and recovery.
-            </p>
-            <Button 
-              variant="hero" 
-              size="lg"
-              onClick={() => window.open('/shop', '_blank')}
-              className="px-10 py-6"
-            >
-              Explore Products
-            </Button>
           </div>
         </div>
       </section>

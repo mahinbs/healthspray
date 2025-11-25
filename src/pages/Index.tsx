@@ -6,7 +6,7 @@ import CategoryShowcase from "@/components/CategoryShowcase";
 import ShopByVideo from "@/components/ShopByVideo";
 import About from "@/components/About";
 import Testimonials from "@/components/Testimonials";
-import Statistics from "@/components/Statistics";
+// import Statistics from "@/components/Statistics";
 import BlogSection from "@/components/BlogSection";
 import Footer from "@/components/Footer";
 
@@ -20,7 +20,7 @@ const Index = () => {
       <ShopByVideo />
       <About />
       <Testimonials />
-      <Statistics />
+      {/* <Statistics /> */}
       <BlogSection />
       <Footer />
     </Layout>

@@ -4,27 +4,27 @@ import { Zap, Heart, Cpu, Shield } from "lucide-react";
 const features = [
   {
     icon: Zap,
-    title: "Advanced Formulations",
+    title: "Science-Backed Formulations",
     description:
-      "Scientifically developed products with cutting-edge ingredients for maximum performance and recovery.",
+      "Developed through research-driven innovation to enhance endurance, support muscle health, and promote faster recovery.",
   },
   {
     icon: Heart,
-    title: "Health & Performance",
+    title: "Performance-Ready Care",
     description:
-      "Designed to enhance athletic performance, reduce injury risk, and accelerate recovery for optimal health.",
+      "Targeted solutions that help reduce soreness, improve flexibility, and keep you active without compromise.",
   },
   {
     icon: Cpu,
-    title: "Smart Solutions",
+    title: "Smart & Adaptive Solutions",
     description:
-      "Innovative products that adapt to your training needs and provide targeted relief when you need it most.",
+      "Designed to respond to your body’s needs — whether you’re training, recovering, or maintaining everyday strength.",
   },
   {
     icon: Shield,
-    title: "Safe & Tested",
+    title: "Safe, Tested & Reliable",
     description:
-      "Every product is rigorously tested and made with premium, safe ingredients for professional athletes.",
+      "Made with premium, skin-safe ingredients and tested for quality, stability, and long-term use.",
   },
 ];
 
@@ -38,16 +38,21 @@ const About = () => {
               <h2 className="text-4xl font-bold">
                 Where{" "}
                 <span className="text-[#ef4e23] font-bold">
-                  science
+                  Consistency
                 </span>{" "}
-                meets performance
+                Fuels Performance
               </h2>
-              <p className="text-lg text-muted-foreground">
-                At Painssy, we've combined cutting-edge science with
-                proven results to create a range of premium sports health products
-                designed to enhance performance, accelerate recovery, and keep you
-                moving at your best. Because your health isn't just important—it's essential.
-              </p>
+              <div className="text-lg text-muted-foreground space-y-4">
+                <p>
+                  At Physiq, we believe performance isn’t built in a single workout — it’s built through 
+                  consistent recovery, care, and balance.
+                </p>
+                <p>
+                  That’s why we created the R² philosophy — Recover & Recharge — a science-backed 
+                  approach that helps your body bounce back faster, stay energized longer, and perform better 
+                  every day.
+                </p>
+              </div>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-6">
@@ -81,7 +86,7 @@ const About = () => {
             <div className="relative bg-card rounded-3xl p-8 border border-border shadow-soft">
               <div className="space-y-6">
                 <div className="text-center space-y-2">
-                  <h3 className="text-2xl font-bold">Quality & Innovation</h3>
+                  <h3 className="text-2xl font-bold">Built on Science. Driven by Results</h3>
                   <p className="text-muted-foreground">
                     Trusted by athletes and fitness enthusiasts across India
                   </p>
@@ -107,9 +112,9 @@ const About = () => {
                     </div>
                   </div>
                   <div className="text-center space-y-1">
-                    <div className="text-3xl font-bold text-primary">24/7</div>
+                    <div className="text-3xl font-bold text-primary">90%+</div>
                     <div className="text-sm text-muted-foreground">
-                      Expert Support
+                      Repeat Users
                     </div>
                   </div>
                 </div>

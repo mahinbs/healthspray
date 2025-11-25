@@ -1,55 +1,110 @@
+import { useState, useEffect, useCallback } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import { GlassCard } from "@/components/ui/glass-card";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import testimonialImage from "@/assets/testimonial-priya.jpg";
 
 const testimonials = [
   {
-    name: "Rajesh Kumar",
-    role: "Professional Athlete",
-    content: "The Cryo Recovery Gel has been a game-changer for my post-workout recovery! After intense training sessions, I apply it to my sore muscles and feel instant relief. The cooling effect is incredible and helps reduce inflammation significantly. My recovery time has improved by 40% since I started using it. The gel absorbs quickly without leaving any sticky residue. Highly recommend for any serious athlete!",
+    name: "Rahul S.",
+    role: "29 | Fitness Enthusiast",
+    quote: "No more next-day soreness.",
+    content: "I train six days a week, and recovery used to be my biggest struggle. Ever since I started using Physiq’s Magnesium Recovery Cream, my legs don’t feel heavy the next morning — I’m actually excited for my workouts again.",
     rating: 5,
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=80",
   },
   {
-    name: "Priya Singh",
-    role: "Fitness Enthusiast",
-    content: "The Thermo Warm-up Balm is perfect for my morning workouts! I apply it before my runs and it helps warm up my muscles so much faster. The warming sensation is gentle but effective, and I've noticed fewer muscle strains since using it. The compact size makes it easy to carry in my gym bag. It's become an essential part of my pre-workout routine!",
-    rating: 5,
+    name: "Priya M.",
+    role: "33 | Marathon Runner",
+    quote: "It’s like instant relief after long runs.",
+    content: "I’m a marathon runner, and this cream has become my post-run ritual. The cooling effect hits instantly, and the muscle tension just melts away. It’s lightweight, non-sticky, and smells refreshing.",
+    rating: 4.5,
+    image: testimonialImage,
   },
   {
-    name: "Amit Patel",
-    role: "Gym Trainer",
-    content: "I've been using the Compression Recovery Sleeves for my clients and the results are outstanding! They provide excellent support during workouts and the compression really helps with blood circulation. My clients report faster recovery and less muscle fatigue. The quality is top-notch and they last through multiple washes. These are now a staple in my training recommendations!",
+    name: "Divya K.",
+    role: "35 | Gym Member & Yoga Practitioner",
+    quote: "Helps me stay consistent.",
+    content: "As a working mom who trains in the evenings, soreness used to slow me down. Physiq’s recovery cream gives me that quick recovery I need to stay on track without skipping sessions.",
     rating: 5,
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&q=80",
   },
   {
-    name: "Sarah Johnson",
-    role: "Marathon Runner",
-    content: "The Pain Relief Spray has been my savior during long training runs! I carry it in my hydration pack and use it whenever I feel muscle tightness or joint pain. The instant cooling effect helps me push through the toughest miles. It's lightweight, doesn't leave any residue, and the relief lasts for hours. This product has helped me complete my first marathon without any major pain issues!",
-    rating: 5,
+    name: "Arjun P.",
+    role: "31 | Strength Trainer",
+    quote: "My go-to after strength sessions.",
+    content: "I do heavy lifts four times a week, and this cream helps my muscles bounce back faster. It absorbs quickly and genuinely reduces post-workout pain — it’s part of my gym bag now.",
+    rating: 4.5,
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&q=80",
   },
-  {
-    name: "Michael Chen",
-    role: "CrossFit Athlete",
-    content: "The Recovery Balm is absolutely incredible for post-WOD recovery! After intense CrossFit sessions, I apply it to my shoulders and back, and the warming sensation helps relax my muscles immediately. The menthol and eucalyptus blend is refreshing and the balm absorbs quickly. I've been using it for 3 months and my recovery time between workouts has significantly improved. My coach even asked what I was using!",
-    rating: 5,
-  },
-  {
-    name: "Lisa Rodriguez",
-    role: "Yoga Instructor",
-    content: "The Muscle Relief Gel has transformed my teaching and personal practice! As a yoga instructor, I often have sore muscles from demonstrating poses all day. This gel provides instant relief and the cooling sensation is perfect for hot yoga sessions. My students have noticed how much more flexible and pain-free I am during classes. I recommend it to all my students now!",
-    rating: 5,
-  },
-  {
-    name: "David Thompson",
-    role: "Physical Therapist",
-    content: "I've been recommending Painssy products to my patients for months now, and the results speak for themselves! The Cryo Recovery Gel works wonders for post-surgery recovery, and the Thermo Balm is perfect for chronic pain management. My patients report 60% faster recovery times and reduced dependency on pain medications. The quality and effectiveness are unmatched in the market!",
-    rating: 5,
-  }
 ];
 
 const Testimonials = () => {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
+    Autoplay({ delay: 2000, stopOnInteraction: false }),
+  ]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index);
+    },
+    [emblaApi]
+  );
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star
+          key={`star-${i}`}
+          className="h-8 w-8 fill-[#ef4e23] text-[#ef4e23] mx-1"
+        />
+      );
+    }
+
+    if (hasHalfStar) {
+      stars.push(
+        <div key="half-star" className="relative mx-1">
+          <Star className="h-8 w-8 text-[#ef4e23]" />
+          <div className="absolute inset-0 overflow-hidden w-1/2">
+            <Star className="h-8 w-8 fill-[#ef4e23] text-[#ef4e23]" />
+          </div>
+        </div>
+      );
+    }
+
+    return stars;
+  };
+
   return (
-    <section className="relative py-32 overflow-hidden">
+    <section className="relative py-16 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-mesh opacity-40" />
       <div className="absolute inset-0 bg-white/80 backdrop-blur-3xl" />
@@ -69,55 +124,91 @@ const Testimonials = () => {
           <p className="text-2xl text-muted-foreground">Real stories from athletes and fitness enthusiasts</p>
         </div>
         
-        <div className="max-w-5xl mx-auto animate-scale-in">
-          <GlassCard intensity="medium" className="relative p-12 overflow-hidden">
-            {/* Decorative Quote */}
-            <Quote className="absolute top-8 left-8 h-16 w-16 text-primary/20" />
-            
-            <div className="relative z-10">
-              {/* Rating Stars */}
-              <div className="flex justify-center items-center mb-8">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className="h-8 w-8 fill-[#ef4e23] text-[#ef4e23] mx-1 animate-pulse-slow" 
-                    style={{ animationDelay: `${i * 0.1}s` }}
-                  />
-                ))}
-              </div>
-              
-              {/* Testimonial Text */}
-              <blockquote className="text-2xl md:text-3xl mb-12 text-foreground leading-relaxed text-center font-medium">
-                "The Cryo Recovery Gel has been a{" "}
-                <span className="text-[#ef4e23] font-bold">
-                  game-changer
-                </span>{" "}
-                for my post-workout recovery! After intense training sessions, I apply it to my sore muscles and feel instant relief. The cooling effect is incredible and helps reduce inflammation significantly."
-              </blockquote>
-              
-              {/* Customer Info */}
-              <div className="flex items-center justify-center">
-                <div className="flex items-center space-x-6">
-                  <div className="relative">
-                    <img
-                      src={testimonialImage}
-                      alt="Rajesh Kumar"
-                      className="w-20 h-20 rounded-full object-cover border-4 border-white/20 shadow-glow"
-                    />
-                    <div className="absolute -inset-2 bg-gradient-primary rounded-full opacity-20 blur-lg animate-pulse-slow" />
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">Rajesh Kumar</div>
-                    <div className="text-lg text-primary font-medium">Professional Athlete</div>
-                  </div>
+        <div className="max-w-5xl mx-auto relative group">
+          {/* Navigation Buttons */}
+          <button 
+            onClick={scrollPrev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 z-20 p-3 rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:bg-white transition-all duration-300 group-hover:opacity-100 opacity-0 md:opacity-100"
+            aria-label="Previous testimonial"
+          >
+            <ChevronLeft className="h-8 w-8 text-primary hover:scale-110 transition-transform" />
+          </button>
+          
+          <button 
+            onClick={scrollNext}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 z-20 p-3 rounded-full bg-white/80 backdrop-blur-md shadow-lg hover:bg-white transition-all duration-300 group-hover:opacity-100 opacity-0 md:opacity-100"
+            aria-label="Next testimonial"
+          >
+            <ChevronRight className="h-8 w-8 text-primary hover:scale-110 transition-transform" />
+          </button>
+
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex">
+              {testimonials.map((testimonial, index) => (
+                <div key={index} className="flex-[0_0_100%] min-w-0 pl-4">
+                  <GlassCard intensity="medium" className="relative p-12 overflow-hidden min-h-[500px] flex flex-col justify-center mx-4">
+                    {/* Decorative Quote */}
+                    <Quote className="absolute top-8 left-8 h-16 w-16 text-primary/20" />
+                    
+                    <div className="relative z-10">
+                      {/* Rating Stars */}
+                      <div className="flex justify-center items-center mb-8">
+                        {renderStars(testimonial.rating)}
+                      </div>
+                      
+                      {/* Testimonial Text */}
+                      <div className="text-center mb-12">
+                        <h3 className="text-2xl font-bold text-[#ef4e23] mb-4">
+                          "{testimonial.quote}"
+                        </h3>
+                        <blockquote className="text-xl md:text-2xl text-foreground leading-relaxed font-medium">
+                          "{testimonial.content}"
+                        </blockquote>
+                      </div>
+                      
+                      {/* Customer Info */}
+                      <div className="flex items-center justify-center">
+                        <div className="flex items-center space-x-6">
+                          <div className="relative">
+                            <img
+                              src={testimonial.image}
+                              alt={testimonial.name}
+                              className="w-20 h-20 rounded-full object-cover border-4 border-white/20 shadow-glow"
+                            />
+                            <div className="absolute -inset-2 bg-gradient-primary rounded-full opacity-20 blur-lg animate-pulse-slow" />
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold">{testimonial.name}</div>
+                            <div className="text-lg text-primary font-medium">{testimonial.role}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Background Decoration */}
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-primary rounded-full opacity-10 blur-3xl animate-float" />
+                    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-accent rounded-full opacity-10 blur-2xl animate-float" style={{ animationDelay: "2s" }} />
+                  </GlassCard>
                 </div>
-              </div>
+              ))}
             </div>
-            
-            {/* Background Decoration */}
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-primary rounded-full opacity-10 blur-3xl animate-float" />
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-accent rounded-full opacity-10 blur-2xl animate-float" style={{ animationDelay: "2s" }} />
-          </GlassCard>
+          </div>
+
+          {/* Dots Navigation */}
+          <div className="flex justify-center space-x-2 mt-8">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => scrollTo(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === selectedIndex 
+                    ? "bg-[#ef4e23] w-8" 
+                    : "bg-gray-300 hover:bg-[#ef4e23]/50"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>

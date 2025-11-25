@@ -25,18 +25,17 @@ const Contact = () => {
               className="w-28 mx-auto object-contain"
             />
             <h2 className="text-2xl md:text-3xl">
-              Ready to elevate your performance?
+              Ready to recover smarter?
             </h2>
             <p className="text-lg text-white/90">
-              Get in touch with us for any questions about our sports health
-              and recovery products.
+              Join the R² movement  — because better recovery means better performance.
             </p>
             <Link to="/shop">
               <Button variant="hero" size="lg" className="px-10 py-6 border-2 border-white/90 rounded-xl">
                 Shop Now →
               </Button>
             </Link>
-            <div className="text-white/80">Professional-grade sports health solutions</div>
+            <div className="text-white/80">Science-backed recovery. Real results.</div>
           </div>
         </div>
       </section>
@@ -71,7 +70,7 @@ const Contact = () => {
                     <div>
                       <h4 className="font-semibold">Address</h4>
                       <p className="text-muted-foreground">
-                        123 Sports Health Plaza, Fitness District, Mumbai, Maharashtra -400001
+                        Chennai, Tamilnadu
                       </p>
                     </div>
                   </div>
@@ -82,7 +81,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold">Email</h4>
-                      <p className="text-muted-foreground">info@physiq.com</p>
+                      <p className="text-muted-foreground">physiqlifestyle@gmail.com</p>
                     </div>
                   </div>
 
@@ -92,7 +91,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold">Phone</h4>
-                      <p className="text-muted-foreground">+91 9876543210</p>
+                      <p className="text-muted-foreground">9566259468</p>
                     </div>
                   </div>
 

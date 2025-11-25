@@ -124,12 +124,10 @@ const Shop = () => {
               Shop Our <span className="text-white font-bold">Products</span>
             </h1>
             <h2 className="text-2xl md:text-3xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-medium mb-6">
-              Premium sports health products for peak performance
+              Smarter recovery for those who never stop moving.
             </h2>
             <p className="text-lg md:text-xl text-white/95 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] max-w-4xl mx-auto leading-relaxed">
-              Discover our collection of innovative recovery and performance
-              solutions designed to keep athletes moving, recovering, and
-              performing at their best.
+              Discover performance essentials built to help you recover faster, move better, and stay consistent.
             </p>
           </div>
         </div>

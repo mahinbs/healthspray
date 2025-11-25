@@ -40,16 +40,16 @@ const BlogSection = () => {
     <section className="py-20 bg-white relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-mesh opacity-20" />
-      
+
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
           <div>
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-              Learn
+              Physiq Insights
             </h2>
             <p className="text-xl text-slate-600 max-w-2xl">
-              Expert insights, recovery tips, and training advice to help you perform at your best.
+              Where fitness meets knowledge — insights that help you recover, recharge, and perform better.
             </p>
           </div>
           <Button

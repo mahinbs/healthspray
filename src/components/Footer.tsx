@@ -18,7 +18,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 
-// Using Cloudinary logo URL
+
 const physiqLogo = "/logo-white.png";
 
 const Footer = () => {
@@ -36,9 +36,8 @@ const Footer = () => {
   const handleSocialClick = (platform: string) => {
     const socialLinks = {
       facebook: "https://www.facebook.com/physiq",
-      twitter: "https://www.twitter.com/physiq",
-      instagram: "https://www.instagram.com/physiq",
-      email: "mailto:contact@physiq.com",
+      instagram: "https://www.instagram.com/physiq.lifestyle/",
+      email: "mailto:physiqlifestyle@gmail.com",
     };
     if (socialLinks[platform as keyof typeof socialLinks]) {
       // Open the actual social media links
@@ -73,8 +72,7 @@ const Footer = () => {
                   />
                 </Link>
                 <p className="text-slate-300 leading-relaxed max-w-sm">
-                  The smarter way to shop for sports health. Cutting-edge
-                  science meets peak performance for athletes worldwide.
+                  Smarter performance starts here — science-driven recovery for active bodies that never stop moving.
                 </p>
               </div>
 
@@ -88,13 +86,6 @@ const Footer = () => {
                     title="Facebook"
                   >
                     <Facebook className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => handleSocialClick("twitter")}
-                    className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 hover:scale-110 backdrop-blur-md border border-white/20"
-                    title="Twitter"
-                  >
-                    <Twitter className="h-5 w-5" />
                   </button>
                   <button
                     onClick={() => handleSocialClick("instagram")}
@@ -122,28 +113,28 @@ const Footer = () => {
                   to="/shop"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  Pain Relief
+                  Warmup & cool down
                   <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
                 <Link
                   to="/shop"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  Recovery Products
+                  Strain & Pain Relief
                   <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
                 <Link
                   to="/shop"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  Compression Wear
+                  Performance Essentials
                   <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
                 <Link
                   to="/shop"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >
-                  Warm-up Products
+                  Active Body care range
                   <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
               </div>
@@ -165,14 +156,6 @@ const Footer = () => {
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group w-full text-left"
                 >
                   Shipping Info
-                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <ExternalLink className="h-3 w-3 ml-2" />
-                </button>
-                <button
-                  onClick={() => window.open("/warranty", "_blank")}
-                  className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group w-full text-left"
-                >
-                  Warranty
                   <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <ExternalLink className="h-3 w-3 ml-2" />
                 </button>
@@ -222,15 +205,15 @@ const Footer = () => {
               <div className="space-y-3 pt-4 border-t border-white/20">
                 <div className="flex items-center text-slate-300">
                   <MapPin className="h-4 w-4 mr-3 text-white" />
-                  <span className="text-sm">Mumbai, Maharashtra</span>
+                  <span className="text-sm">Chennai, Tamilnadu</span>
                 </div>
                 <div className="flex items-center text-slate-300">
                   <Phone className="h-4 w-4 mr-3 text-white" />
-                  <span className="text-sm">+91 9876543210</span>
+                  <span className="text-sm">+91 9566259468</span>
                 </div>
                 <div className="flex items-center text-slate-300">
-                  <Clock className="h-4 w-4 mr-3 text-white" />
-                  <span className="text-sm">24/7 Support</span>
+                  <Mail className="h-4 w-4 mr-3 text-white" />
+                  <span className="text-sm">physiqlifestyle@gmail.com</span>
                 </div>
               </div>
             </div>
@@ -243,21 +226,21 @@ const Footer = () => {
                 <Shield className="h-8 w-8 text-white mx-auto mb-3" />
                 <h5 className="font-semibold mb-2">Secure & Safe</h5>
                 <p className="text-sm text-slate-300">
-                  Your data and payments are protected
+                  Protected payments. Guaranteed confidence.
                 </p>
               </GlassCard>
               <GlassCard className="p-6 text-center" intensity="light">
                 <Award className="h-8 w-8 text-white/80 mx-auto mb-3" />
                 <h5 className="font-semibold mb-2">Premium Quality</h5>
                 <p className="text-sm text-slate-300">
-                  Professional-grade sports health products
+                  Professional-grade care, built for real results.
                 </p>
               </GlassCard>
               <GlassCard className="p-6 text-center" intensity="light">
                 <Zap className="h-8 w-8 text-white mx-auto mb-3" />
                 <h5 className="font-semibold mb-2">Fast Delivery</h5>
                 <p className="text-sm text-slate-300">
-                  Quick shipping for urgent recovery needs
+                  Swift delivery, because recovery can’t wait.
                 </p>
               </GlassCard>
             </div>
