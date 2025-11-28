@@ -33,6 +33,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Plus,
   Edit,
+  Pencil,
   Trash2,
   Eye,
   LogOut,
@@ -71,6 +72,8 @@ import { HeroCarouselManager } from "@/components/HeroCarouselManager";
 import PromotionalBannerManager from "@/components/PromotionalBannerManager";
 import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
+import { categoriesService, type AdminCategory } from "@/services/categories";
+import { blogService, type AdminBlogPost, type BlogContentBlock } from "@/services/blog";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -81,6 +84,8 @@ const Admin = () => {
 
   // Data states
   const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [blogPosts, setBlogPosts] = useState<AdminBlogPost[]>([]);
   const [stats, setStats] = useState<ProductStats>({
     totalProducts: 0,
     activeProducts: 0,
@@ -97,12 +102,31 @@ const Admin = () => {
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(
     null
   );
+  const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(
+    null
+  );
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<AdminProduct | null>(
     null
   );
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isCategoryEditDialogOpen, setIsCategoryEditDialogOpen] = useState(false);
+  const [isCategoryDeleteDialogOpen, setIsCategoryDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<AdminCategory | null>(null);
+  
+  // Blog dialog states
+  const [editingBlogPost, setEditingBlogPost] = useState<AdminBlogPost | null>(null);
+  const [isBlogDialogOpen, setIsBlogDialogOpen] = useState(false);
+  const [isBlogEditDialogOpen, setIsBlogEditDialogOpen] = useState(false);
+  const [isBlogDeleteDialogOpen, setIsBlogDeleteDialogOpen] = useState(false);
+  const [blogPostToDelete, setBlogPostToDelete] = useState<AdminBlogPost | null>(null);
+  
+  // Blog image handling states
+  const [blogImageUploadMethod, setBlogImageUploadMethod] = useState<"url" | "file">("url");
+  const [blogImagePreviews, setBlogImagePreviews] = useState<string[]>([]);
+  const [isBlogImageUploading, setIsBlogImageUploading] = useState(false);
 
   // Image handling states
   const [imageUploadMethod, setImageUploadMethod] = useState<"url" | "file">(
@@ -110,6 +134,11 @@ const Admin = () => {
   );
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isImageUploading, setIsImageUploading] = useState(false);
+  
+  // Category image handling states
+  const [categoryImageUploadMethod, setCategoryImageUploadMethod] = useState<"url" | "file">("url");
+  const [categoryImagePreviews, setCategoryImagePreviews] = useState<string[]>([]);
+  const [isCategoryImageUploading, setIsCategoryImageUploading] = useState(false);
 
   // Initial form data
   const initialFormData = {
@@ -131,6 +160,35 @@ const Admin = () => {
 
   // Form state for adding/editing products
   const [formData, setFormData] = useState(initialFormData);
+  
+  // Category form state
+  const [categoryFormData, setCategoryFormData] = useState({
+    name: "",
+    description: "",
+    slug: "",
+    background_image_url: "",
+    gradient_from: "orange-500",
+    gradient_to: "red-600",
+    product_tags: [] as string[],
+    display_order: 0,
+    is_active: true,
+  });
+  
+  // Blog form state
+  const [blogFormData, setBlogFormData] = useState({
+    title: "",
+    description: "",
+    author: "",
+    published_date: "",
+    image_url: "",
+    category_tag: "",
+    read_time_minutes: 5,
+    slug: "",
+    detailed_title: "",
+    detailed_content: [] as BlogContentBlock[],
+    display_order: 0,
+    is_active: true,
+  });
 
   // Reset form function
   const resetForm = () => {
@@ -152,13 +210,17 @@ const Admin = () => {
       setIsLoading(true);
       setIsLoadingStats(true);
 
-      // Load products and stats in parallel
-      const [productsData, statsData] = await Promise.all([
+      // Load products, categories, blog posts, and stats in parallel
+      const [productsData, categoriesData, blogPostsData, statsData] = await Promise.all([
         productsService.getAllProducts(),
+        categoriesService.getAllCategories(),
+        blogService.getAllBlogPosts(),
         productsService.getProductStats(),
       ]);
 
       setProducts(productsData);
+      setCategories(categoriesData);
+      setBlogPosts(blogPostsData);
       setStats(statsData);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -296,6 +358,360 @@ const Admin = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Category management functions
+  const handleAddCategory = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const newCategory = await categoriesService.addCategory({
+        name: categoryFormData.name,
+        description: categoryFormData.description || null,
+        slug: categoryFormData.slug || categoryFormData.name.toLowerCase().replace(/\s+/g, '-'),
+        background_image_url: categoryFormData.background_image_url || null,
+        gradient_from: categoryFormData.gradient_from || null,
+        gradient_to: categoryFormData.gradient_to || null,
+        product_tags: categoryFormData.product_tags,
+        display_order: categoryFormData.display_order,
+        is_active: categoryFormData.is_active,
+      });
+      
+      setCategories((prev) => [newCategory, ...prev]);
+      setCategoryFormData({
+        name: "",
+        description: "",
+        slug: "",
+        background_image_url: "",
+        gradient_from: "orange-500",
+        gradient_to: "red-600",
+        product_tags: [],
+        display_order: 0,
+        is_active: true,
+      });
+      setCategoryImagePreviews([]);
+      setCategoryImageUploadMethod("url");
+      setIsCategoryDialogOpen(false);
+      toast.success("Category added successfully!");
+    } catch (error) {
+      console.error("Error adding category:", error);
+      toast.error("Failed to add category. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditCategory = async () => {
+    if (!editingCategory) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      const updatedCategory = await categoriesService.updateCategory(editingCategory.id, {
+        name: categoryFormData.name,
+        description: categoryFormData.description || null,
+        slug: categoryFormData.slug,
+        background_image_url: categoryFormData.background_image_url || null,
+        gradient_from: categoryFormData.gradient_from || null,
+        gradient_to: categoryFormData.gradient_to || null,
+        product_tags: categoryFormData.product_tags,
+        display_order: categoryFormData.display_order,
+        is_active: categoryFormData.is_active,
+      });
+      
+      setCategories((prev) =>
+        prev.map((c) => (c.id === editingCategory.id ? updatedCategory : c))
+      );
+      
+      setCategoryFormData({
+        name: "",
+        description: "",
+        slug: "",
+        background_image_url: "",
+        gradient_from: "orange-500",
+        gradient_to: "red-600",
+        product_tags: [],
+        display_order: 0,
+        is_active: true,
+      });
+      setCategoryImagePreviews([]);
+      setCategoryImageUploadMethod("url");
+      setEditingCategory(null);
+      setIsCategoryEditDialogOpen(false);
+      toast.success("Category updated successfully!");
+    } catch (error) {
+      console.error("Error updating category:", error);
+      toast.error("Failed to update category. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+    
+    try {
+      setIsSubmitting(true);
+      await categoriesService.deleteCategory(categoryToDelete.id);
+      setCategories((prev) => prev.filter((c) => c.id !== categoryToDelete.id));
+      setCategoryToDelete(null);
+      setIsCategoryDeleteDialogOpen(false);
+      toast.success("Category deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      toast.error("Failed to delete category. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Blog management functions
+  const handleAddBlogPost = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const newBlogPost = await blogService.addBlogPost({
+        title: blogFormData.title,
+        description: blogFormData.description,
+        author: blogFormData.author,
+        published_date: blogFormData.published_date,
+        image_url: blogFormData.image_url,
+        category_tag: blogFormData.category_tag,
+        read_time_minutes: blogFormData.read_time_minutes,
+        slug: blogFormData.slug || blogFormData.title.toLowerCase().replace(/\s+/g, '-'),
+        detailed_title: blogFormData.detailed_title || blogFormData.title,
+        detailed_content: blogFormData.detailed_content as any,
+        display_order: blogFormData.display_order,
+        is_active: blogFormData.is_active,
+      });
+      
+      setBlogPosts((prev) => [newBlogPost, ...prev]);
+      setBlogFormData({
+        title: "",
+        description: "",
+        author: "",
+        published_date: "",
+        image_url: "",
+        category_tag: "",
+        read_time_minutes: 5,
+        slug: "",
+        detailed_title: "",
+        detailed_content: [],
+        display_order: 0,
+        is_active: true,
+      });
+      setBlogImagePreviews([]);
+      setBlogImageUploadMethod("url");
+      setIsBlogDialogOpen(false);
+      toast.success("Blog post added successfully!");
+    } catch (error) {
+      console.error("Error adding blog post:", error);
+      toast.error("Failed to add blog post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditBlogPost = async () => {
+    if (!editingBlogPost) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      const updatedBlogPost = await blogService.updateBlogPost(editingBlogPost.id, {
+        title: blogFormData.title,
+        description: blogFormData.description,
+        author: blogFormData.author,
+        published_date: blogFormData.published_date,
+        image_url: blogFormData.image_url,
+        category_tag: blogFormData.category_tag,
+        read_time_minutes: blogFormData.read_time_minutes,
+        slug: blogFormData.slug,
+        detailed_title: blogFormData.detailed_title,
+        detailed_content: blogFormData.detailed_content as any,
+        display_order: blogFormData.display_order,
+        is_active: blogFormData.is_active,
+      });
+      
+      setBlogPosts((prev) =>
+        prev.map((p) => (p.id === editingBlogPost.id ? updatedBlogPost : p))
+      );
+      
+      setBlogFormData({
+        title: "",
+        description: "",
+        author: "",
+        published_date: "",
+        image_url: "",
+        category_tag: "",
+        read_time_minutes: 5,
+        slug: "",
+        detailed_title: "",
+        detailed_content: [],
+        display_order: 0,
+        is_active: true,
+      });
+      setBlogImagePreviews([]);
+      setBlogImageUploadMethod("url");
+      setEditingBlogPost(null);
+      setIsBlogEditDialogOpen(false);
+      toast.success("Blog post updated successfully!");
+    } catch (error) {
+      console.error("Error updating blog post:", error);
+      toast.error("Failed to update blog post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteBlogPost = async () => {
+    if (!blogPostToDelete) return;
+    
+    try {
+      setIsSubmitting(true);
+      await blogService.deleteBlogPost(blogPostToDelete.id);
+      setBlogPosts((prev) => prev.filter((p) => p.id !== blogPostToDelete.id));
+      setBlogPostToDelete(null);
+      setIsBlogDeleteDialogOpen(false);
+      toast.success("Blog post deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      toast.error("Failed to delete blog post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openBlogEditDialog = (post: AdminBlogPost) => {
+    setEditingBlogPost(post);
+    setBlogFormData({
+      title: post.title,
+      description: post.description,
+      author: post.author,
+      published_date: post.published_date,
+      image_url: post.image_url,
+      category_tag: post.category_tag,
+      read_time_minutes: post.read_time_minutes,
+      slug: post.slug,
+      detailed_title: post.detailed_title || post.title,
+      detailed_content: (Array.isArray(post.detailed_content) ? post.detailed_content : []) as unknown as BlogContentBlock[],
+      display_order: post.display_order,
+      is_active: post.is_active,
+    });
+    if (post.image_url) {
+      setBlogImagePreviews([post.image_url]);
+    } else {
+      setBlogImagePreviews([]);
+    }
+    setBlogImageUploadMethod("url");
+    setIsBlogEditDialogOpen(true);
+  };
+
+  const handleBlogImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsBlogImageUploading(true);
+
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const response = await fetch(
+        "https://tdzyskyjqobglueymvmx.supabase.co/functions/v1/upload-images",
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${
+              import.meta.env.VITE_SUPABASE_ANON_KEY ||
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkenlza3lqcW9iZ2x1ZXltdm14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NjM4MzYsImV4cCI6MjA3MDEzOTgzNn0.5fQXZ2dJF30gPq_VtKmg4L-_fV5pOp5Pd56PU5mHcUM"
+            }`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.uploaded.length > 0) {
+        const newImageUrls = result.uploaded.map((upload: { url: string }) => upload.url);
+        setBlogImagePreviews((prev) => [...prev, ...newImageUrls]);
+        
+        if (!blogFormData.image_url && newImageUrls.length > 0) {
+          setBlogFormData(prev => ({ ...prev, image_url: newImageUrls[0] }));
+        }
+
+        if (result.failed.length > 0) {
+          toast.warning(
+            `${result.uploaded.length} images uploaded successfully. ${result.failed.length} failed.`
+          );
+        } else {
+          toast.success(`${result.uploaded.length} image(s) uploaded successfully!`);
+        }
+      } else {
+        throw new Error("No images were uploaded successfully");
+      }
+    } catch (error) {
+      console.error("Blog image upload error:", error);
+      toast.error("Failed to upload image. Please try again.");
+    } finally {
+      setIsBlogImageUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  const addContentBlock = (type: 'heading' | 'paragraph' | 'key_points', level?: number) => {
+    setBlogFormData(prev => ({
+      ...prev,
+      detailed_content: [...prev.detailed_content, { type, content: '', level: level || 2 }]
+    }));
+  };
+
+  const updateContentBlock = (index: number, content: string) => {
+    setBlogFormData(prev => ({
+      ...prev,
+      detailed_content: prev.detailed_content.map((block, i) => 
+        i === index ? { ...block, content } : block
+      )
+    }));
+  };
+
+  const removeContentBlock = (index: number) => {
+    setBlogFormData(prev => ({
+      ...prev,
+      detailed_content: prev.detailed_content.filter((_, i) => i !== index)
+    }));
+  };
+
+  const openCategoryEditDialog = (category: AdminCategory) => {
+    setEditingCategory(category);
+    setCategoryFormData({
+      name: category.name,
+      description: category.description || "",
+      slug: category.slug,
+      background_image_url: category.background_image_url || "",
+      gradient_from: category.gradient_from || "orange-500",
+      gradient_to: category.gradient_to || "red-600",
+      product_tags: category.product_tags || [],
+      display_order: category.display_order,
+      is_active: category.is_active,
+    });
+    // Load existing background image into previews if it exists
+    if (category.background_image_url) {
+      setCategoryImagePreviews([category.background_image_url]);
+    } else {
+      setCategoryImagePreviews([]);
+    }
+    setCategoryImageUploadMethod("url");
+    setIsCategoryEditDialogOpen(true);
   };
 
   const openEditDialog = (product: AdminProduct) => {
@@ -521,6 +937,69 @@ const Admin = () => {
     }
   };
 
+  // Category image upload handler
+  const handleCategoryImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsCategoryImageUploading(true);
+
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const response = await fetch(
+        "https://tdzyskyjqobglueymvmx.supabase.co/functions/v1/upload-images",
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${
+              import.meta.env.VITE_SUPABASE_ANON_KEY ||
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkenlza3lqcW9iZ2x1ZXltdm14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1NjM4MzYsImV4cCI6MjA3MDEzOTgzNn0.5fQXZ2dJF30gPq_VtKmg4L-_fV5pOp5Pd56PU5mHcUM"
+            }`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.uploaded.length > 0) {
+        const newImageUrls = result.uploaded.map((upload: { url: string }) => upload.url);
+        setCategoryImagePreviews((prev) => [...prev, ...newImageUrls]);
+        
+        // Auto-set first uploaded image as background if none is set
+        if (!categoryFormData.background_image_url && newImageUrls.length > 0) {
+          setCategoryFormData(prev => ({ ...prev, background_image_url: newImageUrls[0] }));
+        }
+
+        if (result.failed.length > 0) {
+          toast.warning(
+            `${result.uploaded.length} images uploaded successfully. ${result.failed.length} failed.`
+          );
+        } else {
+          toast.success(`${result.uploaded.length} image(s) uploaded successfully!`);
+        }
+      } else {
+        throw new Error("No images were uploaded successfully");
+      }
+    } catch (error) {
+      console.error("Category image upload error:", error);
+      toast.error("Failed to upload image. Please try again.");
+    } finally {
+      setIsCategoryImageUploading(false);
+      event.target.value = "";
+    }
+  };
+
   // Loading state
   if (authLoading) {
     return (
@@ -696,6 +1175,8 @@ const Admin = () => {
         <Tabs defaultValue="products" className="space-y-6">
           <TabsList>
             <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="categories">Categories</TabsTrigger>
+            <TabsTrigger value="blog">Blog Posts</TabsTrigger>
             <TabsTrigger value="featured">Featured</TabsTrigger>
             <TabsTrigger value="videos">Videos</TabsTrigger>
             <TabsTrigger value="coupons">Coupons</TabsTrigger>
@@ -1494,7 +1975,1110 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
-         <TabsContent value="featured" className="space-y-6">
+         <TabsContent value="categories" className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h2 className="text-xl sm:text-2xl font-bold">Category Management</h2>
+            <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Category
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add New Category</DialogTitle>
+                  <DialogDescription>
+                    Create a new category for the Shop by Category section
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="cat-name">Category Name</Label>
+                    <Input
+                      id="cat-name"
+                      value={categoryFormData.name}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="e.g., Warm-Up & Cool-Down"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cat-slug">Slug (URL-friendly)</Label>
+                    <Input
+                      id="cat-slug"
+                      value={categoryFormData.slug}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, slug: e.target.value }))}
+                      placeholder="e.g., warmup-cooldown"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cat-description">Description</Label>
+                    <Textarea
+                      id="cat-description"
+                      value={categoryFormData.description}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="e.g., Pre and post workout solutions"
+                      rows={2}
+                    />
+                  </div>
+                  {/* Category Background Image Section */}
+                  <div className="space-y-4">
+                    <Label>Category Background Image</Label>
+                    
+                    {/* Image Upload Method Toggle */}
+                    <div className="flex space-x-2">
+                      <Button
+                        type="button"
+                        variant={categoryImageUploadMethod === "url" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCategoryImageUploadMethod("url")}
+                      >
+                        <Link className="h-4 w-4 mr-2" />
+                        Image URL
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={categoryImageUploadMethod === "file" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCategoryImageUploadMethod("file")}
+                      >
+                        <FileImage className="h-4 w-4 mr-2" />
+                        Upload File
+                      </Button>
+                    </div>
+
+                    {/* Image URL Input */}
+                    {categoryImageUploadMethod === "url" && (
+                      <div>
+                        <Input
+                          id="cat-bg-image"
+                          value={categoryFormData.background_image_url}
+                          onChange={(e) => setCategoryFormData(prev => ({ ...prev, background_image_url: e.target.value }))}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Enter direct link to background image (JPG, PNG, WebP supported)
+                        </p>
+                      </div>
+                    )}
+
+                    {/* File Upload */}
+                    {categoryImageUploadMethod === "file" && (
+                      <div className="space-y-2">
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleCategoryImageUpload}
+                            className="hidden"
+                            id="category-image-upload"
+                          />
+                          <label
+                            htmlFor="category-image-upload"
+                            className="cursor-pointer"
+                          >
+                            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-600">
+                              {isCategoryImageUploading
+                                ? "Uploading..."
+                                : "Click to upload background image"}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              JPG, PNG, WebP up to 5MB
+                            </p>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Image Preview and Selection */}
+                    {categoryImagePreviews.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Uploaded Images</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                          {categoryImagePreviews.map((preview, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={preview}
+                                alt={`Category preview ${index + 1}`}
+                                className={`w-full h-24 sm:h-32 object-cover rounded-lg border cursor-pointer transition-all duration-200 ${
+                                  categoryFormData.background_image_url === preview
+                                    ? 'ring-2 ring-primary'
+                                    : 'hover:ring-2 hover:ring-primary'
+                                }`}
+                                onClick={() => setCategoryFormData(prev => ({ ...prev, background_image_url: preview }))}
+                                onError={(e) => {
+                                  e.currentTarget.src = "/src/assets/robot-toy-premium.jpg";
+                                }}
+                              />
+                              {categoryFormData.background_image_url === preview && (
+                                <Badge className="absolute top-1 left-1 text-xs bg-primary">
+                                  Selected
+                                </Badge>
+                              )}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="absolute -top-2 -right-2 h-6 w-6"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCategoryImagePreviews(prev => prev.filter((_, i) => i !== index));
+                                  if (categoryFormData.background_image_url === preview) {
+                                    setCategoryFormData(prev => ({ ...prev, background_image_url: "" }));
+                                  }
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Click on an image to set it as the background image
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Current Selection Display */}
+                    {categoryFormData.background_image_url && (
+                      <div className="p-3 bg-muted rounded-lg">
+                        <div className="text-sm font-medium mb-2">Selected Background Image:</div>
+                        <div className="flex items-center gap-2">
+                          <img 
+                            src={categoryFormData.background_image_url} 
+                            alt="Selected" 
+                            className="w-16 h-16 object-cover rounded" 
+                          />
+                          <span className="text-xs text-green-600">✓ Selected</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="cat-gradient-from">Gradient From</Label>
+                      <Input
+                        id="cat-gradient-from"
+                        value={categoryFormData.gradient_from}
+                        onChange={(e) => setCategoryFormData(prev => ({ ...prev, gradient_from: e.target.value }))}
+                        placeholder="orange-500"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="cat-gradient-to">Gradient To</Label>
+                      <Input
+                        id="cat-gradient-to"
+                        value={categoryFormData.gradient_to}
+                        onChange={(e) => setCategoryFormData(prev => ({ ...prev, gradient_to: e.target.value }))}
+                        placeholder="red-600"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="cat-order">Display Order</Label>
+                    <Input
+                      id="cat-order"
+                      type="number"
+                      value={categoryFormData.display_order}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="cat-active"
+                      checked={categoryFormData.is_active}
+                      onCheckedChange={(checked) => setCategoryFormData(prev => ({ ...prev, is_active: checked }))}
+                    />
+                    <Label htmlFor="cat-active">Active (visible on website)</Label>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddCategory} disabled={isSubmitting}>
+                    {isSubmitting ? "Adding..." : "Add Category"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Categories List */}
+          <div className="space-y-4">
+            {categories.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">No categories found. Add your first category above.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {categories.map((category) => (
+                  <Card key={category.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold">{category.name}</h3>
+                            {category.is_active ? (
+                              <Badge variant="default">Active</Badge>
+                            ) : (
+                              <Badge variant="secondary">Inactive</Badge>
+                            )}
+                            <Badge variant="outline">Order: {category.display_order}</Badge>
+                          </div>
+                          {category.description && (
+                            <p className="text-sm text-muted-foreground mb-2">{category.description}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground">Slug: {category.slug}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openCategoryEditDialog(category)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              setCategoryToDelete(category);
+                              setIsCategoryDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Edit Category Dialog */}
+          <Dialog open={isCategoryEditDialogOpen} onOpenChange={setIsCategoryEditDialogOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Edit Category</DialogTitle>
+                <DialogDescription>
+                  Update category details
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-cat-name">Category Name</Label>
+                  <Input
+                    id="edit-cat-name"
+                    value={categoryFormData.name}
+                    onChange={(e) => setCategoryFormData(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-cat-slug">Slug</Label>
+                  <Input
+                    id="edit-cat-slug"
+                    value={categoryFormData.slug}
+                    onChange={(e) => setCategoryFormData(prev => ({ ...prev, slug: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-cat-description">Description</Label>
+                  <Textarea
+                    id="edit-cat-description"
+                    value={categoryFormData.description}
+                    onChange={(e) => setCategoryFormData(prev => ({ ...prev, description: e.target.value }))}
+                    rows={2}
+                  />
+                </div>
+                {/* Category Background Image Section */}
+                <div className="space-y-4">
+                  <Label>Category Background Image</Label>
+                  
+                  {/* Image Upload Method Toggle */}
+                  <div className="flex space-x-2">
+                    <Button
+                      type="button"
+                      variant={categoryImageUploadMethod === "url" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCategoryImageUploadMethod("url")}
+                    >
+                      <Link className="h-4 w-4 mr-2" />
+                      Image URL
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={categoryImageUploadMethod === "file" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCategoryImageUploadMethod("file")}
+                    >
+                      <FileImage className="h-4 w-4 mr-2" />
+                      Upload File
+                    </Button>
+                  </div>
+
+                  {/* Image URL Input */}
+                  {categoryImageUploadMethod === "url" && (
+                    <div>
+                      <Input
+                        id="edit-cat-bg-image"
+                        value={categoryFormData.background_image_url}
+                        onChange={(e) => setCategoryFormData(prev => ({ ...prev, background_image_url: e.target.value }))}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Enter direct link to background image (JPG, PNG, WebP supported)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* File Upload */}
+                  {categoryImageUploadMethod === "file" && (
+                    <div className="space-y-2">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleCategoryImageUpload}
+                          className="hidden"
+                          id="edit-category-image-upload"
+                        />
+                        <label
+                          htmlFor="edit-category-image-upload"
+                          className="cursor-pointer"
+                        >
+                          <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">
+                            {isCategoryImageUploading
+                              ? "Uploading..."
+                              : "Click to upload background image"}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            JPG, PNG, WebP up to 5MB
+                          </p>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Image Preview and Selection */}
+                  {categoryImagePreviews.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Uploaded Images</Label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                        {categoryImagePreviews.map((preview, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={preview}
+                              alt={`Category preview ${index + 1}`}
+                              className={`w-full h-24 sm:h-32 object-cover rounded-lg border cursor-pointer transition-all duration-200 ${
+                                categoryFormData.background_image_url === preview
+                                  ? 'ring-2 ring-primary'
+                                  : 'hover:ring-2 hover:ring-primary'
+                              }`}
+                              onClick={() => setCategoryFormData(prev => ({ ...prev, background_image_url: preview }))}
+                              onError={(e) => {
+                                e.currentTarget.src = "/src/assets/robot-toy-premium.jpg";
+                              }}
+                            />
+                            {categoryFormData.background_image_url === preview && (
+                              <Badge className="absolute top-1 left-1 text-xs bg-primary">
+                                Selected
+                              </Badge>
+                            )}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="absolute -top-2 -right-2 h-6 w-6"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCategoryImagePreviews(prev => prev.filter((_, i) => i !== index));
+                                if (categoryFormData.background_image_url === preview) {
+                                  setCategoryFormData(prev => ({ ...prev, background_image_url: "" }));
+                                }
+                              }}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Click on an image to set it as the background image
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Current Selection Display */}
+                  {categoryFormData.background_image_url && (
+                    <div className="p-3 bg-muted rounded-lg">
+                      <div className="text-sm font-medium mb-2">Selected Background Image:</div>
+                      <div className="flex items-center gap-2">
+                        <img 
+                          src={categoryFormData.background_image_url} 
+                          alt="Selected" 
+                          className="w-16 h-16 object-cover rounded" 
+                        />
+                        <span className="text-xs text-green-600">✓ Selected</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-cat-gradient-from">Gradient From</Label>
+                    <Input
+                      id="edit-cat-gradient-from"
+                      value={categoryFormData.gradient_from}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, gradient_from: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-cat-gradient-to">Gradient To</Label>
+                    <Input
+                      id="edit-cat-gradient-to"
+                      value={categoryFormData.gradient_to}
+                      onChange={(e) => setCategoryFormData(prev => ({ ...prev, gradient_to: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-cat-order">Display Order</Label>
+                  <Input
+                    id="edit-cat-order"
+                    type="number"
+                    value={categoryFormData.display_order}
+                    onChange={(e) => setCategoryFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="edit-cat-active"
+                    checked={categoryFormData.is_active}
+                    onCheckedChange={(checked) => setCategoryFormData(prev => ({ ...prev, is_active: checked }))}
+                  />
+                  <Label htmlFor="edit-cat-active">Active</Label>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCategoryEditDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleEditCategory} disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Category Dialog */}
+          <Dialog open={isCategoryDeleteDialogOpen} onOpenChange={setIsCategoryDeleteDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Category</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete "{categoryToDelete?.name}"? This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCategoryDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleDeleteCategory} disabled={isSubmitting}>
+                  {isSubmitting ? "Deleting..." : "Delete"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </TabsContent>
+
+        <TabsContent value="blog" className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h2 className="text-xl sm:text-2xl font-bold">Blog Posts Management</h2>
+            <Dialog open={isBlogDialogOpen} onOpenChange={setIsBlogDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Blog Post
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add New Blog Post</DialogTitle>
+                  <DialogDescription>
+                    Create a new blog post for Physiq Insights
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="blog-title">Title</Label>
+                      <Input
+                        id="blog-title"
+                        value={blogFormData.title}
+                        onChange={(e) => setBlogFormData(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Blog post title"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="blog-slug">Slug</Label>
+                      <Input
+                        id="blog-slug"
+                        value={blogFormData.slug}
+                        onChange={(e) => setBlogFormData(prev => ({ ...prev, slug: e.target.value }))}
+                        placeholder="url-friendly-slug"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="blog-description">Description</Label>
+                    <Textarea
+                      id="blog-description"
+                      value={blogFormData.description}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Short description for card view"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="blog-author">Author</Label>
+                      <Input
+                        id="blog-author"
+                        value={blogFormData.author}
+                        onChange={(e) => setBlogFormData(prev => ({ ...prev, author: e.target.value }))}
+                        placeholder="Author name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="blog-date">Published Date</Label>
+                      <Input
+                        id="blog-date"
+                        type="date"
+                        value={blogFormData.published_date}
+                        onChange={(e) => setBlogFormData(prev => ({ ...prev, published_date: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="blog-read-time">Read Time (minutes)</Label>
+                      <Input
+                        id="blog-read-time"
+                        type="number"
+                        value={blogFormData.read_time_minutes}
+                        onChange={(e) => setBlogFormData(prev => ({ ...prev, read_time_minutes: parseInt(e.target.value) || 5 }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="blog-category">Category Tag</Label>
+                    <Input
+                      id="blog-category"
+                      value={blogFormData.category_tag}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, category_tag: e.target.value }))}
+                      placeholder="e.g., Recovery, Training"
+                    />
+                  </div>
+
+                  {/* Blog Image Section */}
+                  <div className="space-y-4">
+                    <Label>Blog Image</Label>
+                    <div className="flex space-x-2">
+                      <Button
+                        type="button"
+                        variant={blogImageUploadMethod === "url" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setBlogImageUploadMethod("url")}
+                      >
+                        <Link className="h-4 w-4 mr-2" />
+                        Image URL
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={blogImageUploadMethod === "file" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setBlogImageUploadMethod("file")}
+                      >
+                        <FileImage className="h-4 w-4 mr-2" />
+                        Upload File
+                      </Button>
+                    </div>
+
+                    {blogImageUploadMethod === "url" && (
+                      <Input
+                        value={blogFormData.image_url}
+                        onChange={(e) => setBlogFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    )}
+
+                    {blogImageUploadMethod === "file" && (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleBlogImageUpload}
+                          className="hidden"
+                          id="blog-image-upload"
+                        />
+                        <label htmlFor="blog-image-upload" className="cursor-pointer">
+                          <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600">
+                            {isBlogImageUploading ? "Uploading..." : "Click to upload image"}
+                          </p>
+                        </label>
+                      </div>
+                    )}
+
+                    {blogImagePreviews.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {blogImagePreviews.map((preview, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={preview}
+                              alt={`Preview ${index + 1}`}
+                              className={`w-full h-24 object-cover rounded border cursor-pointer ${
+                                blogFormData.image_url === preview ? 'ring-2 ring-primary' : ''
+                              }`}
+                              onClick={() => setBlogFormData(prev => ({ ...prev, image_url: preview }))}
+                            />
+                            {blogFormData.image_url === preview && (
+                              <Badge className="absolute top-1 left-1 text-xs">Selected</Badge>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="blog-detailed-title">Detailed Title (for full article)</Label>
+                    <Input
+                      id="blog-detailed-title"
+                      value={blogFormData.detailed_title}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, detailed_title: e.target.value }))}
+                      placeholder="Full article title"
+                    />
+                  </div>
+
+                  {/* Detailed Content Editor */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Detailed Content</Label>
+                      <div className="flex gap-2">
+                        <Button type="button" size="sm" variant="outline" onClick={() => addContentBlock('heading', 2)}>
+                          Add Heading
+                        </Button>
+                        <Button type="button" size="sm" variant="outline" onClick={() => addContentBlock('paragraph')}>
+                          Add Paragraph
+                        </Button>
+                        <Button type="button" size="sm" variant="outline" onClick={() => addContentBlock('key_points')}>
+                          Add Key Points
+                        </Button>
+                      </div>
+                    </div>
+
+                    {blogFormData.detailed_content.map((block, index) => (
+                      <div key={index} className="border rounded-lg p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline">
+                            {block.type === 'heading' ? `Heading H${block.level || 2}` : block.type === 'paragraph' ? 'Paragraph' : 'Key Points'}
+                          </Badge>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeContentBlock(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        {block.type === 'heading' && (
+                          <Select
+                            value={(block.level || 2).toString()}
+                            onValueChange={(value) => {
+                              const updated = [...blogFormData.detailed_content];
+                              updated[index] = { ...block, level: parseInt(value) };
+                              setBlogFormData(prev => ({ ...prev, detailed_content: updated }));
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="2">H2</SelectItem>
+                              <SelectItem value="3">H3</SelectItem>
+                              <SelectItem value="4">H4</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                        <Textarea
+                          value={block.content}
+                          onChange={(e) => updateContentBlock(index, e.target.value)}
+                          placeholder={
+                            block.type === 'heading' ? 'Enter heading text' :
+                            block.type === 'key_points' ? 'Enter key points separated by commas' :
+                            'Enter paragraph text'
+                          }
+                          rows={block.type === 'key_points' ? 2 : 4}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="blog-order">Display Order</Label>
+                      <Input
+                        id="blog-order"
+                        type="number"
+                        value={blogFormData.display_order}
+                        onChange={(e) => setBlogFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2 pt-8">
+                      <Switch
+                        id="blog-active"
+                        checked={blogFormData.is_active}
+                        onCheckedChange={(checked) => setBlogFormData(prev => ({ ...prev, is_active: checked }))}
+                      />
+                      <Label htmlFor="blog-active">Active</Label>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsBlogDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddBlogPost} disabled={isSubmitting}>
+                    {isSubmitting ? "Adding..." : "Add Blog Post"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Blog Posts List */}
+          <div className="space-y-4">
+            {blogPosts.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">No blog posts found. Add your first blog post above.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {blogPosts.map((post) => (
+                  <Card key={post.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <img src={post.image_url} alt={post.title} className="w-24 h-24 object-cover rounded" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold">{post.title}</h3>
+                            {post.is_active ? (
+                              <Badge variant="default">Active</Badge>
+                            ) : (
+                              <Badge variant="secondary">Inactive</Badge>
+                            )}
+                            <Badge variant="outline">{post.category_tag}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{post.description}</p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span>By {post.author}</span>
+                            <span>{new Date(post.published_date).toLocaleDateString()}</span>
+                            <span>{post.read_time_minutes} min read</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => openBlogEditDialog(post)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              setBlogPostToDelete(post);
+                              setIsBlogDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Edit Blog Post Dialog - Similar structure to Add */}
+          <Dialog open={isBlogEditDialogOpen} onOpenChange={setIsBlogEditDialogOpen}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Edit Blog Post</DialogTitle>
+                <DialogDescription>Update blog post details</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                {/* Same form fields as Add dialog */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-blog-title">Title</Label>
+                    <Input
+                      id="edit-blog-title"
+                      value={blogFormData.title}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, title: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-blog-slug">Slug</Label>
+                    <Input
+                      id="edit-blog-slug"
+                      value={blogFormData.slug}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, slug: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-blog-description">Description</Label>
+                  <Textarea
+                    id="edit-blog-description"
+                    value={blogFormData.description}
+                    onChange={(e) => setBlogFormData(prev => ({ ...prev, description: e.target.value }))}
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="edit-blog-author">Author</Label>
+                    <Input
+                      id="edit-blog-author"
+                      value={blogFormData.author}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, author: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-blog-date">Published Date</Label>
+                    <Input
+                      id="edit-blog-date"
+                      type="date"
+                      value={blogFormData.published_date}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, published_date: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-blog-read-time">Read Time (minutes)</Label>
+                    <Input
+                      id="edit-blog-read-time"
+                      type="number"
+                      value={blogFormData.read_time_minutes}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, read_time_minutes: parseInt(e.target.value) || 5 }))}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-blog-category">Category Tag</Label>
+                  <Input
+                    id="edit-blog-category"
+                    value={blogFormData.category_tag}
+                    onChange={(e) => setBlogFormData(prev => ({ ...prev, category_tag: e.target.value }))}
+                  />
+                </div>
+                {/* Image section - same as add */}
+                <div className="space-y-4">
+                  <Label>Blog Image</Label>
+                  <div className="flex space-x-2">
+                    <Button
+                      type="button"
+                      variant={blogImageUploadMethod === "url" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setBlogImageUploadMethod("url")}
+                    >
+                      <Link className="h-4 w-4 mr-2" />
+                      Image URL
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={blogImageUploadMethod === "file" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setBlogImageUploadMethod("file")}
+                    >
+                      <FileImage className="h-4 w-4 mr-2" />
+                      Upload File
+                    </Button>
+                  </div>
+                  {blogImageUploadMethod === "url" && (
+                    <Input
+                      value={blogFormData.image_url}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                      placeholder="https://example.com/image.jpg"
+                    />
+                  )}
+                  {blogImageUploadMethod === "file" && (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBlogImageUpload}
+                        className="hidden"
+                        id="edit-blog-image-upload"
+                      />
+                      <label htmlFor="edit-blog-image-upload" className="cursor-pointer">
+                        <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600">
+                          {isBlogImageUploading ? "Uploading..." : "Click to upload image"}
+                        </p>
+                      </label>
+                    </div>
+                  )}
+                  {blogImagePreviews.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {blogImagePreviews.map((preview, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={preview}
+                            alt={`Preview ${index + 1}`}
+                            className={`w-full h-24 object-cover rounded border cursor-pointer ${
+                              blogFormData.image_url === preview ? 'ring-2 ring-primary' : ''
+                            }`}
+                            onClick={() => setBlogFormData(prev => ({ ...prev, image_url: preview }))}
+                          />
+                          {blogFormData.image_url === preview && (
+                            <Badge className="absolute top-1 left-1 text-xs">Selected</Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="edit-blog-detailed-title">Detailed Title</Label>
+                  <Input
+                    id="edit-blog-detailed-title"
+                    value={blogFormData.detailed_title}
+                    onChange={(e) => setBlogFormData(prev => ({ ...prev, detailed_title: e.target.value }))}
+                  />
+                </div>
+                {/* Detailed Content Editor - same as add */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Detailed Content</Label>
+                    <div className="flex gap-2">
+                      <Button type="button" size="sm" variant="outline" onClick={() => addContentBlock('heading', 2)}>
+                        Add Heading
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => addContentBlock('paragraph')}>
+                        Add Paragraph
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => addContentBlock('key_points')}>
+                        Add Key Points
+                      </Button>
+                    </div>
+                  </div>
+                  {blogFormData.detailed_content.map((block, index) => (
+                    <div key={index} className="border rounded-lg p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline">
+                          {block.type === 'heading' ? `Heading H${block.level || 2}` : block.type === 'paragraph' ? 'Paragraph' : 'Key Points'}
+                        </Badge>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => removeContentBlock(index)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {block.type === 'heading' && (
+                        <Select
+                          value={(block.level || 2).toString()}
+                          onValueChange={(value) => {
+                            const updated = [...blogFormData.detailed_content];
+                            updated[index] = { ...block, level: parseInt(value) };
+                            setBlogFormData(prev => ({ ...prev, detailed_content: updated }));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="2">H2</SelectItem>
+                            <SelectItem value="3">H3</SelectItem>
+                            <SelectItem value="4">H4</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <Textarea
+                        value={block.content}
+                        onChange={(e) => updateContentBlock(index, e.target.value)}
+                        placeholder={
+                          block.type === 'heading' ? 'Enter heading text' :
+                          block.type === 'key_points' ? 'Enter key points separated by commas' :
+                          'Enter paragraph text'
+                        }
+                        rows={block.type === 'key_points' ? 2 : 4}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-blog-order">Display Order</Label>
+                    <Input
+                      id="edit-blog-order"
+                      type="number"
+                      value={blogFormData.display_order}
+                      onChange={(e) => setBlogFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2 pt-8">
+                    <Switch
+                      id="edit-blog-active"
+                      checked={blogFormData.is_active}
+                      onCheckedChange={(checked) => setBlogFormData(prev => ({ ...prev, is_active: checked }))}
+                    />
+                    <Label htmlFor="edit-blog-active">Active</Label>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsBlogEditDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleEditBlogPost} disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Blog Post Dialog */}
+          <Dialog open={isBlogDeleteDialogOpen} onOpenChange={setIsBlogDeleteDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Blog Post</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete "{blogPostToDelete?.title}"? This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsBlogDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleDeleteBlogPost} disabled={isSubmitting}>
+                  {isSubmitting ? "Deleting..." : "Delete"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </TabsContent>
+
+        <TabsContent value="featured" className="space-y-6">
            <div className="space-y-8">
              <PromotionalBannerManager />
              <HeroCarouselManager />

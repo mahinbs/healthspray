@@ -253,6 +253,105 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          slug: string
+          background_image_url: string | null
+          gradient_from: string | null
+          gradient_to: string | null
+          product_tags: string[]
+          display_order: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          slug: string
+          background_image_url?: string | null
+          gradient_from?: string | null
+          gradient_to?: string | null
+          product_tags?: string[]
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          slug?: string
+          background_image_url?: string | null
+          gradient_from?: string | null
+          gradient_to?: string | null
+          product_tags?: string[]
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          author: string
+          published_date: string
+          image_url: string
+          category_tag: string
+          read_time_minutes: number
+          slug: string
+          is_active: boolean
+          display_order: number
+          detailed_title: string | null
+          detailed_content: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description: string
+          author: string
+          published_date: string
+          image_url: string
+          category_tag: string
+          read_time_minutes?: number
+          slug: string
+          is_active?: boolean
+          display_order?: number
+          detailed_title?: string | null
+          detailed_content?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string
+          author?: string
+          published_date?: string
+          image_url?: string
+          category_tag?: string
+          read_time_minutes?: number
+          slug?: string
+          is_active?: boolean
+          display_order?: number
+          detailed_title?: string | null
+          detailed_content?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       featured_products: {
         Row: {
           created_at: string
