@@ -16,6 +16,7 @@ import { useState, useRef, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { productsService, type AdminProduct } from "@/services/products";
+import { videoInteractionsService, type VideoInteractionData } from "@/services/videoInteractions";
 import { toast } from "sonner";
 
 const ShopByVideo = () => {
@@ -24,6 +25,7 @@ const ShopByVideo = () => {
   const [selectedProduct, setSelectedProduct] = useState<AdminProduct | null>(
     null
   );
+  const [videoInteractions, setVideoInteractions] = useState<{ [key: string]: VideoInteractionData }>({});
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -37,6 +39,7 @@ const ShopByVideo = () => {
   const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
+  const hasTrackedView = useRef<{ [key: string]: boolean }>({});
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -47,7 +50,15 @@ const ShopByVideo = () => {
         setLoading(true);
         const productsWithVideos =
           await productsService.getProductsWithVideos();
-        setProducts(productsWithVideos.slice(0, 6)); // Show first 6 products with videos
+        const productsList = productsWithVideos.slice(0, 6); // Show first 6 products with videos
+        setProducts(productsList);
+        
+        // Load interactions for all products
+        const interactions: { [key: string]: VideoInteractionData } = {};
+        for (const product of productsList) {
+          interactions[product.id] = await videoInteractionsService.getProductInteractions(product.id);
+        }
+        setVideoInteractions(interactions);
       } catch (error) {
         console.error("Error loading products with videos:", error);
         toast.error("Failed to load products");
@@ -219,7 +230,21 @@ const ShopByVideo = () => {
     }
   };
 
-  const handleVideoClick = (product: AdminProduct) => {
+  // Handle video like (separate from wishlist)
+  const handleVideoLike = async (product: AdminProduct) => {
+    try {
+      const updated = await videoInteractionsService.incrementLikes(product.id);
+      setVideoInteractions(prev => ({
+        ...prev,
+        [product.id]: updated,
+      }));
+    } catch (error) {
+      console.error("Error toggling video like:", error);
+      toast.error("Failed to update like");
+    }
+  };
+
+  const handleVideoClick = async (product: AdminProduct) => {
     setSelectedProduct(product);
     setIsVideoModalOpen(true);
     setIsVideoPlaying(false);
@@ -229,31 +254,59 @@ const ShopByVideo = () => {
       clearTimeout(hideControlsTimeoutRef.current);
       hideControlsTimeoutRef.current = null;
     }
+    
+    // Track view when video modal opens (only once per session)
+    if (!hasTrackedView.current[product.id]) {
+      hasTrackedView.current[product.id] = true;
+      await videoInteractionsService.incrementViews(product.id);
+      // Update local state
+      setVideoInteractions(prev => ({
+        ...prev,
+        [product.id]: {
+          ...prev[product.id],
+          views_count: (prev[product.id]?.views_count || 0) + 1,
+        }
+      }));
+    }
   };
 
-  const handleShare = (product: AdminProduct) => {
+  const handleShare = async (product: AdminProduct) => {
     try {
       const shareUrl = window.location.href;
 
       if (navigator.share) {
-        navigator
-          .share({
-            title: product.name,
-            text: product.description ?? "",
-            url: shareUrl,
-          })
-          .catch(() => {
-            // User dismissed share dialog, ignore
-          });
+        await navigator.share({
+          title: product.name,
+          text: product.description ?? "",
+          url: shareUrl,
+        });
+        // Share was successful, increment count
+        await videoInteractionsService.incrementShares(product.id);
+        setVideoInteractions(prev => ({
+          ...prev,
+          [product.id]: {
+            ...prev[product.id],
+            shares_count: (prev[product.id]?.shares_count || 0) + 1,
+          }
+        }));
       } else if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard
-          .writeText(shareUrl)
-          .then(() => toast.success("Link copied to clipboard"))
-          .catch(() => { });
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard");
+        // Increment share count even for clipboard copy
+        await videoInteractionsService.incrementShares(product.id);
+        setVideoInteractions(prev => ({
+          ...prev,
+          [product.id]: {
+            ...prev[product.id],
+            shares_count: (prev[product.id]?.shares_count || 0) + 1,
+          }
+        }));
       }
     } catch (error) {
-      console.error("Error sharing product:", error);
-      toast.error("Unable to share right now");
+      // User dismissed share dialog, don't show error
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error("Error sharing product:", error);
+      }
     }
   };
 
@@ -279,6 +332,10 @@ const ShopByVideo = () => {
     if (modalVideoRef.current) {
       modalVideoRef.current.pause();
     }
+    // Reset view tracking for this product when modal closes
+    if (selectedProduct) {
+      hasTrackedView.current[selectedProduct.id] = false;
+    }
   };
 
   const handleVideoMouseEnter = () => {
@@ -298,7 +355,7 @@ const ShopByVideo = () => {
     }, 1500);
   };
 
-  const handleVideoPlayPause = () => {
+  const handleVideoPlayPause = async () => {
     if (modalVideoRef.current) {
       if (isVideoPlaying) {
         modalVideoRef.current.pause();
@@ -306,6 +363,19 @@ const ShopByVideo = () => {
       } else {
         modalVideoRef.current.play();
         setIsVideoPlaying(true);
+        
+        // Track view when video starts playing (if not already tracked)
+        if (selectedProduct && !hasTrackedView.current[selectedProduct.id]) {
+          hasTrackedView.current[selectedProduct.id] = true;
+          await videoInteractionsService.incrementViews(selectedProduct.id);
+          setVideoInteractions(prev => ({
+            ...prev,
+            [selectedProduct.id]: {
+              ...prev[selectedProduct.id],
+              views_count: (prev[selectedProduct.id]?.views_count || 0) + 1,
+            }
+          }));
+        }
       }
     }
   };
@@ -554,7 +624,21 @@ const ShopByVideo = () => {
                   loop
                   playsInline
                   muted={isMuted}
-                  onPlay={() => setIsVideoPlaying(true)}
+                  onPlay={async () => {
+                    setIsVideoPlaying(true);
+                    // Track view when video starts playing
+                    if (selectedProduct && !hasTrackedView.current[selectedProduct.id]) {
+                      hasTrackedView.current[selectedProduct.id] = true;
+                      await videoInteractionsService.incrementViews(selectedProduct.id);
+                      setVideoInteractions(prev => ({
+                        ...prev,
+                        [selectedProduct.id]: {
+                          ...prev[selectedProduct.id],
+                          views_count: (prev[selectedProduct.id]?.views_count || 0) + 1,
+                        }
+                      }));
+                    }
+                  }}
                   onPause={() => setIsVideoPlaying(false)}
                 />
               ) : (
@@ -579,14 +663,14 @@ const ShopByVideo = () => {
                   )}
                 </button>
               </div>
-              {/* Right-side action buttons (views, wishlist, share, cart) */}
+              {/* Right-side action buttons (views, likes, share, cart) */}
               <div
                 className={`absolute top-16 right-4 flex flex-col items-center space-y-4 text-white bg-black/40 p-2 rounded-xl transition-opacity duration-300 ${showVideoControls ? "opacity-100" : "opacity-0"
                   }`}
               >
                 <div className="flex flex-col items-center">
                   <div className="font-semibold text-base">
-                    {selectedProduct.reviews ?? 0}
+                    {videoInteractions[selectedProduct.id]?.views_count ?? 0}
                   </div>
                   <div className="uppercase tracking-wide text-[10px]">
                     Views
@@ -594,35 +678,37 @@ const ShopByVideo = () => {
                 </div>
                 <div className="flex flex-col items-center">
                   <button
-                    onClick={() => handleToggleWishlist(selectedProduct)}
-                    className={`${isInWishlist(selectedProduct.id)
-                      ? "text-[#ef4e23]"
-                      : "text-white"
-                      }`}
+                    onClick={() => handleVideoLike(selectedProduct)}
+                    className={`transition-colors ${
+                      videoInteractions[selectedProduct.id]?.user_has_liked
+                        ? "text-[#ef4e23]"
+                        : "text-white hover:text-[#ef4e23]"
+                    }`}
                   >
                     <Heart
-                      className={`h-5 w-5 ${isInWishlist(selectedProduct.id) ? "fill-[#ef4e23]" : ""
-                        }`}
+                      className={`h-5 w-5 transition-all ${
+                        videoInteractions[selectedProduct.id]?.user_has_liked ? "fill-[#ef4e23]" : ""
+                      }`}
                     />
                   </button>
                   <span className="text-[12px] font-semibold mt-1">
-                    {selectedProduct.rating ?? 0}
+                    {videoInteractions[selectedProduct.id]?.likes_count ?? 0}
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
                   <button
                     onClick={() => handleShare(selectedProduct)}
-                    className=""
+                    className="text-white hover:text-[#ef4e23] transition-colors"
                   >
                     <Send className="h-5 w-5" />
                   </button>
                   <span className="text-[12px] font-semibold mt-1">
-                    {(selectedProduct.features?.length ?? 0) || 1}
+                    {videoInteractions[selectedProduct.id]?.shares_count ?? 0}
                   </span>
                 </div>
                 <button
                   onClick={() => handleAddToCart(selectedProduct)}
-                  className="mt-2"
+                  className="mt-2 text-white hover:text-[#ef4e23] transition-colors"
                 >
                   <ShoppingCart className="h-5 w-5" />
                 </button>

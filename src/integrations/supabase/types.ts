@@ -352,6 +352,44 @@ export type Database = {
         }
         Relationships: []
       }
+      product_video_interactions: {
+        Row: {
+          id: string
+          product_id: string
+          views_count: number
+          likes_count: number
+          shares_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          views_count?: number
+          likes_count?: number
+          shares_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          views_count?: number
+          likes_count?: number
+          shares_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_video_interactions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       featured_products: {
         Row: {
           created_at: string
