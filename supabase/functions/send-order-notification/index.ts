@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { parseOrderBreakdown, formatRs } from "../_shared/orderBreakdown.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -94,12 +95,15 @@ function buildEmailHTML(order: Record<string, unknown>, eventType: string): stri
   const invoiceNumber = (order.invoice_number as string) ?? "";
   const orderId       = ((order.id as string) ?? "").substring(0, 8).toUpperCase();
   const trackUrl      = trackOrderUrl(order);
-  const payMode       = (order.payment_mode as string) ?? "Online Payment";
-  const totalPaise    = order.amount as number;
-  const discPaise     = (order.coupon_discount as number) ?? 0;
-  const couponCode    = (order.coupon_code as string) ?? "";
+  const b = parseOrderBreakdown(order);
+  const payMode = b.paymentModeLabel;
+  const couponCode = (order.coupon_code as string) ?? "";
+  const productsPaise = Math.round(b.productsSubtotalRupees * 100);
+  const discPaise = Math.round(b.discountRupees * 100);
+  const shippingPaise = Math.round(b.shippingRupees * 100);
+  const merchantPaise = order.amount as number;
 
-  const formatRs = (p: number) =>
+  const formatRsPaise = (p: number) =>
     `₹${(p / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
 
   const formatDate = (iso: string) =>
@@ -118,11 +122,9 @@ function buildEmailHTML(order: Record<string, unknown>, eventType: string): stri
         </div>
       </td>
       <td style="padding:14px 16px;border-bottom:1px solid #f3f4f6;text-align:center;color:#6b7280;font-size:14px;">×${item.quantity}</td>
-      <td style="padding:14px 16px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:600;color:#111827;font-size:14px;">${formatRs((item.product?.price ?? 0) * item.quantity * 100)}</td>
+      <td style="padding:14px 16px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:600;color:#111827;font-size:14px;">${formatRs((item.product?.price ?? 0) * item.quantity)}</td>
     </tr>
   `).join("");
-
-  const subtotal = totalPaise + discPaise;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -246,18 +248,8 @@ function buildEmailHTML(order: Record<string, unknown>, eventType: string): stri
             <td style="padding:12px 20px;border-bottom:1px solid #f3f4f6;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="color:#6b7280;font-size:13px;">Subtotal</td>
-                  <td style="text-align:right;font-size:13px;color:#111827;font-weight:500;">${formatRs(subtotal)}</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:12px 20px;border-bottom:1px solid #f3f4f6;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="color:#6b7280;font-size:13px;">Shipping</td>
-                  <td style="text-align:right;font-size:13px;color:#16a34a;font-weight:600;">FREE</td>
+                  <td style="color:#6b7280;font-size:13px;">Products subtotal</td>
+                  <td style="text-align:right;font-size:13px;color:#111827;font-weight:500;">${formatRsPaise(productsPaise)}</td>
                 </tr>
               </table>
             </td>
@@ -268,18 +260,48 @@ function buildEmailHTML(order: Record<string, unknown>, eventType: string): stri
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td style="color:#6b7280;font-size:13px;">Discount ${couponCode ? `<span style="background:#fef3c7;color:#d97706;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700;">${couponCode}</span>` : ""}</td>
-                  <td style="text-align:right;font-size:13px;color:#16a34a;font-weight:600;">- ${formatRs(discPaise)}</td>
+                  <td style="text-align:right;font-size:13px;color:#16a34a;font-weight:600;">- ${formatRsPaise(discPaise)}</td>
                 </tr>
               </table>
             </td>
           </tr>` : ""}
-          <!-- Total Row -->
+          <tr>
+            <td style="padding:12px 20px;border-bottom:1px solid #f3f4f6;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="color:#6b7280;font-size:13px;">Delivery</td>
+                  <td style="text-align:right;font-size:13px;color:${shippingPaise === 0 ? '#16a34a' : '#111827'};font-weight:600;">${shippingPaise === 0 ? 'FREE' : formatRsPaise(shippingPaise)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:12px 20px;border-bottom:1px solid #f3f4f6;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="color:#6b7280;font-size:13px;">Order total</td>
+                  <td style="text-align:right;font-size:13px;color:#111827;font-weight:600;">${formatRsPaise(merchantPaise)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ${b.serviceChargeRupees > 0 ? `
+          <tr>
+            <td style="padding:12px 20px;border-bottom:1px solid #f3f4f6;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="color:#6b7280;font-size:13px;">Gateway fee (${payMode})</td>
+                  <td style="text-align:right;font-size:13px;color:#111827;font-weight:500;">${formatRs(b.serviceChargeRupees)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>` : ""}
           <tr>
             <td style="padding:16px 20px;background:linear-gradient(135deg,${BRAND_ORANGE},${BRAND_DARK});">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="color:#fff;font-size:15px;font-weight:700;letter-spacing:0.3px;">TOTAL AMOUNT</td>
-                  <td style="text-align:right;color:#fff;font-size:18px;font-weight:800;">${formatRs(totalPaise)}</td>
+                  <td style="color:#fff;font-size:15px;font-weight:700;letter-spacing:0.3px;">${b.serviceChargeRupees > 0 ? 'TOTAL PAID' : 'TOTAL AMOUNT'}</td>
+                  <td style="text-align:right;color:#fff;font-size:18px;font-weight:800;">${formatRs(b.customerPaidRupees)}</td>
                 </tr>
               </table>
             </td>

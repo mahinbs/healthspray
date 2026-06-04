@@ -6,6 +6,8 @@ import { ArrowLeft, Package2, MapPin, Download, CreditCard, FileText, RefreshCw 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
+import { getOrderBreakdown, formatRs } from '@/lib/orderBreakdown';
 
 interface Product {
   id: string;
@@ -45,6 +47,10 @@ interface Order {
   invoice_generated_at?: string;
   coupon_code?: string;
   coupon_discount?: number;
+  shipping_fee?: number;
+  service_charge?: number;
+  total_paid?: number;
+  payment_sub_inst_type?: string;
 }
 
 const OrderDetails: React.FC = () => {
@@ -147,7 +153,7 @@ const OrderDetails: React.FC = () => {
     }
   };
 
-  const subtotal = order.amount + (order.coupon_discount ?? 0);
+  const breakdown = getOrderBreakdown(order);
 
   return (
     <div className="min-h-screen bg-background">
@@ -173,7 +179,11 @@ const OrderDetails: React.FC = () => {
                     year: 'numeric', month: 'long', day: 'numeric'
                   })}
                 </span>
-                <span>Total ₹{(order.amount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <span>
+                  {breakdown.hasServiceCharge
+                    ? `Paid ${formatRs(breakdown.customerPaidRupees)}`
+                    : `Total ${formatRs(breakdown.merchantTotalRupees)}`}
+                </span>
                 {order.invoice_number && (
                   <span className="flex items-center gap-1">
                     <FileText className="h-3 w-3" />
@@ -246,26 +256,7 @@ const OrderDetails: React.FC = () => {
             {/* Order Summary */}
             <div className="bg-card border rounded-lg p-4">
               <h3 className="font-medium mb-3">Order Summary</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>₹{(subtotal / 100).toFixed(2)}</span>
-                </div>
-                {(order.coupon_discount ?? 0) > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount ({order.coupon_code})</span>
-                    <span>- ₹{((order.coupon_discount ?? 0) / 100).toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Delivery</span>
-                  <span className="text-green-600">FREE</span>
-                </div>
-                <div className="border-t pt-2 flex justify-between font-semibold">
-                  <span>Total</span>
-                  <span>₹{(order.amount / 100).toFixed(2)}</span>
-                </div>
-              </div>
+              <OrderPriceBreakdown order={order} status={order.status} />
             </div>
 
             {/* Shipping Address */}

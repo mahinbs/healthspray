@@ -52,7 +52,7 @@ serve(async (req) => {
       const { data, error } = await supabaseService
         .from("orders")
         .select(
-          "id, amount, status, items, delivery_address, created_at, updated_at, invoice_number, invoice_url, guest_email, user_id, coupon_code, coupon_discount"
+          "id, amount, status, items, delivery_address, created_at, updated_at, invoice_number, invoice_url, guest_email, user_id, coupon_code, coupon_discount, shipping_fee, service_charge, total_paid, payment_mode, payment_sub_inst_type"
         )
         .eq("id", idInput)
         .maybeSingle();
@@ -109,6 +109,11 @@ serve(async (req) => {
           invoice_url: order.invoice_url,
           coupon_code: order.coupon_code,
           coupon_discount: order.coupon_discount,
+          shipping_fee: order.shipping_fee,
+          service_charge: order.service_charge,
+          total_paid: order.total_paid,
+          payment_mode: order.payment_mode,
+          payment_sub_inst_type: order.payment_sub_inst_type,
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }

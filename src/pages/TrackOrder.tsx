@@ -10,6 +10,8 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/services/api';
+import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
+import { getOrderBreakdown, formatRs } from '@/lib/orderBreakdown';
 import { Loader2, Package, Search, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -25,6 +27,11 @@ interface TrackedOrder {
   invoice_url?: string;
   coupon_code?: string;
   coupon_discount?: number;
+  shipping_fee?: number;
+  service_charge?: number;
+  total_paid?: number;
+  payment_mode?: string;
+  payment_sub_inst_type?: string;
 }
 
 const statusLabel: Record<string, string> = {
@@ -144,7 +151,9 @@ const TrackOrder = () => {
           )}
         </GlassCard>
 
-        {order && (
+        {order && (() => {
+          const b = getOrderBreakdown(order);
+          return (
           <GlassCard className="p-6 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -169,9 +178,16 @@ const TrackOrder = () => {
                 </p>
               </div>
               <div>
-                <p className="text-muted-foreground">Total</p>
-                <p className="font-semibold text-green-600">{formatPrice(order.amount / 100)}</p>
+                <p className="text-muted-foreground">Total paid</p>
+                <p className="font-semibold text-green-600">
+                  {b.hasServiceCharge ? formatRs(b.customerPaidRupees) : formatPrice(order.amount / 100)}
+                </p>
               </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-2">Payment breakdown</p>
+              <OrderPriceBreakdown order={order} status={order.status} compact />
             </div>
 
             {order.delivery_address?.fullName && (
@@ -208,7 +224,8 @@ const TrackOrder = () => {
               </Button>
             )}
           </GlassCard>
-        )}
+          );
+        })()}
       </div>
       <Footer />
     </Layout>

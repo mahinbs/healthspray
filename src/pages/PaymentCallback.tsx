@@ -6,6 +6,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
 
 interface OrderInfo {
   id: string;
@@ -14,6 +15,12 @@ interface OrderInfo {
   amount: number;
   status: string;
   delivery_address: Record<string, string>;
+  coupon_code?: string;
+  coupon_discount?: number;
+  shipping_fee?: number;
+  service_charge?: number;
+  total_paid?: number;
+  payment_mode?: string;
 }
 
 const PaymentCallback: React.FC = () => {
@@ -50,7 +57,7 @@ const PaymentCallback: React.FC = () => {
       if (user) {
         const { data } = await supabase
           .from('orders')
-          .select('id, amount, status, delivery_address, invoice_number, invoice_url')
+          .select('id, amount, status, delivery_address, invoice_number, invoice_url, coupon_code, coupon_discount, shipping_fee, service_charge, total_paid, payment_mode')
           .eq('id', id)
           .single();
         if (data) setOrder(data as OrderInfo);
@@ -115,10 +122,9 @@ const PaymentCallback: React.FC = () => {
                 <Copy className="h-3 w-3" />Copy full order ID for tracking
               </button>
             )}
-            {order?.amount && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Amount Paid</span>
-                <span className="font-semibold text-green-600">₹{(order.amount / 100).toFixed(2)}</span>
+            {order?.amount != null && (
+              <div className="border-t pt-2 mt-2">
+                <OrderPriceBreakdown order={order} status={order.status ?? 'paid'} compact />
               </div>
             )}
             {(order?.delivery_address as Record<string, string>)?.fullName && (

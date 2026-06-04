@@ -146,3 +146,10 @@ CREATE POLICY "Admins manage store settings"
   ON public.store_settings FOR ALL
   USING (public.is_admin())
   WITH CHECK (public.is_admin());
+
+-- Order payment breakdown (ICICI gateway fee, shipping, total paid)
+ALTER TABLE public.orders
+  ADD COLUMN IF NOT EXISTS service_charge numeric DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS total_paid numeric,
+  ADD COLUMN IF NOT EXISTS shipping_fee numeric DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS payment_sub_inst_type text;

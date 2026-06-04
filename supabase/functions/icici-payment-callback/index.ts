@@ -1,5 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import {
+  calculateServiceCharge,
+  formatPaymentModeLabel,
+} from "../_shared/orderBreakdown.ts";
 
 // This function receives POST from ICICI (browser redirect after payment)
 // verify_jwt = false in config.toml
@@ -110,12 +114,13 @@ serve(async (req) => {
 
     log("SecureHash verified OK");
 
-    const merchantTxnNo = params.merchantTxnNo ?? "";
-    const responseCode = params.responseCode ?? "";
-    const isSuccess = responseCode === "0000";
-    const iciciTxnId = params.txnID ?? "";
-    const iciciPaymentId = params.paymentID ?? "";
-    const paymentMode = params.paymentMode ?? "";
+    const merchantTxnNo    = params.merchantTxnNo ?? "";
+    const responseCode     = params.responseCode ?? "";
+    const isSuccess        = responseCode === "0000";
+    const iciciTxnId       = params.txnID ?? "";
+    const iciciPaymentId   = params.paymentID ?? "";
+    const paymentMode      = params.paymentMode ?? "";
+    const paymentSubInst   = params.paymentSubInstType ?? "";
 
     if (!merchantTxnNo) {
       errLog("No merchantTxnNo in callback");
@@ -152,14 +157,26 @@ serve(async (req) => {
 
     const newStatus = isSuccess ? "paid" : "failed";
 
+    // Calculate service charge based on payment mode
+    const amountRupees = (order.amount as number) / 100;
+    const serviceCharge = isSuccess
+      ? calculateServiceCharge(amountRupees, paymentMode, paymentSubInst)
+      : 0;
+    const totalPaid = isSuccess ? amountRupees + serviceCharge : amountRupees;
+
     // Update order status and ICICI details
+    const paymentModeLabel = formatPaymentModeLabel(paymentMode, paymentSubInst);
+
     const { error: updateErr } = await supabaseService
       .from("orders")
       .update({
         status: newStatus,
         icici_txn_id: iciciTxnId,
         icici_payment_id: iciciPaymentId,
-        payment_mode: paymentMode,
+        payment_mode: paymentModeLabel,
+        payment_sub_inst_type: paymentSubInst || null,
+        service_charge: serviceCharge,
+        total_paid: totalPaid,
         updated_at: new Date().toISOString(),
       })
       .eq("id", order.id);
@@ -170,38 +187,40 @@ serve(async (req) => {
       log("Order updated", { orderId: order.id, status: newStatus });
     }
 
-    // Handle coupon usage on success
+    // Handle coupon usage on success — wrapped in try/catch so it never crashes the redirect
     if (isSuccess && order.coupon_code) {
-      const { data: coupon } = await supabaseService
-        .from('coupons')
-        .select('id')
-        .eq('code', order.coupon_code)
-        .maybeSingle();
+      try {
+        const { data: coupon } = await supabaseService
+          .from('coupons')
+          .select('id')
+          .eq('code', order.coupon_code)
+          .maybeSingle();
 
-      if (coupon?.id) {
-        if (order.user_id) {
-          // Logged-in user coupon usage
-          await supabaseService.from('coupon_usages').insert({
-            coupon_id: coupon.id,
-            user_id: order.user_id,
-            order_id: order.id,
-          }).catch(() => {});
-        } else {
-          // Guest user coupon usage — track by email + phone
-          const addr = (order.delivery_address ?? {}) as Record<string, string>;
-          const guestEmail = (order.guest_email as string) ?? addr.email ?? null;
-          const guestPhone = addr.phone ?? null;
-          if (guestEmail || guestPhone) {
-            await supabaseService.from('guest_coupon_usages').insert({
+        if (coupon?.id) {
+          if (order.user_id) {
+            await supabaseService.from('coupon_usages').insert({
               coupon_id: coupon.id,
-              coupon_code: order.coupon_code,
-              email: guestEmail,
-              phone: guestPhone,
+              user_id: order.user_id,
               order_id: order.id,
-            }).catch(() => {});
+            });
+          } else {
+            const addrLocal = (order.delivery_address ?? {}) as Record<string, string>;
+            const guestEmail = (order.guest_email as string) ?? addrLocal.email ?? null;
+            const guestPhone = addrLocal.phone ?? null;
+            if (guestEmail || guestPhone) {
+              await supabaseService.from('guest_coupon_usages').insert({
+                coupon_id: coupon.id,
+                coupon_code: order.coupon_code,
+                email: guestEmail,
+                phone: guestPhone,
+                order_id: order.id,
+              });
+            }
           }
+          await supabaseService.rpc('increment_coupon_total_usage', { code: order.coupon_code });
         }
-        await supabaseService.rpc('increment_coupon_total_usage', { code: order.coupon_code }).catch(() => {});
+      } catch (couponErr) {
+        errLog("Coupon recording error (non-fatal)", couponErr);
       }
     }
 
@@ -255,7 +274,7 @@ serve(async (req) => {
           "Authorization": `Bearer ${serviceKey}`,
         },
         body: JSON.stringify({ orderId: order.id, eventType: "payment_failed" }),
-      }).catch(() => {});
+      }).then(() => {}).catch(() => {});
     }
 
     const status = isSuccess ? "success" : "failed";

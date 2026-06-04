@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { PDFDocument, rgb, StandardFonts, degrees } from "https://esm.sh/pdf-lib@1.17.1";
+import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
+import { parseOrderBreakdown } from "../_shared/orderBreakdown.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -223,21 +224,40 @@ async function buildInvoicePDF(order: Record<string, unknown>, invoiceNumber: st
     ty -= 20;
   };
 
-  const subtotalPaise = (order.amount as number) + ((order.coupon_discount as number) ?? 0);
-  const discount = (order.coupon_discount as number) ?? 0;
-  const total = order.amount as number;
+  const b = parseOrderBreakdown(order);
+  const productsPaise = Math.round(b.productsSubtotalRupees * 100);
+  const discountPaise = Math.round(b.discountRupees * 100);
+  const shippingPaise = Math.round(b.shippingRupees * 100);
+  const merchantPaise = order.amount as number;
 
-  drawTotalRow("Subtotal", formatRupees(subtotalPaise));
-  drawTotalRow("Shipping", "FREE", false, GREEN);
-  if (discount > 0) {
-    drawTotalRow(`Discount (${order.coupon_code ?? ""})`, `- ${formatRupees(discount)}`, false, GREEN);
+  drawTotalRow("Products Subtotal", formatRupees(productsPaise));
+  if (discountPaise > 0) {
+    drawTotalRow(`Discount (${order.coupon_code ?? ""})`, `- ${formatRupees(discountPaise)}`, false, GREEN);
+  }
+  drawTotalRow(
+    "Delivery",
+    shippingPaise === 0 ? "FREE" : formatRupees(shippingPaise),
+    false,
+    shippingPaise === 0 ? GREEN : NEAR_BLACK
+  );
+  drawTotalRow("Order Total (Merchant)", formatRupees(merchantPaise));
+  if (b.serviceChargeRupees > 0) {
+    drawTotalRow(
+      `Payment Gateway Fee (${b.paymentModeLabel})`,
+      `Rs. ${b.serviceChargeRupees.toFixed(2)}`,
+      false,
+      GRAY_600
+    );
   }
 
   ty -= 4;
-  // Grand total highlight
   page.drawRectangle({ x: totalsX - 8, y: ty - 8, width: W - totalsX + 8 - 36, height: 26, color: BRAND_ORANGE });
-  page.drawText("GRAND TOTAL", { x: totalsX, y: ty, font: fontBold, size: 11, color: WHITE });
-  page.drawText(formatRupees(total), { x: totalsValX - 10, y: ty, font: fontBold, size: 12, color: WHITE });
+  page.drawText(b.serviceChargeRupees > 0 ? "TOTAL PAID BY CUSTOMER" : "GRAND TOTAL", {
+    x: totalsX, y: ty, font: fontBold, size: 10, color: WHITE,
+  });
+  page.drawText(`Rs. ${b.customerPaidRupees.toFixed(2)}`, {
+    x: totalsValX - 10, y: ty, font: fontBold, size: 12, color: WHITE,
+  });
 
   // ─── Notes Box ───────────────────────────────────────────────────────────────
   const notesY = ty - 40;

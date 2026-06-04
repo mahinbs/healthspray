@@ -13,6 +13,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { formatPrice } from '@/services/api';
+import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
+import { getOrderBreakdown, formatRs } from '@/lib/orderBreakdown';
 import { toast } from 'sonner';
 
 interface AdminOrder {
@@ -34,6 +36,10 @@ interface AdminOrder {
   invoice_generated_at?: string;
   coupon_code?: string;
   coupon_discount?: number;
+  shipping_fee?: number;
+  service_charge?: number;
+  total_paid?: number;
+  payment_sub_inst_type?: string;
   return_reason?: string;
   return_requested_at?: string;
   refunded_at?: string;
@@ -325,7 +331,12 @@ const OrderManagement: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell className="font-semibold text-sm">
-                      {formatPrice(order.amount / 100)}
+                      <div>{formatRs(getOrderBreakdown(order).customerPaidRupees)}</div>
+                      {getOrderBreakdown(order).hasServiceCharge && (
+                        <div className="text-[10px] text-muted-foreground font-normal">
+                          Merchant {formatRs(getOrderBreakdown(order).merchantTotalRupees)}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {order.payment_mode || '—'}
@@ -391,6 +402,11 @@ const OrderManagement: React.FC = () => {
                                       </p>
                                     </div>
                                   </div>
+                                </div>
+
+                                <div className="bg-muted/30 rounded-lg p-4">
+                                  <h4 className="font-semibold mb-3 text-sm uppercase text-muted-foreground">Payment breakdown</h4>
+                                  <OrderPriceBreakdown order={selectedOrder} status={selectedOrder.status} admin />
                                 </div>
 
                                 {/* Items */}

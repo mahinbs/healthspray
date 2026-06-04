@@ -255,6 +255,7 @@ serve(async (req) => {
         coupon_type: coupon?.type || null,
         coupon_value: coupon?.value ?? null,
         coupon_discount: coupon?.discount ?? null,
+        shipping_fee: shippingFee,
       })
       .select()
       .single();
