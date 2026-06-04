@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 interface LoginProps {
   onSwitchToRegister: () => void;
   onClose?: () => void;
@@ -19,9 +21,9 @@ export function Login({
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const {
-    signIn
-  } = useAuth();
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -32,12 +34,26 @@ export function Login({
       return;
     }
     try {
-      const {
-        error
-      } = await signIn(email, password);
+      const { error } = await signIn(email, password);
       if (error) {
         setError(error.message);
       } else {
+        // Check if this user is an admin
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: adminRecord } = await supabase
+            .from('admin_users')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .maybeSingle();
+
+          if (adminRecord) {
+            onClose?.();
+            navigate('/admin');
+            return;
+          }
+        }
         onClose?.();
       }
     } catch (err) {
