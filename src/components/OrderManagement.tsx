@@ -15,6 +15,8 @@ import { Label } from '@/components/ui/label';
 import { formatPrice } from '@/services/api';
 import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
 import { getOrderBreakdown, formatRs } from '@/lib/orderBreakdown';
+import { getDeliveryTimestamp, getReturnDeadline, formatDateIN } from '@/lib/returnPolicy';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { toast } from 'sonner';
 
 interface AdminOrder {
@@ -27,6 +29,7 @@ interface AdminOrder {
   delivery_address: any;
   created_at: string;
   updated_at: string;
+  delivered_at?: string | null;
   payment_mode?: string;
   icici_txn_id?: string;
   icici_txn_no?: string;
@@ -73,6 +76,7 @@ const OrderManagement: React.FC = () => {
   const [processingRefund, setProcessingRefund] = useState<string | null>(null);
   const [returnReason, setReturnReason] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const { settings: storeSettings } = useStoreSettings();
 
   useEffect(() => { fetchOrders(); }, []);
 
@@ -109,8 +113,20 @@ const OrderManagement: React.FC = () => {
         .eq('id', orderId);
       if (error) throw error;
 
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-      if (selectedOrder?.id === orderId) setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : prev);
+      setOrders(prev => prev.map(o => o.id === orderId ? {
+        ...o,
+        status: newStatus,
+        updated_at: now,
+        ...(newStatus === 'delivered' ? { delivered_at: now } : {}),
+      } : o));
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(prev => prev ? {
+          ...prev,
+          status: newStatus,
+          updated_at: now,
+          ...(newStatus === 'delivered' ? { delivered_at: now } : {}),
+        } : prev);
+      }
       toast.success('Order status updated');
 
       // Auto-send notification for key status changes
@@ -389,7 +405,33 @@ const OrderManagement: React.FC = () => {
                                   <div>
                                     <h4 className="font-semibold mb-2 text-sm uppercase text-muted-foreground">Order Info</h4>
                                     <div className="space-y-1 text-sm">
-                                      <p><span className="font-medium">Date:</span> {new Date(selectedOrder.created_at).toLocaleString()}</p>
+                                      <p><span className="font-medium">Placed:</span> {new Date(selectedOrder.created_at).toLocaleString('en-IN')}</p>
+                                      {(() => {
+                                        const deliveredAt = getDeliveryTimestamp(selectedOrder);
+                                        if (!deliveredAt) return null;
+                                        const windowDays = storeSettings.return_window_days ?? 7;
+                                        const returnUntil = storeSettings.returns_enabled
+                                          ? getReturnDeadline(deliveredAt, windowDays)
+                                          : null;
+                                        return (
+                                          <>
+                                            <p>
+                                              <span className="font-medium">Delivered on:</span>{' '}
+                                              <span className="text-green-700 dark:text-green-400">
+                                                {deliveredAt.toLocaleString('en-IN')}
+                                              </span>
+                                              {!selectedOrder.delivered_at && (
+                                                <span className="text-muted-foreground text-xs ml-1">(from status update)</span>
+                                              )}
+                                            </p>
+                                            {returnUntil && (
+                                              <p className="text-muted-foreground text-xs">
+                                                Return window ends {formatDateIN(returnUntil)} ({windowDays} days)
+                                              </p>
+                                            )}
+                                          </>
+                                        );
+                                      })()}
                                       <p><span className="font-medium">Amount:</span> {formatPrice(selectedOrder.amount / 100)}</p>
                                       <p><span className="font-medium">Status:</span> {getStatusBadge(selectedOrder.status)}</p>
                                       {selectedOrder.payment_mode && <p><span className="font-medium">Payment Mode:</span> {selectedOrder.payment_mode}</p>}
