@@ -87,27 +87,72 @@ serve(async (req) => {
 
     let discount = 0;
     if (coupon?.code) {
-      const { data: dbCoupon } = await supabaseClient
+      const { data: dbCoupon } = await supabaseService
         .from('coupons')
         .select('*')
         .eq('code', coupon.code)
         .eq('is_active', true)
         .maybeSingle();
 
-      if (dbCoupon) {
-        const now = new Date();
-        if (now >= new Date(dbCoupon.starts_at) && now <= new Date(dbCoupon.ends_at)) {
-          if (dbCoupon.type === 'percentage') {
-            discount = subtotal * Number(dbCoupon.value) / 100;
-            if (dbCoupon.max_discount != null) {
-              discount = Math.min(discount, Number(dbCoupon.max_discount));
-            }
-          } else {
-            discount = Number(dbCoupon.value);
-          }
-          discount = Math.min(discount, subtotal);
+      if (!dbCoupon) throw new Error("Invalid or inactive coupon");
+
+      // Visibility check: members_only coupons blocked for guests
+      if (!user && dbCoupon.visibility === 'members_only') {
+        throw new Error("This coupon is only available for registered members. Please sign in.");
+      }
+
+      const now = new Date();
+      if (now < new Date(dbCoupon.starts_at) || now > new Date(dbCoupon.ends_at)) {
+        throw new Error("Coupon has expired");
+      }
+
+      if (dbCoupon.total_usage_limit != null && dbCoupon.total_usage >= dbCoupon.total_usage_limit) {
+        throw new Error("Coupon usage limit reached");
+      }
+
+      // Guest usage check: by email AND/OR phone
+      if (!user) {
+        const guestEmail = deliveryAddress.email ?? body.guestEmail ?? null;
+        const guestPhone = deliveryAddress.phone ?? null;
+
+        const { data: guestUsed } = await supabaseService
+          .from('guest_coupon_usages')
+          .select('id')
+          .eq('coupon_code', coupon.code)
+          .or(
+            [
+              guestEmail ? `email.eq.${guestEmail}` : null,
+              guestPhone ? `phone.eq.${guestPhone}` : null,
+            ].filter(Boolean).join(',')
+          )
+          .limit(1)
+          .maybeSingle();
+
+        if (guestUsed) {
+          throw new Error("You have already used this coupon. Each coupon can only be used once per customer.");
+        }
+      } else {
+        // Logged-in user per-user usage check
+        const { count: usedCount } = await supabaseService
+          .from('coupon_usages')
+          .select('id', { count: 'exact', head: true })
+          .eq('coupon_id', dbCoupon.id)
+          .eq('user_id', user.id);
+
+        if ((usedCount ?? 0) >= dbCoupon.usage_limit_per_user) {
+          throw new Error(`You've already used this coupon (limit: ${dbCoupon.usage_limit_per_user} per user)`);
         }
       }
+
+      if (dbCoupon.type === 'percentage') {
+        discount = subtotal * Number(dbCoupon.value) / 100;
+        if (dbCoupon.max_discount != null) {
+          discount = Math.min(discount, Number(dbCoupon.max_discount));
+        }
+      } else {
+        discount = Number(dbCoupon.value);
+      }
+      discount = Math.min(discount, subtotal);
     } else if (coupon?.discount != null) {
       discount = Math.min(Number(coupon.discount), subtotal);
     }

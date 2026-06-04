@@ -308,12 +308,20 @@ serve(async (req) => {
     }
 
     // Generate invoice number using DB sequence
-    const { data: seqData } = await supabaseService
-      .rpc("nextval", { seq: "invoice_number_seq" })
-      .maybeSingle()
-      .catch(() => ({ data: null }));
-
-    const seqNum = seqData ?? (Date.now() % 900000) + 1000;
+    let seqNum: number;
+    try {
+      const { data: seqData, error: seqErr } = await supabaseService
+        .rpc("get_next_invoice_number");
+      if (seqErr || !seqData) throw seqErr;
+      seqNum = Number(seqData);
+    } catch {
+      // Fallback: count existing invoices + offset
+      const { count } = await supabaseService
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .not("invoice_number", "is", null);
+      seqNum = 1000 + (count ?? 0) + 1;
+    }
     const year = new Date().getFullYear();
     const invoiceNumber = `INV-${year}-${String(seqNum).padStart(6, "0")}`;
     const appUrl = Deno.env.get("APP_URL") ?? "";

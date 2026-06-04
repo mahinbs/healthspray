@@ -89,10 +89,13 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
 
       const now = new Date();
       const validCoupons =
-        (coupons as CouponRow[])?.filter((coupon) => {
+        (coupons as (CouponRow & { visibility?: string })[])?.filter((coupon) => {
           const startDate = new Date(coupon.starts_at);
           const endDate = new Date(coupon.ends_at);
-          return now >= startDate && now <= endDate;
+          const withinDates = now >= startDate && now <= endDate;
+          // Hide members_only coupons from guests
+          const visibleToUser = coupon.visibility !== 'members_only' || !!user;
+          return withinDates && visibleToUser;
         }) ?? [];
 
       setAvailableCoupons(validCoupons);

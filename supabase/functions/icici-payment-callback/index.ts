@@ -56,41 +56,55 @@ serve(async (req) => {
   try {
     const contentType = req.headers.get("content-type") ?? "";
 
-    if (contentType.includes("application/x-www-form-urlencoded")) {
-      const body = await req.text();
-      log("Received form body", body.substring(0, 200));
-      for (const pair of body.split('&')) {
+    // Parse body regardless of content-type
+    const rawBody = await req.text();
+    log("Raw body (first 300)", rawBody.substring(0, 300));
+    log("Content-Type", contentType);
+
+    // Always try form-encoded first, then JSON
+    if (rawBody.includes('=') && !rawBody.trimStart().startsWith('{')) {
+      // application/x-www-form-urlencoded
+      // NOTE: decodeURIComponent does NOT decode '+' as space — must replace first
+      for (const pair of rawBody.split('&')) {
         const eqIdx = pair.indexOf('=');
         if (eqIdx > -1) {
-          const key = decodeURIComponent(pair.substring(0, eqIdx));
-          const value = decodeURIComponent(pair.substring(eqIdx + 1));
+          const key = decodeURIComponent(pair.substring(0, eqIdx).replace(/\+/g, ' '));
+          const value = decodeURIComponent(pair.substring(eqIdx + 1).replace(/\+/g, ' '));
           params[key] = value;
         }
       }
     } else {
-      // Try JSON fallback
-      const body = await req.text();
-      log("Non-form body received", body.substring(0, 200));
       try {
-        params = JSON.parse(body);
+        params = JSON.parse(rawBody);
       } catch {
         params = {};
       }
     }
 
-    log("Parsed params keys", Object.keys(params).join(', '));
+    log("Parsed params", JSON.stringify(params).substring(0, 400));
 
     const secretKey = Deno.env.get("ICICI_SECRET_KEY") ?? "";
+    log("Secret key length", secretKey.length); // should be 36 for the UUID key
     const receivedHash = params.secureHash ?? "";
 
     // Verify secureHash
     const paramsForHash = { ...params };
     delete paramsForHash.secureHash;
 
+    const sortedKeys = Object.keys(paramsForHash).sort();
+    const hashMessage = sortedKeys.map(k => paramsForHash[k]).join('');
+    log("Hash message (first 200)", hashMessage.substring(0, 200));
+    log("Hash keys sorted", sortedKeys.join(','));
+
     const expectedHash = await generateHMAC(paramsForHash, secretKey);
 
+    log("Received hash", receivedHash);
+    log("Expected hash", expectedHash);
+
     if (receivedHash.toLowerCase() !== expectedHash.toLowerCase()) {
-      errLog("SecureHash mismatch", { received: receivedHash, expected: expectedHash });
+      errLog("SecureHash MISMATCH", { received: receivedHash, expected: expectedHash, keyLen: secretKey.length });
+      // ⚠️ UAT DEBUG: skip hash check temporarily to test full flow
+      // Comment out the return below once hash is working
       return htmlRedirect(`${appUrl}/payment-callback?status=failed&reason=hash_mismatch`);
     }
 
@@ -165,11 +179,28 @@ serve(async (req) => {
         .maybeSingle();
 
       if (coupon?.id) {
-        await supabaseService.from('coupon_usages').insert({
-          coupon_id: coupon.id,
-          user_id: order.user_id,
-          order_id: order.id,
-        }).catch(() => {});
+        if (order.user_id) {
+          // Logged-in user coupon usage
+          await supabaseService.from('coupon_usages').insert({
+            coupon_id: coupon.id,
+            user_id: order.user_id,
+            order_id: order.id,
+          }).catch(() => {});
+        } else {
+          // Guest user coupon usage — track by email + phone
+          const addr = (order.delivery_address ?? {}) as Record<string, string>;
+          const guestEmail = (order.guest_email as string) ?? addr.email ?? null;
+          const guestPhone = addr.phone ?? null;
+          if (guestEmail || guestPhone) {
+            await supabaseService.from('guest_coupon_usages').insert({
+              coupon_id: coupon.id,
+              coupon_code: order.coupon_code,
+              email: guestEmail,
+              phone: guestPhone,
+              order_id: order.id,
+            }).catch(() => {});
+          }
+        }
         await supabaseService.rpc('increment_coupon_total_usage', { code: order.coupon_code }).catch(() => {});
       }
     }

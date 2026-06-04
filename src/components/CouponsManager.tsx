@@ -44,6 +44,7 @@ const CouponsManager: React.FC = () => {
   const [isActive, setIsActive] = useState(true);
   const [description, setDescription] = useState('');
   const [minCartValue, setMinCartValue] = useState('');
+  const [visibility, setVisibility] = useState<'public' | 'members_only'>('public');
 
   const load = async () => {
     const { data } = await supabase
@@ -68,6 +69,7 @@ const CouponsManager: React.FC = () => {
     setIsActive(true);
     setDescription('');
     setMinCartValue('');
+    setVisibility('public');
     setEditingCoupon(null);
   };
 
@@ -89,6 +91,7 @@ const CouponsManager: React.FC = () => {
     setIsActive(coupon.is_active);
     setDescription(coupon.description || '');
     setMinCartValue(coupon.min_cart_value?.toString() || '');
+    setVisibility((coupon as any).visibility || 'public');
     setIsDialogOpen(true);
   };
 
@@ -112,6 +115,7 @@ const CouponsManager: React.FC = () => {
         is_active: isActive,
         description: description.trim() || null,
         min_cart_value: minCartValue ? Number(minCartValue) : null,
+        visibility,
       };
 
       if (editingCoupon) {
@@ -198,8 +202,13 @@ const CouponsManager: React.FC = () => {
                   {c.min_cart_value && (
                     <div>Min cart: ₹{c.min_cart_value}</div>
                   )}
-                  <div className={`font-medium ${c.is_active ? 'text-green-600' : 'text-red-600'}`}>
-                    {c.is_active ? 'Active' : 'Inactive'}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`font-medium text-sm ${c.is_active ? 'text-green-600' : 'text-red-600'}`}>
+                      {c.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${(c as any).visibility === 'members_only' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                      {(c as any).visibility === 'members_only' ? '🔒 Members Only' : '🌐 Public'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -306,6 +315,29 @@ const CouponsManager: React.FC = () => {
               />
             </div>
             
+            {/* Visibility */}
+            <div className="space-y-1.5">
+              <Label>Coupon Visibility</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { val: 'public', label: '🌐 Public', sub: 'Guests + Members' },
+                  { val: 'members_only', label: '🔒 Members Only', sub: 'Logged-in users only' },
+                ] as const).map(({ val, label, sub }) => (
+                  <button key={val} type="button"
+                    onClick={() => setVisibility(val)}
+                    className={[
+                      'p-3 rounded-lg border-2 text-left text-sm transition-all',
+                      visibility === val
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border hover:border-primary/50',
+                    ].join(' ')}>
+                    <div className="font-semibold">{label}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="flex items-center space-x-2">
               <Switch
                 id="is_active"
