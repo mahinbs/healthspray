@@ -13,6 +13,8 @@ import { formatPrice } from '@/services/api';
 import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
 import { getOrderBreakdown, formatRs } from '@/lib/orderBreakdown';
 import { formatOrderReference } from '@/lib/orderReference';
+import { ReturnRequestSection } from '@/components/ReturnRequestSection';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Loader2, Package, Search, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -33,6 +35,9 @@ interface TrackedOrder {
   total_paid?: number;
   payment_mode?: string;
   payment_sub_inst_type?: string;
+  delivered_at?: string | null;
+  return_reason?: string | null;
+  return_requested_at?: string | null;
 }
 
 const statusLabel: Record<string, string> = {
@@ -53,6 +58,7 @@ const TrackOrder = () => {
   const [email, setEmail] = useState(searchParams.get('email') ?? '');
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState<TrackedOrder | null>(null);
+  const { settings: storeSettings } = useStoreSettings();
 
   const lookup = async (id: string, em: string) => {
     if (!id.trim() || !em.trim()) {
@@ -237,6 +243,16 @@ const TrackOrder = () => {
                 </a>
               </Button>
             )}
+
+            <ReturnRequestSection
+              order={order}
+              email={email}
+              returnPolicy={{
+                returns_enabled: storeSettings.returns_enabled,
+                return_window_days: storeSettings.return_window_days,
+              }}
+              onSuccess={() => lookup(orderId, email)}
+            />
           </GlassCard>
           );
         })()}

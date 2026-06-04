@@ -1,7 +1,8 @@
 import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { GlassCard } from "@/components/ui/glass-card";
-import { Ban } from "lucide-react";
+import { RotateCcw } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Returns = () => {
   return (
@@ -16,14 +17,14 @@ const Returns = () => {
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex justify-center mb-6">
               <div className="p-4 bg-white/10 backdrop-blur-md rounded-full">
-                <Ban className="h-12 w-12 text-red-400" />
+                <RotateCcw className="h-12 w-12 text-primary" />
               </div>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold">
-              No Returns Policy
+              Returns Policy
             </h1>
             <p className="text-xl text-white/90">
-              All sales are final. We do not accept returns or exchanges.
+              Request a return after delivery within our return window. Refunds are processed after review.
             </p>
           </div>
         </div>
@@ -37,15 +38,32 @@ const Returns = () => {
             {/* Policy Overview */}
             <GlassCard className="p-8">
               <div className="flex items-center mb-6">
-                <Ban className="h-8 w-8 text-red-500 mr-3" />
-                <h2 className="text-3xl font-bold text-primary">Final Sale Policy</h2>
+                <RotateCcw className="h-8 w-8 text-primary mr-3" />
+                <h2 className="text-3xl font-bold text-primary">How returns work</h2>
               </div>
               
-              <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 p-6 rounded-lg border border-red-500/30">
-                <h3 className="text-xl font-semibold mb-3 text-red-400">All Sales Are Final</h3>
-                <p className="text-muted-foreground leading-relaxed mb-4">
-                  Due to the nature of our sports health products and hygiene considerations, we do not accept returns or exchanges. 
-                  Please carefully review your order before purchasing.
+              <div className="bg-muted/30 p-6 rounded-lg border space-y-4 text-muted-foreground leading-relaxed">
+                <p>
+                  <strong className="text-foreground">When you can request a return:</strong> only after your order
+                  is marked <strong>Delivered</strong> (not while it is paid, processing, or shipped).
+                </p>
+                <p>
+                  <strong className="text-foreground">Time limit:</strong> a store-wide return window applies (set in
+                  admin, typically 7 days from delivery). Some products may have a shorter window if configured.
+                </p>
+                <p>
+                  <strong className="text-foreground">How to request:</strong> use{' '}
+                  <Link to="/track-order" className="text-primary underline">Track Order</Link> with your order code
+                  and checkout email, or open the order in your account if you are signed in.
+                </p>
+                <p>
+                  <strong className="text-foreground">Refund:</strong> submitting a return request does not refund
+                  automatically. Our team reviews it and processes the refund via the original payment method after
+                  approval.
+                </p>
+                <p className="text-sm">
+                  Hygiene products must be unopened unless damaged or incorrect. Contact support for damaged-on-arrival
+                  cases.
                 </p>
               </div>
             </GlassCard>

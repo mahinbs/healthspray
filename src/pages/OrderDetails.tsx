@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
 import { getOrderBreakdown, formatRs } from '@/lib/orderBreakdown';
+import { ReturnRequestSection } from '@/components/ReturnRequestSection';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 interface Product {
   id: string;
@@ -51,6 +53,9 @@ interface Order {
   service_charge?: number;
   total_paid?: number;
   payment_sub_inst_type?: string;
+  delivered_at?: string | null;
+  return_reason?: string | null;
+  return_requested_at?: string | null;
 }
 
 const OrderDetails: React.FC = () => {
@@ -60,6 +65,7 @@ const OrderDetails: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [generatingInvoice, setGeneratingInvoice] = useState(false);
+  const { settings: storeSettings } = useStoreSettings();
 
   const fetchOrder = async () => {
     if (!orderId) {
@@ -304,6 +310,18 @@ const OrderDetails: React.FC = () => {
                 </div>
               </div>
             )}
+
+            <div className="bg-card border rounded-lg p-4">
+              <ReturnRequestSection
+                order={order}
+                email={user?.email ?? order.delivery_address?.email ?? ''}
+                returnPolicy={{
+                  returns_enabled: storeSettings.returns_enabled,
+                  return_window_days: storeSettings.return_window_days,
+                }}
+                onSuccess={fetchOrder}
+              />
+            </div>
 
             {/* Invoice */}
             {(order.invoice_number || order.invoice_url) && (

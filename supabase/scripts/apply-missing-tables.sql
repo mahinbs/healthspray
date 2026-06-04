@@ -178,3 +178,14 @@ AS $$
 $$;
 
 GRANT EXECUTE ON FUNCTION public.find_order_by_id_prefix(text) TO service_role;
+
+-- Return policy (universal) + optional per-product return_window_days
+ALTER TABLE public.store_settings
+  ADD COLUMN IF NOT EXISTS return_window_days integer NOT NULL DEFAULT 7,
+  ADD COLUMN IF NOT EXISTS returns_enabled boolean NOT NULL DEFAULT true;
+
+ALTER TABLE public.products
+  ADD COLUMN IF NOT EXISTS return_window_days integer;
+
+ALTER TABLE public.orders
+  ADD COLUMN IF NOT EXISTS delivered_at timestamptz;

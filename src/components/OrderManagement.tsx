@@ -95,9 +95,17 @@ const OrderManagement: React.FC = () => {
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       setUpdating(orderId);
+      const now = new Date().toISOString();
+      const patch: { status: string; updated_at: string; delivered_at?: string } = {
+        status: newStatus,
+        updated_at: now,
+      };
+      if (newStatus === 'delivered') {
+        patch.delivered_at = now;
+      }
       const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update(patch)
         .eq('id', orderId);
       if (error) throw error;
 

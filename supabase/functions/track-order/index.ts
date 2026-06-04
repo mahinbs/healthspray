@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const ORDER_SELECT =
-  "id, amount, status, items, delivery_address, created_at, updated_at, invoice_number, invoice_url, guest_email, user_id, coupon_code, coupon_discount, shipping_fee, service_charge, total_paid, payment_mode, payment_sub_inst_type";
+          "id, amount, status, items, delivery_address, created_at, updated_at, delivered_at, return_reason, return_requested_at, invoice_number, invoice_url, guest_email, user_id, coupon_code, coupon_discount, shipping_fee, service_charge, total_paid, payment_mode, payment_sub_inst_type";
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -173,6 +173,9 @@ serve(async (req) => {
           delivery_address: order.delivery_address,
           created_at: order.created_at,
           updated_at: order.updated_at,
+          delivered_at: order.delivered_at,
+          return_reason: order.return_reason,
+          return_requested_at: order.return_requested_at,
           invoice_number: order.invoice_number,
           invoice_url: order.invoice_url,
           coupon_code: order.coupon_code,
