@@ -9,6 +9,8 @@ import {
   canCustomerRequestReturn,
   getDeliveryTimestamp,
   isWithinReturnWindow,
+  getReturnDeadline,
+  formatDateIN,
   DEFAULT_RETURN_POLICY,
   type ReturnPolicySettings,
 } from '@/lib/returnPolicy';
@@ -96,10 +98,13 @@ export const ReturnRequestSection: React.FC<ReturnRequestSectionProps> = ({
     );
   }
 
+  const returnUntil = getReturnDeadline(deliveredAt, windowDays);
+
   if (!isWithinReturnWindow(deliveredAt, windowDays)) {
     return (
       <p className="text-sm text-muted-foreground">
-        The return window ({windowDays} days from delivery) has ended for this order.
+        Delivered on {formatDateIN(deliveredAt)}. The return window ended on{' '}
+        {formatDateIN(returnUntil)} ({windowDays} days from delivery).
       </p>
     );
   }
@@ -151,7 +156,8 @@ export const ReturnRequestSection: React.FC<ReturnRequestSectionProps> = ({
         <h3 className="font-medium text-sm">Request return / refund</h3>
       </div>
       <p className="text-xs text-muted-foreground">
-        Available for delivered orders only. {daysLeft} day(s) left in your {windowDays}-day return window.
+        Delivered on <strong>{formatDateIN(deliveredAt)}</strong>. You may request a return until{' '}
+        <strong>{formatDateIN(returnUntil)}</strong> ({daysLeft} day(s) left of {windowDays} after delivery).
         Refund is processed after admin approval (not automatic).
       </p>
       <div>

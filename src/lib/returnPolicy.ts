@@ -44,3 +44,20 @@ export function canCustomerRequestReturn(order: {
   if (order.status === 'return_requested' || order.status === 'refunded') return false;
   return order.status === CUSTOMER_RETURN_ELIGIBLE_STATUS;
 }
+
+export function formatDateIN(isoOrDate: string | Date): string {
+  const d = typeof isoOrDate === 'string' ? new Date(isoOrDate) : isoOrDate;
+  return d.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+/** Last calendar day (end of day) when a return can still be requested. */
+export function getReturnDeadline(deliveredAt: Date, windowDays: number): Date {
+  const end = new Date(deliveredAt.getTime());
+  end.setDate(end.getDate() + windowDays);
+  end.setHours(23, 59, 59, 999);
+  return end;
+}

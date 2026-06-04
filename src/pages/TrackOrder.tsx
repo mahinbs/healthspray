@@ -14,6 +14,7 @@ import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
 import { getOrderBreakdown, formatRs } from '@/lib/orderBreakdown';
 import { formatOrderReference } from '@/lib/orderReference';
 import { ReturnRequestSection } from '@/components/ReturnRequestSection';
+import { OrderDeliveryInfo } from '@/components/OrderDeliveryInfo';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Loader2, Package, Search, Download } from 'lucide-react';
 import { toast } from 'sonner';
@@ -186,23 +187,19 @@ const TrackOrder = () => {
               </Badge>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Placed on</p>
-                <p className="font-medium">
-                  {new Date(order.created_at).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Total paid</p>
-                <p className="font-semibold text-green-600">
-                  {b.hasServiceCharge ? formatRs(b.customerPaidRupees) : formatPrice(order.amount / 100)}
-                </p>
-              </div>
+            <OrderDeliveryInfo
+              order={order}
+              returnPolicy={{
+                returns_enabled: storeSettings.returns_enabled,
+                return_window_days: storeSettings.return_window_days,
+              }}
+            />
+
+            <div className="text-sm border-t pt-3">
+              <p className="text-muted-foreground">Total paid</p>
+              <p className="font-semibold text-green-600 text-lg">
+                {b.hasServiceCharge ? formatRs(b.customerPaidRupees) : formatPrice(order.amount / 100)}
+              </p>
             </div>
 
             <div className="border-t pt-4">

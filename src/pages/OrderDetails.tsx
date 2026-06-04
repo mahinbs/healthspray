@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
 import { getOrderBreakdown, formatRs } from '@/lib/orderBreakdown';
 import { ReturnRequestSection } from '@/components/ReturnRequestSection';
+import { OrderDeliveryInfo } from '@/components/OrderDeliveryInfo';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 interface Product {
@@ -185,6 +186,14 @@ const OrderDetails: React.FC = () => {
                     year: 'numeric', month: 'long', day: 'numeric'
                   })}
                 </span>
+                {order.status === 'delivered' && (order.delivered_at || order.updated_at) && (
+                  <span className="text-green-700 dark:text-green-400">
+                    Delivered on{' '}
+                    {new Date(order.delivered_at ?? order.updated_at).toLocaleDateString('en-IN', {
+                      year: 'numeric', month: 'long', day: 'numeric',
+                    })}
+                  </span>
+                )}
                 <span>
                   {breakdown.hasServiceCharge
                     ? `Paid ${formatRs(breakdown.customerPaidRupees)}`
@@ -262,6 +271,14 @@ const OrderDetails: React.FC = () => {
             {/* Order Summary */}
             <div className="bg-card border rounded-lg p-4">
               <h3 className="font-medium mb-3">Order Summary</h3>
+              <OrderDeliveryInfo
+                order={order}
+                returnPolicy={{
+                  returns_enabled: storeSettings.returns_enabled,
+                  return_window_days: storeSettings.return_window_days,
+                }}
+                className="mb-4"
+              />
               <OrderPriceBreakdown order={order} status={order.status} />
             </div>
 
