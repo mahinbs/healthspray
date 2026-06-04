@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
+import { formatOrderReference } from '@/lib/orderReference';
 
 interface OrderInfo {
   id: string;
@@ -88,7 +89,7 @@ const PaymentCallback: React.FC = () => {
   };
 
   const shortRef = (order?.id ?? orderId)
-    ? `#${(order?.id ?? orderId)!.substring(0, 8).toUpperCase()}`
+    ? `#${formatOrderReference((order?.id ?? orderId)!)}`
     : '';
 
   // ── Success ────────────────────────────────────────────────────────────────
@@ -184,7 +185,7 @@ const PaymentCallback: React.FC = () => {
         {orderId && (
           <div className="bg-muted/50 rounded-xl p-4 text-sm">
             <span className="text-muted-foreground">Reference: </span>
-            <span className="font-mono">#{orderId.substring(0, 8).toUpperCase()}</span>
+            <span className="font-mono">#{formatOrderReference(orderId)}</span>
           </div>
         )}
         <div className="flex flex-col gap-3">

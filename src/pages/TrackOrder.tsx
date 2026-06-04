@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/services/api';
 import { OrderPriceBreakdown } from '@/components/OrderPriceBreakdown';
 import { getOrderBreakdown, formatRs } from '@/lib/orderBreakdown';
+import { formatOrderReference } from '@/lib/orderReference';
 import { Loader2, Package, Search, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -64,14 +65,27 @@ const TrackOrder = () => {
       const { data, error } = await supabase.functions.invoke('track-order', {
         body: { orderId: id.trim(), email: em.trim() },
       });
-      if (error) throw error;
+      if (error) {
+        let msg = error.message;
+        try {
+          const ctx = (error as { context?: Response })?.context;
+          if (ctx) {
+            const parsed = await ctx.json();
+            if (parsed?.error) msg = parsed.error;
+          }
+        } catch {
+          /* ignore */
+        }
+        toast.error(msg || 'Could not look up order');
+        return;
+      }
       if (!data?.success) {
         toast.error(data?.error ?? 'Order not found');
         return;
       }
       setOrder(data.order as TrackedOrder);
-    } catch {
-      toast.error('Could not look up order. Try again or contact support.');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not look up order. Try again or contact support.');
     } finally {
       setLoading(false);
     }
@@ -91,7 +105,7 @@ const TrackOrder = () => {
     lookup(orderId, email);
   };
 
-  const displayRef = order ? `#${order.id.substring(0, 8).toUpperCase()}` : '';
+  const displayRef = order ? `#${formatOrderReference(order.id)}` : '';
 
   return (
     <Layout>
@@ -100,7 +114,7 @@ const TrackOrder = () => {
           <Package className="h-12 w-12 text-primary mx-auto mb-4" />
           <h1 className="text-3xl font-bold">Track your order</h1>
           <p className="text-muted-foreground mt-2">
-            Use the order ID from your confirmation email or payment success page, plus the email you used at checkout.
+            Use the 8-character order code from your invoice or confirmation email (e.g. #FB11E620), plus your checkout email.
           </p>
         </div>
 
@@ -110,7 +124,7 @@ const TrackOrder = () => {
               <Label htmlFor="orderId">Order ID</Label>
               <Input
                 id="orderId"
-                placeholder="Full ID or short code (e.g. A1B2C3D4)"
+                placeholder="8-char code from invoice (e.g. FB11E620)"
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
                 className="mt-1 font-mono text-sm"

@@ -93,7 +93,7 @@ function buildEmailHTML(order: Record<string, unknown>, eventType: string): stri
   const items = (order.items ?? []) as Array<{ product: { name: string; price: number; image?: string; category?: string }; quantity: number }>;
   const invoiceUrl    = (order.invoice_url as string) ?? "";
   const invoiceNumber = (order.invoice_number as string) ?? "";
-  const orderId       = ((order.id as string) ?? "").substring(0, 8).toUpperCase();
+  const orderId       = ((order.id as string) ?? "").slice(-8).toUpperCase();
   const trackUrl      = trackOrderUrl(order);
   const b = parseOrderBreakdown(order);
   const payMode = b.paymentModeLabel;
