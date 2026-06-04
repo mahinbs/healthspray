@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ interface CheckoutModalProps {
 
 interface DeliveryAddress {
   fullName: string;
+  email: string;
   phone: string;
   address: string;
   city: string;
@@ -38,6 +39,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
 
   const [address, setAddress] = useState<DeliveryAddress>({
     fullName: '',
+    email: user?.email ?? '',
     phone: '',
     address: '',
     city: '',
@@ -45,12 +47,22 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     pincode: '',
   });
 
+  useEffect(() => {
+    if (user?.email) {
+      setAddress((prev) => ({ ...prev, email: prev.email || user.email! }));
+    }
+  }, [user?.email]);
+
   const handleInputChange = (field: keyof DeliveryAddress, value: string) => {
     setAddress(prev => ({ ...prev, [field]: value }));
   };
 
   const validateForm = (): boolean => {
     if (!address.fullName.trim()) { toast.error('Please enter your full name'); return false; }
+    if (!address.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address.email)) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
     if (!address.phone || address.phone.length !== 10) { toast.error('Please enter a valid 10-digit phone number'); return false; }
     if (!address.address.trim()) { toast.error('Please enter your address'); return false; }
     if (!address.city.trim()) { toast.error('Please enter your city'); return false; }
@@ -60,7 +72,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
   };
 
   const handlePayment = async () => {
-    if (!user) { toast.error('Please login to place an order'); return; }
     if (!validateForm()) return;
 
     setLoading(true);
@@ -124,29 +135,38 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
           <div className="space-y-3">
             <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Delivery Address</h3>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  value={address.fullName}
-                  onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  placeholder="Enter full name"
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={address.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value.replace(/\D/g, ''))}
-                  placeholder="10-digit number"
-                  maxLength={10}
-                  disabled={loading}
-                />
-              </div>
+            <div>
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                value={address.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                placeholder="Enter full name"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={address.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="you@example.com"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={address.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value.replace(/\D/g, ''))}
+                placeholder="10-digit number"
+                maxLength={10}
+                disabled={loading}
+              />
             </div>
 
             <div>

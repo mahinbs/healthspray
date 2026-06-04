@@ -49,8 +49,8 @@ const Hero = () => {
       {/* Gradient Mesh Background */}
       <div className="absolute inset-0 bg-gradient-mesh" />
 
-      {/* Dynamic Hero Carousel */}
-      <HeroCarousel />
+      {/* Dynamic Hero Carousel — slide text only when main_hero section is inactive */}
+      <HeroCarousel showSlideText={!heroContent} />
 
       {/* Floating Elements */}
       <FloatingElements />
@@ -59,38 +59,22 @@ const Hero = () => {
 
       <div className="relative z-20 container mx-auto px-4 text-center text-white">
         <div className="max-w-6xl mx-auto space-y-12">
-          {/* Animated Main Heading */}
-          {/* <div className="space-y-6 animate-fade-in">
-            <h1 className="text-6xl md:text-8xl font-bold leading-tight tracking-tight drop-shadow-2xl">
-              {heroContent?.title ? (
+          {heroContent && (
+            <div className="space-y-6 animate-fade-in mb-8">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight drop-shadow-2xl">
                 <span className="text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
                   {heroContent.title}
                 </span>
-              ) : (
-                <>
-                  <span className="text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                    Relieve Pain.{" "}
-                  </span>
-                  <span className="bg-gradient-primary bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                    Recover Faster.
-                  </span>{" "}
-                  <span className="text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                    Rise{" "}
-                  </span>
-                  <span className="relative text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                    Stronger.
-                    <div className="absolute -inset-2 bg-gradient-primary opacity-30 blur-xl rounded-full animate-pulse-slow" />
-                  </span>
-                </>
+              </h1>
+              {heroContent.subtitle && (
+                <div className="bg-orange-500/20 backdrop-blur-md rounded-3xl p-6 md:p-8 border border-orange-200/30 max-w-4xl mx-auto shadow-2xl">
+                  <p className="text-lg md:text-2xl text-white leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] font-medium">
+                    {heroContent.subtitle}
+                  </p>
+                </div>
               )}
-            </h1>
-
-            <div className="bg-orange-500/20 backdrop-blur-md rounded-3xl p-8 border border-orange-200/30 max-w-4xl mx-auto shadow-2xl">
-              <p className="text-2xl md:text-3xl text-white leading-relaxed animate-slide-up drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] font-medium">
-                {heroContent?.subtitle || "Scientifically designed pain relief and recovery solutions to keep you moving — before, during, and after every workout."}
-              </p>
             </div>
-          </div> */}
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-8 justify-center items-center animate-scale-in pb-20">

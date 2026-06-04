@@ -49,8 +49,10 @@ const AdminOrderStats = () => {
         const shipped = orders.filter(o => o.status === 'shipped').length;
         const delivered = orders.filter(o => o.status === 'delivered').length;
         const cancelled = orders.filter(o => o.status === 'cancelled').length;
-        const totalRevenue = orders.reduce((sum, order) => sum + (order.amount || 0), 0);
-        const averageOrderValue = total > 0 ? totalRevenue / total : 0;
+        const paidStatuses = ['paid', 'processing', 'shipped', 'delivered'];
+        const paidOrders = orders.filter(o => paidStatuses.includes(o.status));
+        const totalRevenuePaise = paidOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
+        const averageOrderValuePaise = paidOrders.length > 0 ? totalRevenuePaise / paidOrders.length : 0;
 
         setStats({
           total,
@@ -59,8 +61,8 @@ const AdminOrderStats = () => {
           shipped,
           delivered,
           cancelled,
-          totalRevenue,
-          averageOrderValue,
+          totalRevenue: totalRevenuePaise,
+          averageOrderValue: averageOrderValuePaise,
         });
       }
     } catch (error) {
@@ -70,11 +72,11 @@ const AdminOrderStats = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amountPaise: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
-    }).format(amount);
+    }).format(amountPaise / 100);
   };
 
   if (loading) {

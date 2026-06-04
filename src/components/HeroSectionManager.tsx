@@ -122,9 +122,23 @@ export const HeroSectionManager: React.FC = () => {
 
   const handleToggleActive = async (id: string, currentStatus: boolean) => {
     try {
+      const section = heroSections.find((s) => s.id === id);
+      if (!section) return;
+
+      const nextActive = !currentStatus;
+
+      // Only one active row per section_type (DB unique constraint)
+      if (nextActive) {
+        await supabase
+          .from('hero_section')
+          .update({ is_active: false })
+          .eq('section_type', section.section_type)
+          .neq('id', id);
+      }
+
       const { error } = await supabase
         .from('hero_section')
-        .update({ is_active: !currentStatus })
+        .update({ is_active: nextActive })
         .eq('id', id);
 
       if (error) throw error;

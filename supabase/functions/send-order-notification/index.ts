@@ -52,6 +52,20 @@ const EVENT_CONFIG: Record<string, { label: string; icon: string; color: string;
     bg: "#fffbeb",
     tagline: "Your order has been cancelled. Refund will be processed in 5–7 business days.",
   },
+  order_return_requested: {
+    label: "Return Requested",
+    icon: "↩️",
+    color: "#d97706",
+    bg: "#fffbeb",
+    tagline: "We received your return request and will process it shortly.",
+  },
+  order_refunded: {
+    label: "Refund Processed",
+    icon: "💰",
+    color: "#16a34a",
+    bg: "#f0fdf4",
+    tagline: "Your refund has been processed. It may take 5–7 business days to reflect in your account.",
+  },
 };
 
 // ─── Email HTML Builder ───────────────────────────────────────────────────────

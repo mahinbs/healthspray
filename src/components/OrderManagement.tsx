@@ -7,9 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-  Eye, Package, Truck, CheckCircle, Clock, XCircle, Calendar,
-  MapPin, Phone, User, RefreshCw, Download, Bell, FileText, CreditCard
+  Eye, Package, Truck, CheckCircle, Clock, XCircle,
+  MapPin, Phone, User, RefreshCw, Download, Bell, FileText, CreditCard, RotateCcw, IndianRupee
 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { formatPrice } from '@/services/api';
 import { toast } from 'sonner';
 
@@ -32,12 +34,27 @@ interface AdminOrder {
   invoice_generated_at?: string;
   coupon_code?: string;
   coupon_discount?: number;
+  return_reason?: string;
+  return_requested_at?: string;
+  refunded_at?: string;
+  refund_amount?: number;
+  icici_refund_ref?: string;
+  refund_notes?: string;
 }
+
+const ORDER_STATUSES = [
+  'pending', 'paid', 'processing', 'shipped', 'delivered',
+  'return_requested', 'refunded', 'cancelled', 'failed',
+] as const;
+
+const REFUNDABLE_STATUSES = ['paid', 'processing', 'shipped', 'delivered', 'return_requested'];
 
 const STATUS_TO_EVENT: Record<string, string> = {
   shipped: 'order_shipped',
   delivered: 'order_delivered',
   cancelled: 'order_cancelled',
+  return_requested: 'order_return_requested',
+  refunded: 'order_refunded',
 };
 
 const OrderManagement: React.FC = () => {
@@ -47,6 +64,8 @@ const OrderManagement: React.FC = () => {
   const [updating, setUpdating] = useState<string | null>(null);
   const [notifying, setNotifying] = useState<string | null>(null);
   const [generatingInvoice, setGeneratingInvoice] = useState<string | null>(null);
+  const [processingRefund, setProcessingRefund] = useState<string | null>(null);
+  const [returnReason, setReturnReason] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => { fetchOrders(); }, []);
@@ -107,6 +126,60 @@ const OrderManagement: React.FC = () => {
     }
   };
 
+  const markReturnRequested = async (orderId: string, reason: string) => {
+    try {
+      setUpdating(orderId);
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          status: 'return_requested',
+          return_reason: reason || 'Customer return',
+          return_requested_at: now,
+          updated_at: now,
+        })
+        .eq('id', orderId);
+      if (error) throw error;
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'return_requested', return_reason: reason } : o));
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(prev => prev ? { ...prev, status: 'return_requested', return_reason: reason } : prev);
+      }
+      toast.success('Marked as return requested');
+      await sendNotification(orderId, 'order_return_requested', true);
+    } catch {
+      toast.error('Failed to update return status');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const processRefund = async (orderId: string, manual = false) => {
+    setProcessingRefund(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('icici-process-refund', {
+        body: {
+          orderId,
+          reason: returnReason || selectedOrder?.return_reason,
+          manual,
+        },
+      });
+      if (error || !data?.success) {
+        throw new Error(data?.error || error?.message || 'Refund failed');
+      }
+      toast.success(
+        manual
+          ? 'Refund recorded in admin. Complete payout in ICICI merchant portal if needed.'
+          : `Refund processed${data.iciciRefundRef ? ` (ref: ${data.iciciRefundRef})` : ''}`
+      );
+      setReturnReason('');
+      await fetchOrders();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Refund failed');
+    } finally {
+      setProcessingRefund(null);
+    }
+  };
+
   const generateInvoice = async (orderId: string) => {
     setGeneratingInvoice(orderId);
     try {
@@ -132,6 +205,8 @@ const OrderManagement: React.FC = () => {
       delivered: <CheckCircle className="h-3 w-3 mr-1" />,
       cancelled: <XCircle className="h-3 w-3 mr-1" />,
       failed: <XCircle className="h-3 w-3 mr-1" />,
+      return_requested: <RotateCcw className="h-3 w-3 mr-1" />,
+      refunded: <IndianRupee className="h-3 w-3 mr-1" />,
     };
     const colors: Record<string, string> = {
       paid: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
@@ -141,6 +216,8 @@ const OrderManagement: React.FC = () => {
       delivered: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
       cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
       failed: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+      return_requested: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
+      refunded: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
     };
     return (
       <Badge className={colors[status] ?? ''}>
@@ -157,6 +234,7 @@ const OrderManagement: React.FC = () => {
     paid: orders.filter(o => ['paid', 'processing', 'shipped', 'delivered'].includes(o.status)).length,
     pending: orders.filter(o => o.status === 'pending').length,
     delivered: orders.filter(o => o.status === 'delivered').length,
+    returns: orders.filter(o => ['return_requested', 'refunded'].includes(o.status)).length,
     revenue: orders
       .filter(o => ['paid', 'processing', 'shipped', 'delivered'].includes(o.status))
       .reduce((sum, o) => sum + o.amount, 0),
@@ -165,12 +243,13 @@ const OrderManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
           { label: 'Total Orders', value: stats.total, icon: <Package className="h-5 w-5 text-blue-500" /> },
           { label: 'Paid Orders', value: stats.paid, icon: <CheckCircle className="h-5 w-5 text-green-500" /> },
           { label: 'Pending', value: stats.pending, icon: <Clock className="h-5 w-5 text-yellow-500" /> },
           { label: 'Delivered', value: stats.delivered, icon: <Truck className="h-5 w-5 text-purple-500" /> },
+          { label: 'Returns/Refunds', value: stats.returns, icon: <RotateCcw className="h-5 w-5 text-amber-500" /> },
           { label: 'Revenue', value: formatPrice(stats.revenue / 100), icon: <CreditCard className="h-5 w-5 text-emerald-500" /> },
         ].map(({ label, value, icon }) => (
           <Card key={label}>
@@ -192,7 +271,7 @@ const OrderManagement: React.FC = () => {
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            {['all', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'failed'].map(s => (
+            {['all', ...ORDER_STATUSES].map(s => (
               <SelectItem key={s} value={s}>{s === 'all' ? 'All Orders' : s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
             ))}
           </SelectContent>
@@ -349,8 +428,10 @@ const OrderManagement: React.FC = () => {
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        {['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'failed'].map(s => (
-                                          <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+                                        {ORDER_STATUSES.map(s => (
+                                          <SelectItem key={s} value={s}>
+                                            {s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                          </SelectItem>
                                         ))}
                                       </SelectContent>
                                     </Select>
@@ -380,6 +461,73 @@ const OrderManagement: React.FC = () => {
                                     </div>
                                   </div>
                                 </div>
+
+                                {/* Return & refund (ICICI) */}
+                                {REFUNDABLE_STATUSES.includes(selectedOrder.status) && (
+                                  <div className="space-y-3 pt-2 border-t">
+                                    <h4 className="font-semibold text-sm flex items-center gap-2">
+                                      <RotateCcw className="h-4 w-4" />
+                                      Return &amp; Refund
+                                    </h4>
+                                    <p className="text-xs text-muted-foreground">
+                                      Mark return when customer sends product back. Process refund here after ICICI payment (or record manual refund from merchant portal).
+                                    </p>
+                                    <div>
+                                      <Label htmlFor="return-reason" className="text-xs">Return reason</Label>
+                                      <Textarea
+                                        id="return-reason"
+                                        className="mt-1 min-h-[60px]"
+                                        placeholder="e.g. Damaged product, wrong size..."
+                                        value={returnReason || selectedOrder.return_reason || ''}
+                                        onChange={(e) => setReturnReason(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                      {selectedOrder.status !== 'return_requested' && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          disabled={updating === selectedOrder.id}
+                                          onClick={() => markReturnRequested(selectedOrder.id, returnReason)}
+                                        >
+                                          <RotateCcw className="h-3 w-3 mr-1" />
+                                          Mark return requested
+                                        </Button>
+                                      )}
+                                      <Button
+                                        size="sm"
+                                        variant="default"
+                                        disabled={processingRefund === selectedOrder.id}
+                                        onClick={() => processRefund(selectedOrder.id, false)}
+                                      >
+                                        <IndianRupee className="h-3 w-3 mr-1" />
+                                        {processingRefund === selectedOrder.id ? 'Processing...' : 'Refund via ICICI'}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        disabled={processingRefund === selectedOrder.id}
+                                        onClick={() => processRefund(selectedOrder.id, true)}
+                                      >
+                                        Record manual refund
+                                      </Button>
+                                    </div>
+                                    {selectedOrder.icici_txn_no && (
+                                      <p className="text-xs font-mono text-muted-foreground">
+                                        ICICI Txn: {selectedOrder.icici_txn_no}
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
+
+                                {selectedOrder.status === 'refunded' && (
+                                  <div className="p-3 rounded-lg bg-muted text-sm space-y-1">
+                                    <p><strong>Refunded</strong> {selectedOrder.refunded_at && new Date(selectedOrder.refunded_at).toLocaleString()}</p>
+                                    {selectedOrder.return_reason && <p>Reason: {selectedOrder.return_reason}</p>}
+                                    {selectedOrder.icici_refund_ref && <p className="font-mono text-xs">Ref: {selectedOrder.icici_refund_ref}</p>}
+                                    {selectedOrder.refund_notes && <p className="text-xs">{selectedOrder.refund_notes}</p>}
+                                  </div>
+                                )}
 
                                 {/* Invoice actions */}
                                 <div className="flex gap-3 pt-2 border-t">
@@ -414,8 +562,10 @@ const OrderManagement: React.FC = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'failed'].map(s => (
-                              <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+                            {ORDER_STATUSES.map(s => (
+                              <SelectItem key={s} value={s}>
+                                {s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>

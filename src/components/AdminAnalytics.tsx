@@ -9,6 +9,7 @@ interface AnalyticsData {
   totalRevenue: number;
   pendingOrders: number;
   completedOrders: number;
+  refundedOrders: number;
   totalProducts: number;
   activeProducts: number;
   recentOrdersGrowth: number;
@@ -21,6 +22,7 @@ const AdminAnalytics = () => {
     totalRevenue: 0,
     pendingOrders: 0,
     completedOrders: 0,
+    refundedOrders: 0,
     totalProducts: 0,
     activeProducts: 0,
     recentOrdersGrowth: 0,
@@ -51,10 +53,13 @@ const AdminAnalytics = () => {
       if (productsError) throw productsError;
 
       // Calculate analytics
+      const paidStatuses = ['paid', 'processing', 'shipped', 'delivered'];
+      const paidOrders = orders?.filter(o => paidStatuses.includes(o.status)) || [];
       const totalOrders = orders?.length || 0;
-      const totalRevenue = orders?.reduce((sum, order) => sum + (order.amount || 0), 0) || 0;
+      const totalRevenuePaise = paidOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
       const pendingOrders = orders?.filter(o => o.status === 'pending').length || 0;
-      const completedOrders = orders?.filter(o => o.status === 'completed' || o.status === 'delivered').length || 0;
+      const completedOrders = orders?.filter(o => o.status === 'delivered').length || 0;
+      const refundedOrders = orders?.filter(o => o.status === 'refunded').length || 0;
       const totalProducts = products?.length || 0;
       const activeProducts = products?.filter(p => p.is_active).length || 0;
 
@@ -69,11 +74,11 @@ const AdminAnalytics = () => {
         return date >= sixtyDaysAgo && date < thirtyDaysAgo;
       }).length || 0;
 
-      const recentRevenue = orders?.filter(o => new Date(o.created_at) >= thirtyDaysAgo)
+      const recentRevenue = orders?.filter(o => paidStatuses.includes(o.status) && new Date(o.created_at) >= thirtyDaysAgo)
         .reduce((sum, order) => sum + (order.amount || 0), 0) || 0;
       const previousRevenue = orders?.filter(o => {
         const date = new Date(o.created_at);
-        return date >= sixtyDaysAgo && date < thirtyDaysAgo;
+        return paidStatuses.includes(o.status) && date >= sixtyDaysAgo && date < thirtyDaysAgo;
       }).reduce((sum, order) => sum + (order.amount || 0), 0) || 0;
 
       const recentOrdersGrowth = previousOrders > 0 ? 
@@ -83,13 +88,14 @@ const AdminAnalytics = () => {
 
       setAnalytics({
         totalOrders,
-        totalRevenue,
+        totalRevenue: totalRevenuePaise,
         pendingOrders,
         completedOrders,
         totalProducts,
         activeProducts,
         recentOrdersGrowth,
         revenueGrowth,
+        refundedOrders,
       });
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -98,11 +104,11 @@ const AdminAnalytics = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amountPaise: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
-    }).format(amount);
+    }).format(amountPaise / 100);
   };
 
   if (loading) {
@@ -229,16 +235,13 @@ const AdminAnalytics = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">Refunded</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {analytics.totalOrders > 0 ? 
-                ((analytics.completedOrders / analytics.totalOrders) * 100).toFixed(1) : 0}%
-            </div>
+            <div className="text-2xl font-bold">{analytics.refundedOrders}</div>
             <p className="text-xs text-muted-foreground">
-              Orders completed
+              Returns refunded via admin
             </p>
           </CardContent>
         </Card>

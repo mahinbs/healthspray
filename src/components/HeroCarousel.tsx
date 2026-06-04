@@ -11,7 +11,11 @@ interface CarouselImage {
   is_active: boolean;
 }
 
-export const HeroCarousel: React.FC = () => {
+interface HeroCarouselProps {
+  showSlideText?: boolean;
+}
+
+export const HeroCarousel: React.FC<HeroCarouselProps> = ({ showSlideText = true }) => {
   const [carouselImages, setCarouselImages] = useState<CarouselImage[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -29,7 +33,7 @@ export const HeroCarousel: React.FC = () => {
         .order('display_order', { ascending: true });
 
       if (error) throw error;
-      setCarouselImages(data as CarouselImage[]);
+      setCarouselImages((data as CarouselImage[]) ?? []);
     } catch (error) {
       console.error('Error loading carousel images:', error);
     } finally {
@@ -124,6 +128,22 @@ export const HeroCarousel: React.FC = () => {
             </svg>
           </button>
         </>
+      )}
+
+      {/* Slide text overlay when Hero Section Content is inactive */}
+      {showSlideText && carouselImages[currentIndex]?.title && (
+        <div className="absolute inset-x-0 top-24 md:top-32 z-10 px-4 pointer-events-none">
+          <div className="max-w-4xl mx-auto text-center space-y-4">
+            <h2 className="text-3xl md:text-5xl font-bold text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">
+              {carouselImages[currentIndex].title}
+            </h2>
+            {carouselImages[currentIndex].subtitle && (
+              <p className="text-base md:text-xl text-white/95 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] max-w-3xl mx-auto">
+                {carouselImages[currentIndex].subtitle}
+              </p>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Dots Indicator */}

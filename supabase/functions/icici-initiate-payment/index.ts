@@ -50,14 +50,17 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     );
 
+    let user: { id: string; email?: string | null } | null = null;
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Authorization header missing");
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: authError } = await supabaseClient.auth.getUser(token);
-    if (authError || !userData.user) throw new Error("User not authenticated");
-    const user = userData.user;
-    log("User authenticated", user.id);
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData, error: authError } = await supabaseClient.auth.getUser(token);
+      if (!authError && userData.user) {
+        user = userData.user;
+        log("User authenticated", user.id);
+      }
+    }
+    log(user ? "Authenticated checkout" : "Guest checkout");
 
     const body = await req.json();
     const { amount, items, deliveryAddress, idempotency_key, coupon } = body;
@@ -121,7 +124,7 @@ serve(async (req) => {
       amount: amountStr,
       currencyCode: "356",
       payType: "0",
-      customerEmailID: user.email ?? "customer@example.com",
+      customerEmailID: user?.email ?? deliveryAddress.email ?? "customer@example.com",
       customerMobileNo: deliveryAddress.phone ?? "9999999999",
       customerName: deliveryAddress.fullName ?? "Customer",
       transactionType: "SALE",
@@ -161,7 +164,8 @@ serve(async (req) => {
     const { data: order, error: dbError } = await supabaseService
       .from("orders")
       .insert({
-        user_id: user.id,
+        user_id: user?.id ?? null,
+        guest_email: user ? null : (deliveryAddress.email ?? null),
         icici_txn_no: merchantTxnNo,
         amount: Math.round(finalAmount * 100),
         items,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +50,16 @@ import {
   ShoppingBag,
   AlertCircle,
   ImageIcon,
+  LayoutDashboard,
+  Tag,
+  FileText,
+  Star,
+  Video,
+  Ticket,
+  ShoppingCart,
+  Bell,
+  Menu,
+  ChevronRight,
 } from "lucide-react";
 import { formatPrice } from "@/services/api";
 import {
@@ -186,6 +195,8 @@ const Admin = () => {
 
   // Loading states
   const [isLoading, setIsLoading] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('products');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -289,6 +300,26 @@ const Admin = () => {
     setEditingProduct(null);
   };
 
+  // Category names for product form: DB categories + existing product categories (not the hardcoded old list)
+  const productCategoryOptions = useMemo(() => {
+    const fromDb = categories.map((c) => c.name);
+    const fromProducts = products
+      .map((p) => p.category)
+      .filter((name): name is string => Boolean(name?.trim()));
+    const defaults = [
+      "Recovery",
+      "Hygiene",
+      "Bundles",
+      "Recovery Products",
+      "Pain Relief",
+      "Compression Wear",
+      "Warm-up Products",
+    ];
+    return [...new Set([...fromDb, ...fromProducts, ...defaults])].sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }, [categories, products]);
+
   // Load data when user becomes admin
   useEffect(() => {
     if (isAdmin) {
@@ -297,29 +328,67 @@ const Admin = () => {
   }, [isAdmin]);
 
   const loadData = async () => {
-    try {
-      setIsLoading(true);
-      setIsLoadingStats(true);
+    setIsLoading(true);
+    setIsLoadingStats(true);
 
-      // Load products, categories, blog posts, and stats in parallel
-      const [productsData, categoriesData, blogPostsData, statsData] = await Promise.all([
-        productsService.getAllProducts(),
-        categoriesService.getAllCategories(),
-        blogService.getAllBlogPosts(),
-        productsService.getProductStats(),
-      ]);
+    const results = await Promise.allSettled([
+      productsService.getAllProducts(),
+      categoriesService.getAllCategories(),
+      blogService.getAllBlogPosts(),
+      productsService.getProductStats(),
+    ]);
 
-      setProducts(productsData);
-      setCategories(categoriesData);
-      setBlogPosts(blogPostsData);
-      setStats(statsData);
-    } catch (error) {
-      console.error("Error loading data:", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-      setIsLoadingStats(false);
+    const [productsResult, categoriesResult, blogResult, statsResult] = results;
+    const failures: string[] = [];
+
+    if (productsResult.status === "fulfilled") {
+      setProducts(productsResult.value);
+    } else {
+      console.error("Error loading products:", productsResult.reason);
+      failures.push("products");
     }
+
+    if (categoriesResult.status === "fulfilled") {
+      setCategories(categoriesResult.value);
+    } else {
+      console.error("Error loading categories:", categoriesResult.reason);
+      failures.push("categories");
+    }
+
+    if (blogResult.status === "fulfilled") {
+      setBlogPosts(blogResult.value);
+    } else {
+      console.error("Error loading blog posts:", blogResult.reason);
+      failures.push("blog posts");
+    }
+
+    if (statsResult.status === "fulfilled") {
+      setStats(statsResult.value);
+    } else {
+      console.error("Error loading product stats:", statsResult.reason);
+      failures.push("stats");
+      if (productsResult.status === "fulfilled") {
+        const list = productsResult.value;
+        setStats({
+          totalProducts: list.length,
+          activeProducts: list.filter((p) => p.is_active).length,
+          categories: new Set(list.map((p) => p.category)).size,
+          newProducts: list.filter((p) => p.is_new).length,
+        });
+      }
+    }
+
+    if (failures.includes("products")) {
+      toast.error("Could not load products. Check Supabase connection and try again.");
+    }
+    if (failures.includes("categories") || failures.includes("blog posts")) {
+      console.warn(
+        "Categories/Blog tables missing on Supabase. Run supabase/scripts/apply-missing-tables.sql in SQL Editor."
+      );
+    }
+
+    setIsLoading(false);
+    setIsLoadingStats(false);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -1187,97 +1256,86 @@ const Admin = () => {
   }
 
   // Admin Dashboard
+  const NAV_ITEMS = [
+    { id: 'products',      label: 'Products',      icon: Package },
+    { id: 'categories',    label: 'Categories',    icon: Tag },
+    { id: 'blog',          label: 'Blog Posts',    icon: FileText },
+    { id: 'featured',      label: 'Featured',      icon: Star },
+    { id: 'videos',        label: 'Videos',        icon: Video },
+    { id: 'coupons',       label: 'Coupons',       icon: Ticket },
+    { id: 'orders',        label: 'Orders',        icon: ShoppingCart },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'analytics',     label: 'Analytics',     icon: BarChart3 },
+    { id: 'settings',      label: 'Settings',      icon: Settings },
+  ];
+  const currentLabel = NAV_ITEMS.find(n => n.id === activeSection)?.label ?? 'Dashboard';
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Manage your products and store
-            </p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* ── Sidebar ── */}
+      <aside className={["fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col z-40 transition-transform duration-300", sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"].join(" ")}>
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-5 py-[18px] border-b border-gray-100 dark:border-gray-800">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{background:"linear-gradient(135deg,#EF4E23,#c83a10)"}}>
+            <LayoutDashboard className="h-5 w-5 text-white" />
           </div>
-          <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
-            <Badge variant="secondary" className="text-xs sm:text-sm">Welcome, Admin</Badge>
-            <Button variant="outline" onClick={handleLogout} size="sm" className="text-xs sm:text-sm">
-              <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="inline">Logout</span>
-            </Button>
+          <div>
+            <p className="font-bold text-sm text-gray-900 dark:text-white leading-none">Physiq</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">Admin Panel</p>
           </div>
         </div>
+        {/* Nav items */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+            const active = activeSection === id;
+            return (
+              <button key={id} onClick={() => { setActiveSection(id); setSidebarOpen(false); }}
+                className={["w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all", active ? "text-white shadow-sm" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"].join(" ")}
+                style={active ? {background:"linear-gradient(135deg,#EF4E23,#c83a10)"} : {}}>
+                <Icon className="h-4 w-4 shrink-0" />
+                {label}
+                {active && <ChevronRight className="h-3 w-3 ml-auto opacity-70" />}
+              </button>
+            );
+          })}
+        </nav>
+        {/* Sidebar footer */}
+        <div className="px-3 py-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
+          <div className="px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Logged in as</p>
+            <p className="text-xs font-semibold text-gray-900 dark:text-white truncate mt-0.5">{user?.email}</p>
+          </div>
+          <Button variant="ghost" onClick={handleLogout} className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950" size="sm">
+            <LogOut className="h-4 w-4 mr-2" />Logout
+          </Button>
+        </div>
+      </aside>
 
-        
+      {/* ── Main content ── */}
+      <div className="flex-1 lg:ml-64 min-h-screen flex flex-col">
+        {/* Topbar */}
+        <header className="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 lg:px-6 py-3 flex items-center gap-3">
+          <Button variant="ghost" size="sm" className="lg:hidden -ml-1" onClick={() => setSidebarOpen(true)}>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">{currentLabel}</h1>
+          </div>
+          <Badge variant="secondary" className="text-xs hidden sm:flex shrink-0">Admin</Badge>
+        </header>
 
-        
-        {/* Order Stats */}
-        <AdminOrderStats />
+        {/* Page content */}
+        <main className="flex-1 p-4 lg:p-6">
+          <div className="space-y-6">
+          {!["analytics", "orders"].includes(activeSection) && <AdminOrderStats />}
 
-        {/* Helpful Info Card */}
-        <Card className="mb-6 border-blue-200 bg-blue-50/10">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-start space-x-2 sm:space-x-3">
-              <div className="text-blue-500 mt-1 flex-shrink-0">
-                <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-blue-900 mb-2 text-sm sm:text-base">
-                  How to Edit Products
-                </h3>
-                <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
-                  <li className="break-words">
-                    • <strong>View Products:</strong> All your products are
-                    listed in the table below
-                  </li>
-                  <li className="break-words">
-                    • <strong>Edit Product:</strong> Click the ✏️ (edit) button
-                    next to any product
-                  </li>
-                  <li className="break-words">
-                    • <strong>Update Details:</strong> Modify name, price,
-                    description, stock, features, etc.
-                  </li>
-                  <li className="break-words">
-                    • <strong>Save Changes:</strong> Click "Save Changes" to
-                    update the product
-                  </li>
-                  <li className="break-words">
-                    • <strong>Active/Inactive:</strong> Toggle product
-                    visibility on your website
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-
-        {/* Main Content */}
-        <Tabs defaultValue="products" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="blog">Blog Posts</TabsTrigger>
-            <TabsTrigger value="featured">Featured</TabsTrigger>
-            <TabsTrigger value="videos">Videos</TabsTrigger>
-            <TabsTrigger value="coupons">Coupons</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="products" className="space-y-6">
+          {activeSection === "products" && (<div className="space-y-6">
             {/* Add Product Button */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-xl sm:text-2xl font-bold">Product Management</h2>
@@ -1358,16 +1416,18 @@ const Admin = () => {
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Pain Relief">
-                              Pain Relief
-                            </SelectItem>
-                            <SelectItem value="Recovery Products">Recovery Products</SelectItem>
-                            <SelectItem value="Compression Wear">
-                              Compression Wear
-                            </SelectItem>
-                            <SelectItem value="Warm-up Products">Warm-up Products</SelectItem>
+                            {productCategoryOptions.map((name) => (
+                              <SelectItem key={name} value={name}>
+                                {name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
+                        {categories.length === 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Options from your product catalog. Use Categories tab after running apply-missing-tables.sql.
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -2065,9 +2125,9 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>)}
 
-         <TabsContent value="categories" className="space-y-6">
+         {activeSection === "categories" && (<div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-xl sm:text-2xl font-bold">Category Management</h2>
             <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
@@ -2588,9 +2648,9 @@ const Admin = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </TabsContent>
+        </div>)}
 
-        <TabsContent value="blog" className="space-y-6">
+        {activeSection === "blog" && (<div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-xl sm:text-2xl font-bold">Blog Posts Management</h2>
             <Dialog open={isBlogDialogOpen} onOpenChange={setIsBlogDialogOpen}>
@@ -3168,26 +3228,26 @@ const Admin = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </TabsContent>
+        </div>)}
 
-        <TabsContent value="featured" className="space-y-6">
+        {activeSection === "featured" && (<div className="space-y-6">
            <div className="space-y-8">
              <PromotionalBannerManager />
              <HeroCarouselManager />
              <HeroSectionManager />
              <FeaturedProductsManager />
            </div>
-         </TabsContent>
+         </div>)}
 
-          <TabsContent value="videos" className="space-y-6">
+          {activeSection === "videos" && (<div className="space-y-6">
             <VideoManagement 
               products={products} 
               onVideoUploaded={loadData}
             />
-          </TabsContent>
+          </div>)}
 
           {/* Coupons Management - simple list/create */}
-          <TabsContent value="coupons" className="space-y-6">
+          {activeSection === "coupons" && (<div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Coupons</CardTitle>
@@ -3197,29 +3257,27 @@ const Admin = () => {
                 <CouponsManager />
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>)}
 
-          <TabsContent value="orders" className="space-y-6">
+          {activeSection === "orders" && (<div className="space-y-6">
             <OrderManagement />
-          </TabsContent>
+          </div>)}
 
-          <TabsContent value="notifications" className="space-y-6">
+          {activeSection === "notifications" && (<div className="space-y-6">
             <NotificationLogs />
-          </TabsContent>
+          </div>)}
 
-          <TabsContent value="analytics" className="space-y-6">
+          {activeSection === "analytics" && (<div className="space-y-6">
             <div>
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
-                <p className="text-muted-foreground">
-                  View your store performance and insights
-                </p>
-              </div>
-              <AdminAnalytics />
+              <h2 className="text-2xl font-bold">Analytics</h2>
+              <p className="text-muted-foreground mt-1">
+                Store performance (revenue counts paid orders only). Zeros mean no completed payments yet.
+              </p>
             </div>
-          </TabsContent>
+            <AdminAnalytics />
+          </div>)}
 
-          <TabsContent value="settings" className="space-y-6">
+          {activeSection === "settings" && (<div className="space-y-6">
             <div>
               <div className="mb-6">
                 <h2 className="text-2xl font-bold">Admin Settings</h2>
@@ -3229,9 +3287,9 @@ const Admin = () => {
               </div>
               <AdminSettings />
             </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+          </div>)}
+          </div>
+        </main>
 
       {/* Edit Product Dialog */}
       <Dialog
@@ -3278,12 +3336,11 @@ const Admin = () => {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pain Relief">
-                      Pain Relief
-                    </SelectItem>
-                    <SelectItem value="Recovery Products">Recovery Products</SelectItem>
-                    <SelectItem value="Compression Wear">Compression Wear</SelectItem>
-                    <SelectItem value="Warm-up Products">Warm-up Products</SelectItem>
+                    {productCategoryOptions.map((name) => (
+                      <SelectItem key={name} value={name}>
+                        {name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -3688,6 +3745,7 @@ const Admin = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };
