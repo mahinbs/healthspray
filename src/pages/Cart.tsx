@@ -15,6 +15,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useCartTotals } from "@/hooks/useCartTotals";
 import { formatPrice } from "@/services/api";
 import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
@@ -25,7 +26,16 @@ import Header from "@/components/Header";
 const Cart = () => {
   const navigate = useNavigate();
   const { state, removeItem, updateQuantity, clearCart } = useCart();
+  const { grandTotal, shippingFee, isFreeShipping, settings, subtotalAfterDiscount } = useCartTotals();
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+
+  const shippingLabel = isFreeShipping
+    ? 'Free'
+    : formatPrice(shippingFee);
+  const shippingHint =
+    !isFreeShipping && subtotalAfterDiscount > 0
+      ? `Add ${formatPrice(Math.max(0, settings.free_shipping_minimum - subtotalAfterDiscount))} more for free delivery`
+      : null;
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -129,14 +139,19 @@ const Cart = () => {
               
               <div className="flex justify-between">
                 <span className="text-sm sm:text-base text-muted-foreground">Shipping</span>
-                <span className="text-sm sm:text-base text-green-600 dark:text-green-400">Free</span>
+                <span className={`text-sm sm:text-base ${isFreeShipping ? 'text-green-600 dark:text-green-400' : 'text-foreground'}`}>
+                  {shippingLabel}
+                </span>
               </div>
+              {shippingHint && (
+                <p className="text-xs text-muted-foreground">{shippingHint}</p>
+              )}
               
               <div className="border-t border-border pt-3 sm:pt-4">
                 <div className="flex justify-between">
                   <span className="text-base sm:text-lg font-semibold text-foreground">Total</span>
                   <span className="text-lg sm:text-xl font-bold text-primary">
-                    {formatPrice(state.finalTotal)}
+                    {formatPrice(grandTotal)}
                   </span>
                 </div>
               </div>
@@ -280,14 +295,19 @@ const Cart = () => {
                 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
-                  <span className="text-green-600 dark:text-green-400">Free</span>
+                  <span className={isFreeShipping ? 'text-green-600 dark:text-green-400' : 'text-foreground'}>
+                    {shippingLabel}
+                  </span>
                 </div>
+                {shippingHint && (
+                  <p className="text-xs text-muted-foreground">{shippingHint}</p>
+                )}
                 
                 <div className="border-t border-border pt-4">
                   <div className="flex justify-between">
                     <span className="text-lg font-semibold text-foreground">Total</span>
                     <span className="text-xl font-bold text-primary">
-                      {formatPrice(state.finalTotal)}
+                      {formatPrice(grandTotal)}
                     </span>
                   </div>
                   <p className="text-gray-500">*Inclusive of all taxes</p>
@@ -307,7 +327,9 @@ const Cart = () => {
               <div className="mt-6 space-y-3">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Truck className="h-4 w-4 mr-2 text-green-600 dark:text-green-400" />
-                  Free shipping on all orders
+                  {isFreeShipping
+                    ? 'Free delivery on this order'
+                    : `Free delivery on orders ₹${settings.free_shipping_minimum}+`}
                 </div>
                 {/*                  <div className="flex items-center text-sm text-muted-foreground">
                    <Shield className="h-4 w-4 mr-2 text-primary" />

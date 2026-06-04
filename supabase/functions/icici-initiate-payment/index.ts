@@ -75,8 +75,17 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Validate coupon on server if provided
-    let finalAmount = amount;
+    let subtotal = 0;
+    for (const item of items) {
+      const price = Number(item.product?.price ?? 0);
+      const qty = Number(item.quantity ?? 1);
+      if (!Number.isFinite(price) || !Number.isFinite(qty) || qty < 1) {
+        throw new Error("Invalid cart item");
+      }
+      subtotal += price * qty;
+    }
+
+    let discount = 0;
     if (coupon?.code) {
       const { data: dbCoupon } = await supabaseClient
         .from('coupons')
@@ -89,13 +98,38 @@ serve(async (req) => {
         const now = new Date();
         if (now >= new Date(dbCoupon.starts_at) && now <= new Date(dbCoupon.ends_at)) {
           if (dbCoupon.type === 'percentage') {
-            finalAmount = amount - (amount * dbCoupon.value / 100);
+            discount = subtotal * Number(dbCoupon.value) / 100;
+            if (dbCoupon.max_discount != null) {
+              discount = Math.min(discount, Number(dbCoupon.max_discount));
+            }
           } else {
-            finalAmount = Math.max(0, amount - dbCoupon.value);
+            discount = Number(dbCoupon.value);
           }
-          finalAmount = Math.max(1, finalAmount);
+          discount = Math.min(discount, subtotal);
         }
       }
+    } else if (coupon?.discount != null) {
+      discount = Math.min(Number(coupon.discount), subtotal);
+    }
+
+    const afterDiscount = Math.max(0, subtotal - discount);
+
+    const { data: storeSettings } = await supabaseService
+      .from("store_settings")
+      .select("free_shipping_minimum, delivery_charge")
+      .eq("id", "default")
+      .maybeSingle();
+
+    const freeMin = Number(storeSettings?.free_shipping_minimum ?? 500);
+    const deliveryCharge = Number(storeSettings?.delivery_charge ?? 49);
+    const shippingFee =
+      afterDiscount <= 0 ? 0 : afterDiscount >= freeMin ? 0 : deliveryCharge;
+
+    const finalAmount = afterDiscount + shippingFee;
+
+    if (Math.abs(finalAmount - Number(amount)) > 0.02) {
+      errLog("Amount mismatch", { client: amount, server: finalAmount, subtotal, discount, shippingFee });
+      throw new Error("Order total mismatch. Please refresh your cart and try again.");
     }
 
     // ICICI config from environment

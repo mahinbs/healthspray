@@ -72,6 +72,7 @@ import { supabase } from "@/integrations/supabase/client";
 import OrderManagement from "@/components/OrderManagement";
 import AdminAnalytics from "@/components/AdminAnalytics";
 import AdminSettings from "@/components/AdminSettings";
+import AdminStoreShippingSettings from "@/components/AdminStoreShippingSettings";
 import AdminOrderStats from "@/components/AdminOrderStats";
 import VideoManagement from "@/components/VideoManagement";
 import CouponsManager from "@/components/CouponsManager";
@@ -3285,6 +3286,7 @@ const Admin = () => {
                   Manage your admin account and preferences
                 </p>
               </div>
+              <AdminStoreShippingSettings />
               <AdminSettings />
             </div>
           </div>)}

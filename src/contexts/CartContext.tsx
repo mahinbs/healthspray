@@ -40,6 +40,7 @@ interface CartState {
     max_discount: number | null;
     discountAmount: number;
   } | null;
+  /** Subtotal after coupon discount (before shipping) */
   finalTotal: number;
 }
 
@@ -52,6 +53,22 @@ type CartAction =
   | { type: 'SET_SYNCING'; payload: boolean }
   | { type: 'APPLY_COUPON'; payload: { id: string; code: string; type: 'percentage' | 'fixed'; value: number; max_discount: number | null; discountAmount: number } }
   | { type: 'REMOVE_COUPON' };
+
+function sumCart(items: CartItem[]) {
+  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  return { total, itemCount };
+}
+
+function withCouponTotals(
+  items: CartItem[],
+  coupon: CartState['couponApplied']
+): Pick<CartState, 'items' | 'total' | 'itemCount' | 'finalTotal'> {
+  const { total, itemCount } = sumCart(items);
+  const discount = coupon?.discountAmount ?? 0;
+  const finalTotal = Math.max(0, total - discount);
+  return { items, total, itemCount, finalTotal };
+}
 
 // Initial state
 const initialState: CartState = {
@@ -68,65 +85,36 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_ITEM': {
       const existingItem = state.items.find(item => item.product.id === action.payload.id);
-      
+
       if (existingItem) {
         const updatedItems = state.items.map(item =>
           item.product.id === action.payload.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
-        
-        return {
-          ...state,
-          items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-          itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
-          finalTotal: state.couponApplied 
-            ? Math.max(1, updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0) - state.couponApplied.discountAmount)
-            : updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-        };
-      } else {
-        const newItem: CartItem = { product: action.payload, quantity: 1 };
-        const updatedItems = [...state.items, newItem];
-        
-        return {
-          ...state,
-          items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-          itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
-          finalTotal: state.couponApplied 
-            ? Math.max(1, updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0) - state.couponApplied.discountAmount)
-            : updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-        };
+        return { ...state, ...withCouponTotals(updatedItems, state.couponApplied) };
       }
+
+      const updatedItems = [...state.items, { product: action.payload, quantity: 1 }];
+      return { ...state, ...withCouponTotals(updatedItems, state.couponApplied) };
     }
-    
+
     case 'REMOVE_ITEM': {
       const updatedItems = state.items.filter(item => item.product.id !== action.payload);
-      
-      return {
-        ...state,
-        items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-        itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
-      };
+      return { ...state, ...withCouponTotals(updatedItems, state.couponApplied) };
     }
-    
+
     case 'UPDATE_QUANTITY': {
-      const updatedItems = state.items.map(item =>
-        item.product.id === action.payload.productId
-          ? { ...item, quantity: Math.max(0, action.payload.quantity) }
-          : item
-      ).filter(item => item.quantity > 0);
-      
-      return {
-        ...state,
-        items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-        itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
-      };
+      const updatedItems = state.items
+        .map(item =>
+          item.product.id === action.payload.productId
+            ? { ...item, quantity: Math.max(0, action.payload.quantity) }
+            : item
+        )
+        .filter(item => item.quantity > 0);
+      return { ...state, ...withCouponTotals(updatedItems, state.couponApplied) };
     }
-    
+
     case 'CLEAR_CART':
       return {
         ...state,
@@ -136,41 +124,29 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         couponApplied: null,
         finalTotal: 0,
       };
-    
+
     case 'LOAD_CART': {
       const items = action.payload;
-      return {
-        ...state,
-        items,
-        total: items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
-        itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-      };
+      return { ...state, ...withCouponTotals(items, state.couponApplied) };
     }
-    
-    case 'SET_SYNCING': {
-      return {
-        ...state,
-        isSyncing: action.payload,
-      };
-    }
-    
-    case 'APPLY_COUPON': {
-      const finalTotal = Math.max(1, state.total - action.payload.discountAmount);
+
+    case 'SET_SYNCING':
+      return { ...state, isSyncing: action.payload };
+
+    case 'APPLY_COUPON':
       return {
         ...state,
         couponApplied: action.payload,
-        finalTotal,
+        finalTotal: Math.max(0, state.total - action.payload.discountAmount),
       };
-    }
-    
-    case 'REMOVE_COUPON': {
+
+    case 'REMOVE_COUPON':
       return {
         ...state,
         couponApplied: null,
         finalTotal: state.total,
       };
-    }
-    
+
     default:
       return state;
   }
@@ -235,14 +211,14 @@ const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   // Save cart to localStorage and sync with backend whenever it changes
   useEffect(() => {
     localStorage.setItem('zippty-cart', JSON.stringify(state.items));
-    
+
     // Check if cart data has actually changed
     const currentCartData = JSON.stringify(state.items);
     if (currentCartData === lastCartDataRef.current) {
       return; // No change, skip sync
     }
     lastCartDataRef.current = currentCartData;
-    
+
     // Sync with backend for authenticated users with debouncing and rate limiting
     if (user) {
       const now = Date.now();
@@ -251,7 +227,7 @@ const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         if (syncTimeoutRef.current) {
           clearTimeout(syncTimeoutRef.current);
         }
-        
+
         // Debounce the sync to avoid rapid successive calls
         syncTimeoutRef.current = setTimeout(() => {
           syncCartWithBackend();
@@ -262,28 +238,28 @@ const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   const syncCartWithBackend = async () => {
     if (!user) return;
-    
+
     const now = Date.now();
     if (now - lastSyncRef.current < SYNC_COOLDOWN) {
       console.log('Skipping sync due to rate limiting');
       return;
     }
-    
+
     dispatch({ type: 'SET_SYNCING', payload: true });
     try {
       await cartAPI.syncCart(state.items);
       lastSyncRef.current = now;
     } catch (error: any) {
       console.error('Error syncing cart with backend:', error);
-      
+
       // Handle rate limiting more aggressively
-      if (error?.message?.includes('rate limit') || 
-          error?.message?.includes('429') || 
+      if (error?.message?.includes('rate limit') ||
+          error?.message?.includes('429') ||
           error?.status === 429 ||
           error?.code === 'RATE_LIMIT_EXCEEDED') {
         console.warn('Rate limit hit, extending cooldown period');
         lastSyncRef.current = now + 10000; // 10 seconds cooldown
-        
+
         // Store cart locally as backup
         localStorage.setItem('zippty-cart-backup', JSON.stringify({
           items: state.items,
@@ -292,7 +268,7 @@ const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       } else if (error?.message?.includes('Too Many Requests')) {
         console.warn('Too many requests, extending cooldown period');
         lastSyncRef.current = now + 15000; // 15 seconds cooldown
-        
+
         // Store cart locally as backup
         localStorage.setItem('zippty-cart-backup', JSON.stringify({
           items: state.items,
@@ -393,4 +369,4 @@ function useCart() {
   return context;
 }
 
-export { CartProvider, useCart }; 
+export { CartProvider, useCart };

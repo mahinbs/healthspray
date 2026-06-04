@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useCart } from '@/contexts/CartContext';
+import { useCartTotals } from '@/hooks/useCartTotals';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -27,7 +28,8 @@ interface DeliveryAddress {
 }
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
-  const { state: { items, total, couponApplied, finalTotal } } = useCart();
+  const { state: { items, total, couponApplied } } = useCart();
+  const { grandTotal, shippingFee, isFreeShipping, settings } = useCartTotals();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -79,7 +81,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     try {
       const { data, error } = await supabase.functions.invoke('icici-initiate-payment', {
         body: {
-          amount: finalTotal,
+          amount: grandTotal,
+          shippingFee,
           items,
           deliveryAddress: address,
           idempotency_key: idempotencyKeyRef.current,
@@ -132,7 +135,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
     }
   };
 
-  const finalAmount = finalTotal;
+  const finalAmount = grandTotal;
 
   return (
     <Dialog open={isOpen} onOpenChange={loading ? undefined : onClose}>
@@ -246,8 +249,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
               )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
-                <span className="text-green-600 font-medium">FREE</span>
+                <span className={isFreeShipping ? 'text-green-600 font-medium' : ''}>
+                  {isFreeShipping ? 'FREE' : `₹${shippingFee.toFixed(2)}`}
+                </span>
               </div>
+              {!isFreeShipping && (
+                <p className="text-xs text-muted-foreground">
+                  Free delivery on orders ₹{settings.free_shipping_minimum}+
+                </p>
+              )}
               <div className="flex justify-between font-bold text-base border-t pt-2 mt-2">
                 <span>Total</span>
                 <span>₹{finalAmount.toFixed(2)}</span>
