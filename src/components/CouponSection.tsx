@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,8 +9,52 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Tag, X, Loader2 } from 'lucide-react';
 
+interface CouponRow {
+  id: string;
+  code: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+  max_discount: number | null;
+  starts_at: string;
+  ends_at: string;
+  is_active: boolean;
+  usage_limit_per_user: number;
+  total_usage_limit: number | null;
+  total_usage: number;
+  min_cart_value: number | null;
+  description?: string | null;
+}
+
 interface CouponSectionProps {
   className?: string;
+}
+
+function computeDiscount(subtotal: number, coupon: CouponRow): number {
+  const couponValue = Number(coupon.value);
+  if (Number.isNaN(couponValue) || couponValue <= 0) {
+    throw new Error('Invalid coupon value');
+  }
+  if (coupon.type !== 'percentage' && coupon.type !== 'fixed') {
+    throw new Error('Invalid coupon type');
+  }
+
+  let discount =
+    coupon.type === 'percentage'
+      ? (subtotal * couponValue) / 100
+      : couponValue;
+
+  if (coupon.type === 'percentage' && coupon.max_discount) {
+    const maxDiscount = Number(coupon.max_discount);
+    if (!Number.isNaN(maxDiscount) && maxDiscount > 0) {
+      discount = Math.min(discount, maxDiscount);
+    }
+  }
+
+  discount = Math.min(discount, subtotal);
+  if (Number.isNaN(discount) || discount < 0) {
+    throw new Error('Invalid discount calculation');
+  }
+  return Number(discount.toFixed(2));
 }
 
 export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) => {
@@ -19,30 +63,37 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
   const [couponCode, setCouponCode] = useState('');
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [loadingCoupons, setLoadingCoupons] = useState(false);
-  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [availableCoupons, setAvailableCoupons] = useState<CouponRow[]>([]);
   const [showCouponsPopup, setShowCouponsPopup] = useState(false);
 
-  // Load available coupons
+  const getSubtotal = useCallback(
+    () =>
+      state.items.reduce((acc, item) => {
+        const price = Number(item.product.price) || 0;
+        const quantity = Number(item.quantity) || 0;
+        return acc + price * quantity;
+      }, 0),
+    [state.items]
+  );
+
   const loadAvailableCoupons = async () => {
-    if (!user) return;
-    
     setLoadingCoupons(true);
     try {
       const { data: coupons, error } = await supabase
-        .from('coupons' as any)
+        .from('coupons')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Filter coupons that are currently valid
       const now = new Date();
-      const validCoupons = (coupons as any[])?.filter((coupon: any) => {
-        const startDate = new Date(coupon.starts_at);
-        const endDate = new Date(coupon.ends_at);
-        return now >= startDate && now <= endDate;
-      }) || [];
+      const validCoupons =
+        (coupons as CouponRow[])?.filter((coupon) => {
+          const startDate = new Date(coupon.starts_at);
+          const endDate = new Date(coupon.ends_at);
+          return now >= startDate && now <= endDate;
+        }) ?? [];
 
       setAvailableCoupons(validCoupons);
     } catch (error) {
@@ -53,91 +104,62 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
   };
 
   useEffect(() => {
+    loadAvailableCoupons();
+  }, []);
+
+  const validateAndApply = async (coupon: CouponRow) => {
+    const subtotal = getSubtotal();
+
+    if (Number.isNaN(subtotal) || subtotal <= 0) {
+      throw new Error('Add items to your cart first');
+    }
+
+    const now = new Date();
+    if (now < new Date(coupon.starts_at) || now > new Date(coupon.ends_at)) {
+      throw new Error('Coupon is not active');
+    }
+
+    if (coupon.min_cart_value && subtotal < coupon.min_cart_value) {
+      throw new Error(`Minimum cart value of ₹${coupon.min_cart_value} required for this coupon`);
+    }
+
+    if (
+      coupon.total_usage_limit !== null &&
+      coupon.total_usage >= coupon.total_usage_limit
+    ) {
+      throw new Error('Coupon usage limit reached');
+    }
+
     if (user) {
-      loadAvailableCoupons();
-    }
-  }, [user]);
-
-  // Apply coupon from available list
-  const handleApplyCouponFromList = async (coupon: any) => {
-    if (!user) {
-      toast.error('Login to apply a coupon');
-      return;
-    }
-    
-    setApplyingCoupon(true);
-    try {
-      // Check minimum cart value
-      const subtotal = state.items.reduce((acc, item) => {
-        const price = Number(item.product.price) || 0;
-        const quantity = Number(item.quantity) || 0;
-        return acc + (price * quantity);
-      }, 0);
-      
-      if (isNaN(subtotal) || subtotal <= 0) {
-        throw new Error('Invalid cart total');
-      }
-      
-      if ((coupon as any).min_cart_value && subtotal < (coupon as any).min_cart_value) {
-        throw new Error(`Minimum cart value of ₹${(coupon as any).min_cart_value} required for this coupon`);
-      }
-
-      // Check per-user usage
       const { count: userCount } = await supabase
-        .from('coupon_usages' as any)
+        .from('coupon_usages')
         .select('id', { count: 'exact', head: true })
-        .eq('coupon_id', (coupon as any).id)
+        .eq('coupon_id', coupon.id)
         .eq('user_id', user.id);
 
-      if ((userCount || 0) >= ((coupon as any).usage_limit_per_user ?? 1)) {
+      if ((userCount || 0) >= (coupon.usage_limit_per_user ?? 1)) {
         throw new Error('You have already used this coupon');
       }
+    }
 
-      // Compute discount
-      let discount = 0;
-      
-      // Validate coupon value
-      const couponValue = Number((coupon as any).value);
-      if (isNaN(couponValue) || couponValue <= 0) {
-        throw new Error('Invalid coupon value');
-      }
-      
-      // Validate coupon type
-      const couponType = (coupon as any).type;
-      if (!couponType || (couponType !== 'percentage' && couponType !== 'fixed')) {
-        throw new Error('Invalid coupon type');
-      }
-      
-      if (couponType === 'percentage') {
-        discount = (subtotal * couponValue) / 100;
-        if ((coupon as any).max_discount) {
-          const maxDiscount = Number((coupon as any).max_discount);
-          if (!isNaN(maxDiscount) && maxDiscount > 0) {
-            discount = Math.min(discount, maxDiscount);
-          }
-        }
-      } else {
-        discount = couponValue;
-      }
-      
-      // Ensure discount doesn't exceed subtotal
-      discount = Math.min(discount, subtotal);
-      
-      // Ensure discount is a valid number
-      if (isNaN(discount) || discount < 0) {
-        throw new Error('Invalid discount calculation');
-      }
+    const discount = computeDiscount(subtotal, coupon);
 
-      applyCoupon({
-        id: (coupon as any).id,
-        code: (coupon as any).code,
-        type: (coupon as any).type,
-        value: Number((coupon as any).value),
-        max_discount: (coupon as any).max_discount ? Number((coupon as any).max_discount) : null,
-        discountAmount: Number(discount.toFixed(2)),
-      });
-      
-      toast.success(`Coupon ${(coupon as any).code} applied! You saved ₹${discount.toFixed(2)}`);
+    applyCoupon({
+      id: coupon.id,
+      code: coupon.code,
+      type: coupon.type,
+      value: Number(coupon.value),
+      max_discount: coupon.max_discount ? Number(coupon.max_discount) : null,
+      discountAmount: discount,
+    });
+
+    toast.success(`Coupon ${coupon.code} applied! You saved ₹${discount.toFixed(2)}`);
+  };
+
+  const handleApplyCouponFromList = async (coupon: CouponRow) => {
+    setApplyingCoupon(true);
+    try {
+      await validateAndApply(coupon);
       setShowCouponsPopup(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to apply coupon');
@@ -146,112 +168,26 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
     }
   };
 
-  // Apply coupon from input
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       toast.error('Please enter a coupon code');
       return;
     }
 
-    if (!user) {
-      toast.error('Login to apply a coupon');
-      return;
-    }
-    
     setApplyingCoupon(true);
     try {
-      // Find coupon by code
-      const { data: coupons, error } = await supabase
-        .from('coupons' as any)
+      const { data: coupon, error } = await supabase
+        .from('coupons')
         .select('*')
         .eq('code', couponCode.toUpperCase())
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
-      if (error || !coupons) {
+      if (error || !coupon) {
         throw new Error('Invalid coupon code');
       }
 
-      const coupon = coupons as any;
-
-      // Date window
-      const now = new Date();
-      if (now < new Date((coupon as any).starts_at) || now > new Date((coupon as any).ends_at)) {
-        throw new Error('Coupon is not active');
-      }
-
-      // Check minimum cart value
-      const subtotal = Number(state.total) || 0;
-      
-      if (isNaN(subtotal) || subtotal <= 0) {
-        throw new Error('Invalid cart total');
-      }
-      
-      if ((coupon as any).min_cart_value && subtotal < (coupon as any).min_cart_value) {
-        throw new Error(`Minimum cart value of ₹${(coupon as any).min_cart_value} required for this coupon`);
-      }
-
-      // Total usage limit
-      if ((coupon as any).total_usage_limit !== null && (coupon as any).total_usage >= (coupon as any).total_usage_limit) {
-        throw new Error('Coupon usage limit reached');
-      }
-
-      // Per-user usage
-      const { count: userCount } = await supabase
-        .from('coupon_usages' as any)
-        .select('id', { count: 'exact', head: true })
-        .eq('coupon_id', (coupon as any).id)
-        .eq('user_id', user.id);
-
-      if ((userCount || 0) >= ((coupon as any).usage_limit_per_user ?? 1)) {
-        throw new Error('You have already used this coupon');
-      }
-
-      // Compute discount
-      let discount = 0;
-      
-      // Validate coupon value
-      const couponValue = Number((coupon as any).value);
-      if (isNaN(couponValue) || couponValue <= 0) {
-        throw new Error('Invalid coupon value');
-      }
-      
-      // Validate coupon type
-      const couponType = (coupon as any).type;
-      if (!couponType || (couponType !== 'percentage' && couponType !== 'fixed')) {
-        throw new Error('Invalid coupon type');
-      }
-      
-      if (couponType === 'percentage') {
-        discount = (subtotal * couponValue) / 100;
-        if ((coupon as any).max_discount) {
-          const maxDiscount = Number((coupon as any).max_discount);
-          if (!isNaN(maxDiscount) && maxDiscount > 0) {
-            discount = Math.min(discount, maxDiscount);
-          }
-        }
-      } else {
-        discount = couponValue;
-      }
-      
-      // Ensure discount doesn't exceed subtotal
-      discount = Math.min(discount, subtotal);
-      
-      // Ensure discount is a valid number
-      if (isNaN(discount) || discount < 0) {
-        throw new Error('Invalid discount calculation');
-      }
-
-      applyCoupon({
-        id: (coupon as any).id,
-        code: (coupon as any).code,
-        type: (coupon as any).type,
-        value: Number((coupon as any).value),
-        max_discount: (coupon as any).max_discount ? Number((coupon as any).max_discount) : null,
-        discountAmount: Number(discount.toFixed(2)),
-      });
-      
-      toast.success(`Coupon ${(coupon as any).code} applied! You saved ₹${discount.toFixed(2)}`);
+      await validateAndApply(coupon as CouponRow);
       setCouponCode('');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to apply coupon');
@@ -265,9 +201,15 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
     toast.success('Coupon removed');
   };
 
+  const openCouponsPopup = () => {
+    setShowCouponsPopup(true);
+    if (availableCoupons.length === 0) {
+      loadAvailableCoupons();
+    }
+  };
+
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* Coupon Input */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Coupon Code</Label>
         <div className="flex gap-2">
@@ -284,29 +226,25 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
             size="sm"
             className="px-4"
           >
-            {applyingCoupon ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              'Apply'
-            )}
+            {applyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
           </Button>
         </div>
       </div>
 
-      {/* Available Coupons Button */}
-      {availableCoupons.length > 0 && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowCouponsPopup(true)}
-          className="w-full h-7 px-3 text-xs"
-          disabled={!!state.couponApplied}
-        >
-          View Available Coupons ({availableCoupons.length})
-        </Button>
-      )}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={openCouponsPopup}
+        className="w-full h-7 px-3 text-xs"
+        disabled={!!state.couponApplied}
+      >
+        {loadingCoupons
+          ? 'Loading offers…'
+          : availableCoupons.length > 0
+            ? `View Available Coupons (${availableCoupons.length})`
+            : 'View Available Coupons'}
+      </Button>
 
-      {/* Applied Coupon Display */}
       {state.couponApplied && (
         <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
           <div className="flex items-center gap-2">
@@ -316,11 +254,11 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
                 {state.couponApplied.code}
               </div>
               <div className="text-xs text-green-600 dark:text-green-400">
-                {state.couponApplied.type === 'percentage' 
-                  ? `${state.couponApplied.value}% off` 
-                  : `₹${state.couponApplied.value} off`
-                }
-                {state.couponApplied.max_discount && ` (max ₹${state.couponApplied.max_discount})`}
+                {state.couponApplied.type === 'percentage'
+                  ? `${state.couponApplied.value}% off`
+                  : `₹${state.couponApplied.value} off`}
+                {state.couponApplied.max_discount &&
+                  ` (max ₹${state.couponApplied.max_discount})`}
               </div>
             </div>
           </div>
@@ -335,13 +273,12 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
         </div>
       )}
 
-      {/* Available Coupons Popup */}
       <Dialog open={showCouponsPopup} onOpenChange={setShowCouponsPopup}>
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Available Coupons</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-3">
             {loadingCoupons ? (
               <div className="flex justify-center py-4">
@@ -349,23 +286,25 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
               </div>
             ) : availableCoupons.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No coupons available at the moment.
+                No active coupons right now. Enter a code above if you have one.
               </p>
             ) : (
-              availableCoupons.map((coupon: any) => (
+              availableCoupons.map((coupon) => (
                 <div key={coupon.id} className="border rounded-lg p-3 space-y-2">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start gap-2">
                     <div>
                       <div className="font-semibold">{coupon.code}</div>
                       <div className="text-sm text-muted-foreground">
-                        {coupon.type === 'percentage' ? `${coupon.value}% off` : `₹${coupon.value} off`}
+                        {coupon.type === 'percentage'
+                          ? `${coupon.value}% off`
+                          : `₹${coupon.value} off`}
                         {coupon.max_discount && ` (max ₹${coupon.max_discount})`}
                       </div>
                     </div>
                     <Button
                       size="sm"
                       onClick={() => handleApplyCouponFromList(coupon)}
-                      disabled={applyingCoupon}
+                      disabled={applyingCoupon || !!state.couponApplied}
                     >
                       {applyingCoupon ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -375,13 +314,13 @@ export const CouponSection: React.FC<CouponSectionProps> = ({ className = '' }) 
                     </Button>
                   </div>
                   {coupon.description && (
-                    <div className="text-sm text-gray-600">
-                      {coupon.description}
-                    </div>
+                    <div className="text-sm text-muted-foreground">{coupon.description}</div>
                   )}
                   <div className="text-xs text-muted-foreground">
                     Valid until: {new Date(coupon.ends_at).toLocaleDateString()}
-                    {coupon.min_cart_value && ` • Min cart: ₹${coupon.min_cart_value}`}
+                    {coupon.min_cart_value
+                      ? ` • Min cart: ₹${coupon.min_cart_value}`
+                      : ''}
                   </div>
                 </div>
               ))
