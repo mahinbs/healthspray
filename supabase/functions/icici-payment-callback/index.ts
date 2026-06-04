@@ -122,10 +122,18 @@ serve(async (req) => {
 
     log("Found order", { orderId: order.id, currentStatus: order.status });
 
+    const addr = (order.delivery_address ?? {}) as Record<string, string>;
+    const trackEmail = encodeURIComponent(
+      (order.guest_email as string) ?? addr.email ?? ""
+    );
+    const trackQuery = trackEmail
+      ? `&email=${trackEmail}`
+      : "";
+
     // Idempotency: don't process twice
     if (order.status === "paid") {
       log("Order already paid, redirecting to success");
-      return htmlRedirect(`${appUrl}/payment-callback?status=success&orderId=${order.id}`);
+      return htmlRedirect(`${appUrl}/payment-callback?status=success&orderId=${order.id}${trackQuery}`);
     }
 
     const newStatus = isSuccess ? "paid" : "failed";
@@ -220,7 +228,7 @@ serve(async (req) => {
     }
 
     const status = isSuccess ? "success" : "failed";
-    return htmlRedirect(`${appUrl}/payment-callback?status=${status}&orderId=${order.id}`);
+    return htmlRedirect(`${appUrl}/payment-callback?status=${status}&orderId=${order.id}${trackQuery}`);
 
   } catch (error) {
     errLog("Unhandled error", error);

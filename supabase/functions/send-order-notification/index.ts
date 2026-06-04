@@ -70,6 +70,15 @@ const EVENT_CONFIG: Record<string, { label: string; icon: string; color: string;
 
 // ─── Email HTML Builder ───────────────────────────────────────────────────────
 
+function trackOrderUrl(order: Record<string, unknown>): string {
+  const id = (order.id as string) ?? "";
+  const addr = (order.delivery_address ?? {}) as Record<string, string>;
+  const email = (order.guest_email as string) ?? addr.email ?? "";
+  const params = new URLSearchParams({ orderId: id });
+  if (email) params.set("email", email);
+  return `${APP_URL()}/track-order?${params.toString()}`;
+}
+
 function buildEmailHTML(order: Record<string, unknown>, eventType: string): string {
   const cfg = EVENT_CONFIG[eventType] ?? {
     label: "Order Update",
@@ -83,7 +92,8 @@ function buildEmailHTML(order: Record<string, unknown>, eventType: string): stri
   const items = (order.items ?? []) as Array<{ product: { name: string; price: number; image?: string; category?: string }; quantity: number }>;
   const invoiceUrl    = (order.invoice_url as string) ?? "";
   const invoiceNumber = (order.invoice_number as string) ?? "";
-  const orderId       = ((order.id as string) ?? "").slice(-8).toUpperCase();
+  const orderId       = ((order.id as string) ?? "").substring(0, 8).toUpperCase();
+  const trackUrl      = trackOrderUrl(order);
   const payMode       = (order.payment_mode as string) ?? "Online Payment";
   const totalPaise    = order.amount as number;
   const discPaise     = (order.coupon_discount as number) ?? 0;
@@ -313,13 +323,13 @@ function buildEmailHTML(order: Record<string, unknown>, eventType: string): stri
               </a>
             </td>
             <td style="padding-left:8px;">
-              <a href="${APP_URL()}/orders" style="display:block;background:#f9fafb;border:2px solid #e5e7eb;color:#374151;text-decoration:none;text-align:center;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:700;">
-                View All Orders
+              <a href="${trackUrl}" style="display:block;background:#f9fafb;border:2px solid #e5e7eb;color:#374151;text-decoration:none;text-align:center;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:700;">
+                Track Order
               </a>
             </td>` : `
             <td>
-              <a href="${APP_URL()}/orders" style="display:block;background:linear-gradient(135deg,${BRAND_ORANGE},${BRAND_DARK});color:#fff;text-decoration:none;text-align:center;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:700;letter-spacing:0.3px;">
-                View Your Order
+              <a href="${trackUrl}" style="display:block;background:linear-gradient(135deg,${BRAND_ORANGE},${BRAND_DARK});color:#fff;text-decoration:none;text-align:center;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:700;letter-spacing:0.3px;">
+                Track Your Order
               </a>
             </td>`}
           </tr>
@@ -561,8 +571,8 @@ serve(async (req) => {
     const customerName = addr.fullName ?? "Customer";
     const customerMobile = addr.phone ?? "";
 
-    // Get customer email from auth
-    let userEmail = "customer@example.com";
+    const addrEmail = addr.email ?? "";
+    let userEmail = (order.guest_email as string) ?? addrEmail ?? "customer@example.com";
     if (order.user_id) {
       try {
         const { data: usr } = await supabaseService.auth.admin.getUserById(order.user_id);

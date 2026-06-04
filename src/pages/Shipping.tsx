@@ -120,7 +120,11 @@ const Shipping = () => {
                 
                 <div className="border-b border-slate-700 pb-4">
                   <h3 className="text-lg font-semibold mb-2">How can I track my order?</h3>
-                  <p className="text-muted-foreground">You'll receive a tracking number via email once your order ships. You can also track it in your account dashboard.</p>
+                  <p className="text-muted-foreground">
+                    After checkout, use your order ID and email on our{' '}
+                    <a href="/track-order" className="text-primary underline">Track Order</a> page (no login required).
+                    Logged-in customers can also view orders in their account.
+                  </p>
                 </div>
                 
                 <div className="border-b border-slate-700 pb-4">

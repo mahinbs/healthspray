@@ -56,7 +56,14 @@ const OrderDetails: React.FC = () => {
   const [generatingInvoice, setGeneratingInvoice] = useState(false);
 
   const fetchOrder = async () => {
-    if (!user || !orderId) { navigate('/'); return; }
+    if (!orderId) {
+      navigate('/');
+      return;
+    }
+    if (!user) {
+      navigate(`/track-order?orderId=${encodeURIComponent(orderId)}`);
+      return;
+    }
 
     try {
       const { data, error } = await supabase

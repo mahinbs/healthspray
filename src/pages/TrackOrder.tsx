@@ -1,0 +1,218 @@
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import Layout from '@/components/Layout';
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { GlassCard } from '@/components/ui/glass-card';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { formatPrice } from '@/services/api';
+import { Loader2, Package, Search, Download } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface TrackedOrder {
+  id: string;
+  amount: number;
+  status: string;
+  items: Array<{ product: { name: string; price: number; image?: string }; quantity: number }>;
+  delivery_address: Record<string, string>;
+  created_at: string;
+  updated_at: string;
+  invoice_number?: string;
+  invoice_url?: string;
+  coupon_code?: string;
+  coupon_discount?: number;
+}
+
+const statusLabel: Record<string, string> = {
+  pending: 'Payment pending',
+  paid: 'Confirmed',
+  failed: 'Payment failed',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+  return_requested: 'Return requested',
+  refunded: 'Refunded',
+};
+
+const TrackOrder = () => {
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const [orderId, setOrderId] = useState(searchParams.get('orderId') ?? '');
+  const [email, setEmail] = useState(searchParams.get('email') ?? '');
+  const [loading, setLoading] = useState(false);
+  const [order, setOrder] = useState<TrackedOrder | null>(null);
+
+  const lookup = async (id: string, em: string) => {
+    if (!id.trim() || !em.trim()) {
+      toast.error('Enter your order ID and the email used at checkout');
+      return;
+    }
+    setLoading(true);
+    setOrder(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('track-order', {
+        body: { orderId: id.trim(), email: em.trim() },
+      });
+      if (error) throw error;
+      if (!data?.success) {
+        toast.error(data?.error ?? 'Order not found');
+        return;
+      }
+      setOrder(data.order as TrackedOrder);
+    } catch {
+      toast.error('Could not look up order. Try again or contact support.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const qId = searchParams.get('orderId');
+    const qEmail = searchParams.get('email');
+    if (qId && qEmail) {
+      lookup(qId, qEmail);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    lookup(orderId, email);
+  };
+
+  const displayRef = order ? `#${order.id.substring(0, 8).toUpperCase()}` : '';
+
+  return (
+    <Layout>
+      <div className="container mx-auto px-4 py-12 max-w-2xl">
+        <div className="text-center mb-8">
+          <Package className="h-12 w-12 text-primary mx-auto mb-4" />
+          <h1 className="text-3xl font-bold">Track your order</h1>
+          <p className="text-muted-foreground mt-2">
+            Use the order ID from your confirmation email or payment success page, plus the email you used at checkout.
+          </p>
+        </div>
+
+        <GlassCard className="p-6 mb-8">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="orderId">Order ID</Label>
+              <Input
+                id="orderId"
+                placeholder="Full ID or short code (e.g. A1B2C3D4)"
+                value={orderId}
+                onChange={(e) => setOrderId(e.target.value)}
+                className="mt-1 font-mono text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Looking up…
+                </>
+              ) : (
+                <>
+                  <Search className="h-4 w-4 mr-2" />
+                  Track order
+                </>
+              )}
+            </Button>
+          </form>
+          {user && (
+            <p className="text-sm text-muted-foreground text-center mt-4">
+              Signed in?{' '}
+              <Link to="/orders" className="text-primary underline">
+                View all orders in your account
+              </Link>
+            </p>
+          )}
+        </GlassCard>
+
+        {order && (
+          <GlassCard className="p-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Order reference</p>
+                <p className="font-mono font-semibold">{displayRef}</p>
+                <p className="text-xs text-muted-foreground mt-1 break-all">{order.id}</p>
+              </div>
+              <Badge className="text-sm">
+                {statusLabel[order.status] ?? order.status}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Placed on</p>
+                <p className="font-medium">
+                  {new Date(order.created_at).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Total</p>
+                <p className="font-semibold text-green-600">{formatPrice(order.amount / 100)}</p>
+              </div>
+            </div>
+
+            {order.delivery_address?.fullName && (
+              <div className="text-sm border-t pt-4">
+                <p className="text-muted-foreground mb-1">Delivering to</p>
+                <p className="font-medium">{order.delivery_address.fullName}</p>
+                <p className="text-muted-foreground">
+                  {order.delivery_address.address}, {order.delivery_address.city},{' '}
+                  {order.delivery_address.state} — {order.delivery_address.pincode}
+                </p>
+              </div>
+            )}
+
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-2">Items</p>
+              <ul className="space-y-2 text-sm">
+                {(order.items ?? []).map((item, i) => (
+                  <li key={i} className="flex justify-between">
+                    <span>
+                      {item.product?.name ?? 'Product'} × {item.quantity}
+                    </span>
+                    <span>{formatPrice((item.product?.price ?? 0) * item.quantity)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {order.invoice_url && (
+              <Button variant="outline" className="w-full" asChild>
+                <a href={order.invoice_url} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download invoice
+                </a>
+              </Button>
+            )}
+          </GlassCard>
+        )}
+      </div>
+      <Footer />
+    </Layout>
+  );
+};
+
+export default TrackOrder;

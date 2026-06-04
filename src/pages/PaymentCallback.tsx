@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckCircle, XCircle, Loader2, Download, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Download, ArrowRight, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface OrderInfo {
   id: string;
@@ -17,6 +19,7 @@ interface OrderInfo {
 const PaymentCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { clearCart } = useCart();
   const [order, setOrder] = useState<OrderInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,22 +28,59 @@ const PaymentCallback: React.FC = () => {
   const status = searchParams.get('status');
   const orderId = searchParams.get('orderId');
   const reason = searchParams.get('reason');
+  const emailParam = searchParams.get('email');
   const isSuccess = status === 'success';
+
+  const trackEmail =
+    emailParam ??
+    (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('pending_order_email') : null) ??
+    '';
+
+  const trackOrderPath = (id: string, email: string) => {
+    const params = new URLSearchParams({ orderId: id });
+    if (email) params.set('email', email);
+    return `/track-order?${params.toString()}`;
+  };
 
   useEffect(() => {
     if (isSuccess) {
       clearCart();
       sessionStorage.removeItem('pending_order_id');
+      sessionStorage.removeItem('pending_order_email');
     }
 
-    if (orderId) {
-      fetchOrderWithPolling(orderId);
+    if (orderId && trackEmail) {
+      fetchOrderWithPolling(orderId, trackEmail);
+    } else if (orderId && user) {
+      fetchOrderAsUser(orderId);
     } else {
       setLoading(false);
     }
-  }, [orderId, isSuccess]);
+  }, [orderId, isSuccess, trackEmail, user]);
 
-  const fetchOrderWithPolling = async (id: string, attempts = 0) => {
+  const fetchOrderWithPolling = async (id: string, email: string, attempts = 0) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('track-order', {
+        body: { orderId: id, email },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error);
+
+      const o = data.order as OrderInfo;
+      setOrder(o);
+
+      if (isSuccess && !o.invoice_url && attempts < 10) {
+        setTimeout(() => fetchOrderWithPolling(id, email, attempts + 1), 2000);
+      } else {
+        if (o.invoice_url) setInvoiceReady(true);
+        setLoading(false);
+      }
+    } catch {
+      setLoading(false);
+    }
+  };
+
+  const fetchOrderAsUser = async (id: string, attempts = 0) => {
     try {
       const { data, error } = await supabase
         .from('orders')
@@ -52,15 +92,33 @@ const PaymentCallback: React.FC = () => {
 
       setOrder(data as OrderInfo);
 
-      // Poll for invoice generation (up to 10 attempts, 2s apart)
       if (isSuccess && !data.invoice_url && attempts < 10) {
-        setTimeout(() => fetchOrderWithPolling(id, attempts + 1), 2000);
+        setTimeout(() => fetchOrderAsUser(id, attempts + 1), 2000);
       } else {
         if (data.invoice_url) setInvoiceReady(true);
         setLoading(false);
       }
     } catch {
       setLoading(false);
+    }
+  };
+
+  const copyOrderId = () => {
+    const id = order?.id ?? orderId;
+    if (!id) return;
+    navigator.clipboard.writeText(id);
+    toast.success('Order ID copied');
+  };
+
+  const goToOrderDetails = () => {
+    if (!orderId) {
+      navigate(user ? '/orders' : '/track-order');
+      return;
+    }
+    if (user) {
+      navigate(`/orders/${orderId}`);
+    } else {
+      navigate(trackOrderPath(orderId, trackEmail));
     }
   };
 
@@ -77,6 +135,12 @@ const PaymentCallback: React.FC = () => {
   }
 
   if (isSuccess) {
+    const shortRef = order?.id
+      ? `#${order.id.substring(0, 8).toUpperCase()}`
+      : orderId
+        ? `#${orderId.substring(0, 8).toUpperCase()}`
+        : '';
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="max-w-md w-full text-center space-y-6">
@@ -93,23 +157,37 @@ const PaymentCallback: React.FC = () => {
             </p>
           </div>
 
-          {order && (
+          {(order || orderId) && (
             <div className="bg-muted/50 rounded-xl p-4 text-left space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Order ID</span>
-                <span className="font-mono font-medium">#{order.id.substring(0, 8).toUpperCase()}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Order reference</span>
+                <span className="font-mono font-medium">{shortRef}</span>
               </div>
-              {order.invoice_number && (
+              {(order?.id ?? orderId) && (
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={copyOrderId}
+                    className="w-full flex items-center justify-center gap-2 text-xs font-mono text-primary hover:underline"
+                  >
+                    <Copy className="h-3 w-3" />
+                    Copy full order ID for tracking
+                  </button>
+                </div>
+              )}
+              {order?.invoice_number && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Invoice No</span>
                   <span className="font-medium">{order.invoice_number}</span>
                 </div>
               )}
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Amount Paid</span>
-                <span className="font-semibold text-green-600">₹{(order.amount / 100).toFixed(2)}</span>
-              </div>
-              {(order.delivery_address as Record<string, string>)?.fullName && (
+              {order && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Amount Paid</span>
+                  <span className="font-semibold text-green-600">₹{(order.amount / 100).toFixed(2)}</span>
+                </div>
+              )}
+              {(order?.delivery_address as Record<string, string>)?.fullName && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivering to</span>
                   <span className="font-medium">{(order.delivery_address as Record<string, string>).fullName}</span>
@@ -119,7 +197,9 @@ const PaymentCallback: React.FC = () => {
           )}
 
           <p className="text-xs text-muted-foreground">
-            A confirmation email with your invoice has been sent to your registered email address.
+            {trackEmail
+              ? `Save your order ID — we sent a confirmation to ${trackEmail}. You can track status anytime at Track Order (no account needed).`
+              : 'A confirmation email has been sent. Use Track Order with your order ID and checkout email.'}
           </p>
 
           <div className="flex flex-col gap-3">
@@ -134,20 +214,27 @@ const PaymentCallback: React.FC = () => {
               </Button>
             )}
 
-            {!invoiceReady && !order?.invoice_url && isSuccess && (
+            {!invoiceReady && !order?.invoice_url && isSuccess && order && (
               <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 Generating invoice...
               </p>
             )}
 
-            <Button
-              onClick={() => navigate(orderId ? `/orders/${orderId}` : '/orders')}
-              className="w-full"
-            >
-              View Order Details
+            <Button onClick={goToOrderDetails} className="w-full">
+              {user ? 'View Order Details' : 'Track Order Status'}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
+
+            {!user && orderId && (
+              <Button
+                variant="outline"
+                onClick={() => navigate(trackOrderPath(orderId, trackEmail))}
+                className="w-full"
+              >
+                Track order later
+              </Button>
+            )}
 
             <Button
               variant="ghost"

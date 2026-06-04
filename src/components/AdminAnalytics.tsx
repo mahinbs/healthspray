@@ -508,8 +508,8 @@ const AdminAnalytics = () => {
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 text-center">
             {[
-              { label: "Products", value: stats.total },
-              { label: "Active SKUs", value: stats.active },
+              { label: "Total products", value: stats.total },
+              { label: "Active products", value: stats.active },
               { label: "Paid", value: stats.paid },
               { label: "Processing", value: stats.processing },
               { label: "Shipped", value: stats.shipped },

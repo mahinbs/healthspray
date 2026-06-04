@@ -145,6 +145,13 @@ const Footer = () => {
               <h4 className="text-lg font-semibold text-white">Support</h4>
               <div className="space-y-3">
                 <Link
+                  to="/track-order"
+                  className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
+                >
+                  Track Order
+                  <ArrowRight className="h-4 w-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </Link>
+                <Link
                   to="/contact"
                   className="flex items-center text-slate-300 hover:text-white transition-all duration-300 hover:translate-x-2 group"
                 >

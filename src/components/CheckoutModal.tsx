@@ -94,11 +94,25 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
         },
       });
 
-      if (error) throw new Error(error.message || 'Failed to initiate payment');
-      if (!data?.success || !data?.paymentUrl) throw new Error('Invalid payment response');
+      if (error) {
+        const ctx = (error as { context?: Response })?.context;
+        let serverMsg = error.message;
+        if (ctx) {
+          try {
+            const parsed = await ctx.json();
+            if (parsed?.error) serverMsg = parsed.error;
+          } catch {
+            /* use default message */
+          }
+        }
+        throw new Error(serverMsg || 'Failed to initiate payment');
+      }
+      if (data?.error) throw new Error(data.error);
+      if (!data?.success || !data?.paymentUrl) throw new Error(data.error || 'Invalid payment response');
 
-      // Store orderId so PaymentCallback can use it if needed
+      // Store order details for payment return page (guest tracking)
       sessionStorage.setItem('pending_order_id', data.orderId);
+      sessionStorage.setItem('pending_order_email', address.email.trim());
 
       toast.success('Redirecting to payment gateway...');
 
