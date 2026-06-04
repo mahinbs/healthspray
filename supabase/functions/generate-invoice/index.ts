@@ -209,58 +209,114 @@ async function buildInvoicePDF(order: Record<string, unknown>, invoiceNumber: st
     page.drawRectangle({ x: tableLeft, y: rowY, width: tableWidth, height: 0.5, color: GRAY_200 });
   }
 
-  // ─── Totals Section ──────────────────────────────────────────────────────────
-  const totalsStartY = rowY - 16;
-  const totalsX = colX.price - 10;
-  const totalsValX = colX.total;
-  let ty = totalsStartY;
-
-  const drawTotalRow = (label: string, value: string, bold = false, color = NEAR_BLACK, bgColor?: typeof BRAND_ORANGE) => {
-    if (bgColor) {
-      page.drawRectangle({ x: totalsX - 8, y: ty - 5, width: W - totalsX + 8 - 36, height: 20, color: bgColor });
-    }
-    page.drawText(label, { x: totalsX, y: ty, font: bold ? fontBold : fontReg, size: 9.5, color: bold ? color : GRAY_600 });
-    page.drawText(value, { x: totalsValX + 2, y: ty, font: bold ? fontBold : fontReg, size: 9.5, color });
-    ty -= 20;
-  };
-
+  // ─── Totals Section (right-aligned box, no label/value overlap) ─────────────
   const b = parseOrderBreakdown(order);
   const productsPaise = Math.round(b.productsSubtotalRupees * 100);
   const discountPaise = Math.round(b.discountRupees * 100);
   const shippingPaise = Math.round(b.shippingRupees * 100);
   const merchantPaise = order.amount as number;
 
-  drawTotalRow("Products Subtotal", formatRupees(productsPaise));
+  const totalsBoxLeft = 300;
+  const totalsBoxRight = W - 36;
+  const totalsRowH = 18;
+  let ty = rowY - 24;
+
+  page.drawRectangle({ x: tableLeft, y: ty + 10, width: tableWidth, height: 0.5, color: GRAY_200 });
+
+  const fitLabel = (text: string, maxWidth: number, font = fontReg, size = 9) => {
+    let s = text;
+    while (s.length > 3 && font.widthOfTextAtSize(s, size) > maxWidth) {
+      s = s.slice(0, -1);
+    }
+    if (s !== text && s.length > 0) s = s.trimEnd() + "…";
+    return s;
+  };
+
+  const drawTotalRow = (
+    label: string,
+    value: string,
+    opts?: { valueColor?: typeof NEAR_BLACK; labelColor?: typeof GRAY_600; size?: number }
+  ) => {
+    const size = opts?.size ?? 9;
+    const valueFont = fontBold;
+    const valueWidth = valueFont.widthOfTextAtSize(value, size);
+    const valueX = totalsBoxRight - valueWidth;
+    const labelMaxW = valueX - totalsBoxLeft - 14;
+    const labelText = fitLabel(label, labelMaxW, fontReg, size);
+    page.drawText(labelText, {
+      x: totalsBoxLeft,
+      y: ty,
+      font: fontReg,
+      size,
+      color: opts?.labelColor ?? GRAY_600,
+    });
+    page.drawText(value, {
+      x: valueX,
+      y: ty,
+      font: valueFont,
+      size,
+      color: opts?.valueColor ?? NEAR_BLACK,
+    });
+    ty -= totalsRowH;
+  };
+
+  drawTotalRow("Products subtotal", formatRupees(productsPaise));
   if (discountPaise > 0) {
-    drawTotalRow(`Discount (${order.coupon_code ?? ""})`, `- ${formatRupees(discountPaise)}`, false, GREEN);
+    const discLabel = order.coupon_code
+      ? `Discount (${String(order.coupon_code).slice(0, 12)})`
+      : "Discount";
+    drawTotalRow(discLabel, `- ${formatRupees(discountPaise)}`, {
+      valueColor: GREEN,
+      labelColor: GREEN,
+    });
   }
   drawTotalRow(
     "Delivery",
     shippingPaise === 0 ? "FREE" : formatRupees(shippingPaise),
-    false,
-    shippingPaise === 0 ? GREEN : NEAR_BLACK
+    { valueColor: shippingPaise === 0 ? GREEN : NEAR_BLACK }
   );
-  drawTotalRow("Order Total (Merchant)", formatRupees(merchantPaise));
+  drawTotalRow("Order total", formatRupees(merchantPaise));
   if (b.serviceChargeRupees > 0) {
     drawTotalRow(
-      `Payment Gateway Fee (${b.paymentModeLabel})`,
+      `Gateway fee (${b.paymentModeLabel})`,
       `Rs. ${b.serviceChargeRupees.toFixed(2)}`,
-      false,
-      GRAY_600
+      { labelColor: GRAY_600 }
     );
   }
 
-  ty -= 4;
-  page.drawRectangle({ x: totalsX - 8, y: ty - 8, width: W - totalsX + 8 - 36, height: 26, color: BRAND_ORANGE });
-  page.drawText(b.serviceChargeRupees > 0 ? "TOTAL PAID BY CUSTOMER" : "GRAND TOTAL", {
-    x: totalsX, y: ty, font: fontBold, size: 10, color: WHITE,
+  ty -= 6;
+  const grandBarH = 28;
+  const grandLabel = b.serviceChargeRupees > 0 ? "TOTAL PAID" : "GRAND TOTAL";
+  const grandValue = `Rs. ${b.customerPaidRupees.toFixed(2)}`;
+  const grandValueW = fontBold.widthOfTextAtSize(grandValue, 11);
+  const grandTextY = ty - 6;
+
+  page.drawRectangle({
+    x: totalsBoxLeft - 10,
+    y: grandTextY - 4,
+    width: totalsBoxRight - totalsBoxLeft + 20,
+    height: grandBarH,
+    color: BRAND_ORANGE,
   });
-  page.drawText(`Rs. ${b.customerPaidRupees.toFixed(2)}`, {
-    x: totalsValX - 10, y: ty, font: fontBold, size: 12, color: WHITE,
+  page.drawText(grandLabel, {
+    x: totalsBoxLeft,
+    y: grandTextY + 2,
+    font: fontBold,
+    size: 10,
+    color: WHITE,
+  });
+  page.drawText(grandValue, {
+    x: totalsBoxRight - grandValueW,
+    y: grandTextY + 1,
+    font: fontBold,
+    size: 11,
+    color: WHITE,
   });
 
+  ty = grandTextY - grandBarH - 12;
+
   // ─── Notes Box ───────────────────────────────────────────────────────────────
-  const notesY = ty - 40;
+  const notesY = ty - 28;
   page.drawRectangle({ x: 36, y: notesY - 40, width: 240, height: 56, color: LIGHT_ORANGE, borderRadius: 4 });
   page.drawText("NOTES", { x: 48, y: notesY + 2, font: fontBold, size: 8, color: BRAND_ORANGE });
   page.drawText("• Thank you for shopping with Physiq!", { x: 48, y: notesY - 12, font: fontReg, size: 8.5, color: GRAY_600 });
