@@ -1,4 +1,4 @@
-project_id = "gielqkfnsypadbplaaci"
+project_id = "pwlonviycrvejqbhlyaj"
 
 [functions.setup-admin]
 verify_jwt = false
@@ -10,4 +10,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.update-product-images]
+verify_jwt = false
+
+[functions.icici-payment-callback]
+verify_jwt = false
+
+[functions.generate-invoice]
+verify_jwt = false
+
+[functions.send-order-notification]
 verify_jwt = false

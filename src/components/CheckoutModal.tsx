@@ -8,8 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import type { Database } from '@/integrations/supabase/types';
-import { PopupGuide } from './PopupGuide';
+import { CreditCard, Shield, Loader2 } from 'lucide-react';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -26,17 +25,11 @@ interface DeliveryAddress {
   pincode: string;
 }
 
-// Windowed Payment Implementation
-export const CheckoutModal: React.FC<CheckoutModalProps> = ({
-  isOpen,
-  onClose,
-  onSuccess,
-}) => {
-  const { state: { items, total, couponApplied, finalTotal }, clearCart } = useCart();
+export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
+  const { state: { items, total, couponApplied, finalTotal } } = useCart();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [showPopupGuide, setShowPopupGuide] = useState(false);
-  
+
   const idempotencyKeyRef = useRef(
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
@@ -56,45 +49,29 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setAddress(prev => ({ ...prev, [field]: value }));
   };
 
-  // Load available coupons
-  const validateForm = () => {
-    if (!address.fullName.trim()) {
-      toast.error('Please enter your full name');
-      return false;
-    }
-    if (!address.phone || address.phone.length !== 10) {
-      toast.error('Please enter a valid 10-digit phone number');
-      return false;
-    }
-    if (!address.address.trim()) {
-      toast.error('Please enter your address');
-      return false;
-    }
-    if (!address.city.trim()) {
-      toast.error('Please enter your city');
-      return false;
-    }
-    if (!address.state.trim()) {
-      toast.error('Please enter your state');
-      return false;
-    }
-    if (!address.pincode || address.pincode.length !== 6) {
-      toast.error('Please enter a valid 6-digit pincode');
-      return false;
-    }
+  const validateForm = (): boolean => {
+    if (!address.fullName.trim()) { toast.error('Please enter your full name'); return false; }
+    if (!address.phone || address.phone.length !== 10) { toast.error('Please enter a valid 10-digit phone number'); return false; }
+    if (!address.address.trim()) { toast.error('Please enter your address'); return false; }
+    if (!address.city.trim()) { toast.error('Please enter your city'); return false; }
+    if (!address.state.trim()) { toast.error('Please enter your state'); return false; }
+    if (!address.pincode || address.pincode.length !== 6) { toast.error('Please enter a valid 6-digit pincode'); return false; }
     return true;
   };
 
-  // Create order using Edge Function
-  const createOrder = async (finalAmount: number) => {
+  const handlePayment = async () => {
+    if (!user) { toast.error('Please login to place an order'); return; }
+    if (!validateForm()) return;
+
+    setLoading(true);
+
     try {
-      const { data, error } = await supabase.functions.invoke('create-order', {
+      const { data, error } = await supabase.functions.invoke('icici-initiate-payment', {
         body: {
-          amount: finalAmount,
-          items: items,
+          amount: finalTotal,
+          items,
           deliveryAddress: address,
           idempotency_key: idempotencyKeyRef.current,
-          // pass coupon metadata (if any)
           coupon: couponApplied
             ? {
                 code: couponApplied.code,
@@ -106,395 +83,47 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         },
       });
 
-      if (error) {
-        console.error('Edge function error:', error);
-        throw new Error(error.message || 'Failed to create order');
-      }
+      if (error) throw new Error(error.message || 'Failed to initiate payment');
+      if (!data?.success || !data?.paymentUrl) throw new Error('Invalid payment response');
 
-      return data;
-    } catch (error) {
-      console.error('Error creating order:', error);
-      throw error;
-    }
-  };
+      // Store orderId so PaymentCallback can use it if needed
+      sessionStorage.setItem('pending_order_id', data.orderId);
 
+      toast.success('Redirecting to payment gateway...');
 
-
-  // Create payment page content
-  const createPaymentPageContent = (orderData: any) => {
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment - Painssy</title>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .payment-container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-        }
-        .logo {
-            color: #6366f1;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .amount {
-            font-size: 32px;
-            font-weight: bold;
-            color: #333;
-            margin: 20px 0;
-        }
-        .pay-button {
-            background: #6366f1;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            transition: background 0.2s;
-        }
-        .pay-button:hover {
-            background: #5855eb;
-        }
-        .pay-button:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-        }
-        .loading {
-            display: none;
-            margin-top: 20px;
-        }
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #6366f1;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .order-details {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: left;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-    <div class="payment-container">
-        <div class="logo">💪 Physiq</div>
-        <div class="order-details">
-            <div><strong>Items:</strong> ${items.length} item${items.length > 1 ? 's' : ''}</div>
-            <div><strong>Customer:</strong> ${address.fullName}</div>
-            <div><strong>Phone:</strong> ${address.phone}</div>
-        </div>
-        <div class="amount">₹${(orderData.amount / 100).toFixed(2)}</div>
-        <button id="payButton" class="pay-button" onclick="initiatePayment()">
-            Pay Securely with Razorpay
-        </button>
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Processing payment...</p>
-        </div>
-    </div>
-
-    <script>
-        const orderData = ${JSON.stringify(orderData)};
-        const addressData = ${JSON.stringify(address)};
-        
-        function showLoading() {
-            document.getElementById('payButton').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-        }
-        
-        function hideLoading() {
-            document.getElementById('payButton').style.display = 'block';
-            document.getElementById('loading').style.display = 'none';
-        }
-        
-        function initiatePayment() {
-            showLoading();
-            
-            const options = {
-                key: orderData.keyId,
-                amount: orderData.amount,
-                currency: orderData.currency,
-                order_id: orderData.orderId,
-                name: 'Physiq - Premium Sports Health',
-                description: 'Order for ${items.length} item${items.length > 1 ? 's' : ''}',
-                handler: function(response) {
-                    // Send success message to parent window
-                    if (window.opener) {
-                        window.opener.postMessage({
-                            type: 'PAYMENT_SUCCESS',
-                            data: {
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature,
-                                orderDbId: orderData.orderDbId
-                            }
-                        }, '*');
-                    }
-                    window.close();
-                },
-                prefill: {
-                    name: addressData.fullName,
-                    contact: addressData.phone
-                },
-                theme: {
-                    color: '#6366f1'
-                },
-                modal: {
-                    ondismiss: function() {
-                        // Send cancel message to parent window
-                        if (window.opener) {
-                            window.opener.postMessage({
-                                type: 'PAYMENT_CANCELLED'
-                            }, '*');
-                        }
-                        window.close();
-                    }
-                }
-            };
-            
-            const rzp = new Razorpay(options);
-            rzp.open();
-            hideLoading();
-        }
-        
-        // Auto-start payment when page loads
-        window.onload = function() {
-            setTimeout(initiatePayment, 1000);
-        };
-    </script>
-</body>
-</html>`;
-  };
-
-  // Detect if user is on mobile device
-  const isMobileDevice = () => {
-    return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           (typeof window.orientation !== "undefined") ||
-           (navigator.maxTouchPoints > 0);
-  };
-
-  // Show popup blocker help
-  const showPopupHelp = () => {
-    setShowPopupGuide(true);
-    setLoading(false);
-  };
-
-  const handlePayment = async () => {
-    if (!user) {
-      toast.error('Please login to place an order');
-      return;
-    }
-
-    if (!validateForm()) return;
-
-    setLoading(true);
-
-    try {
-      // Calculate final amount (free shipping for all orders)
-      const finalAmount = finalTotal;
-
-      // Create order via Edge Function
-      const orderData = await createOrder(finalAmount);
-
-      // Check if mobile and warn user
-      if (isMobileDevice()) {
-        toast.info('Opening payment in new window. Please complete payment and return to this page.', 
-          { duration: 5000 });
-      }
-
-      // Create payment window with mobile-friendly dimensions
-      const windowFeatures = isMobileDevice() 
-        ? 'width=400,height=600,scrollbars=yes,resizable=yes'
-        : 'width=500,height=700,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no';
-      
-      const paymentWindow = window.open('', 'razorpay-payment', windowFeatures);
-
-      if (!paymentWindow) {
-        showPopupHelp();
-        setLoading(false);
-        return;
-      }
-
-      // Double-check that window actually opened (some browsers return a window object even when blocked)
-      setTimeout(() => {
-        try {
-          if (paymentWindow.closed || !paymentWindow.location) {
-            showPopupHelp();
-            setLoading(false);
-            return;
-          }
-        } catch (e) {
-          // This is expected for cross-origin windows, so window is likely open
-        }
-      }, 100);
-
-      // Write payment page content to the window
-      paymentWindow.document.write(createPaymentPageContent(orderData));
-      paymentWindow.document.close();
-
-      // Listen for messages from payment window
-      const handleMessage = async (event: MessageEvent) => {
-        // Security: Check origin if needed
-        // if (event.origin !== 'expected-origin') return;
-
-        if (event.data.type === 'PAYMENT_SUCCESS') {
-          const { data: paymentData } = event.data;
-          
-          try {
-            // Verify payment via Edge Function
-            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-payment', {
-              body: {
-                razorpay_order_id: paymentData.razorpay_order_id,
-                razorpay_payment_id: paymentData.razorpay_payment_id,
-                razorpay_signature: paymentData.razorpay_signature,
-              },
-            });
-
-            if (verifyError) {
-              throw new Error('Payment verification failed');
-            }
-
-            // Success
-            clearCart();
-            onSuccess(paymentData.orderDbId);
-            onClose();
-            toast.success('Order placed successfully! Payment completed.');
-            
-            // Regenerate idempotency key
-            idempotencyKeyRef.current =
-              typeof crypto !== 'undefined' && 'randomUUID' in crypto
-                ? crypto.randomUUID()
-                : `idemp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-                
-          } catch (error) {
-            console.error('Payment verification failed:', error);
-            toast.error('Payment processing failed. Please contact support.');
-          }
-        } else if (event.data.type === 'PAYMENT_CANCELLED') {
-          toast.info('Payment was cancelled');
-          // Regenerate idempotency key
-          idempotencyKeyRef.current =
-            typeof crypto !== 'undefined' && 'randomUUID' in crypto
-              ? crypto.randomUUID()
-              : `idemp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-        }
-
-        // Cleanup
-        window.removeEventListener('message', handleMessage);
-        setLoading(false);
-      };
-
-      // Add message listener
-      window.addEventListener('message', handleMessage);
-
-      // Handle window close without payment
-      const checkWindowClosed = setInterval(() => {
-        if (paymentWindow.closed) {
-          clearInterval(checkWindowClosed);
-          window.removeEventListener('message', handleMessage);
-          setLoading(false);
-          
-          // Show retry option
-          toast.error('Payment window was closed. Click "Pay" to try again.', {
-            duration: 6000,
-            action: {
-              label: 'Try Again',
-              onClick: () => handlePayment(),
-            },
-          });
-          
-          // Regenerate idempotency key
-          idempotencyKeyRef.current =
-            typeof crypto !== 'undefined' && 'randomUUID' in crypto
-              ? crypto.randomUUID()
-              : `idemp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-        }
-      }, 1000);
-
-      // Timeout handler - close window after 10 minutes
-      const timeoutHandler = setTimeout(() => {
-        if (!paymentWindow.closed) {
-          paymentWindow.close();
-          clearInterval(checkWindowClosed);
-          window.removeEventListener('message', handleMessage);
-          setLoading(false);
-          toast.error('Payment session expired. Please try again.');
-          
-          // Regenerate idempotency key
-          idempotencyKeyRef.current =
-            typeof crypto !== 'undefined' && 'randomUUID' in crypto
-              ? crypto.randomUUID()
-              : `idemp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-        }
-      }, 600000); // 10 minutes
-
-      // Cleanup timeout when payment completes
-      const originalHandleMessage = handleMessage;
-      const enhancedHandleMessage = async (event: MessageEvent) => {
-        clearTimeout(timeoutHandler);
-        return originalHandleMessage(event);
-      };
-
-      // Replace the message handler
-      window.removeEventListener('message', handleMessage);
-      window.addEventListener('message', enhancedHandleMessage);
+      // Full-page redirect to ICICI payment page
+      window.location.href = data.paymentUrl;
 
     } catch (error) {
-      console.error('Payment failed:', error);
+      console.error('Payment initiation failed:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to initiate payment. Please try again.');
       setLoading(false);
+
+      // Regenerate idempotency key on failure
+      idempotencyKeyRef.current =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `idemp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     }
   };
 
   const finalAmount = finalTotal;
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Checkout</DialogTitle>
-          </DialogHeader>
-        
+    <Dialog open={isOpen} onOpenChange={loading ? undefined : onClose}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-primary" />
+            Checkout
+          </DialogTitle>
+        </DialogHeader>
+
         <div className="space-y-4">
           {/* Delivery Address Form */}
           <div className="space-y-3">
-            <h3 className="font-semibold">Delivery Address</h3>
-            
+            <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Delivery Address</h3>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="fullName">Full Name</Label>
@@ -503,16 +132,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   value={address.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
                   placeholder="Enter full name"
+                  disabled={loading}
                 />
               </div>
               <div>
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
+                  type="tel"
                   value={address.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="10-digit phone number"
+                  onChange={(e) => handleInputChange('phone', e.target.value.replace(/\D/g, ''))}
+                  placeholder="10-digit number"
                   maxLength={10}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -523,8 +155,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 id="address"
                 value={address.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
-                placeholder="Enter complete address"
-                className="min-h-[80px]"
+                placeholder="House/Flat no., Street, Locality"
+                className="min-h-[72px]"
+                disabled={loading}
               />
             </div>
 
@@ -536,6 +169,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   value={address.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   placeholder="City"
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -545,6 +179,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   value={address.state}
                   onChange={(e) => handleInputChange('state', e.target.value)}
                   placeholder="State"
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -552,9 +187,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <Input
                   id="pincode"
                   value={address.pincode}
-                  onChange={(e) => handleInputChange('pincode', e.target.value)}
-                  placeholder="Pincode"
+                  onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, ''))}
+                  placeholder="6 digits"
                   maxLength={6}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -562,50 +198,56 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
           {/* Order Summary */}
           <div className="border-t pt-4">
-            <h3 className="font-semibold mb-3">Order Summary</h3>
+            <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3">Order Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span>Subtotal ({items.length} items)</span>
+                <span className="text-muted-foreground">Subtotal ({items.length} item{items.length !== 1 ? 's' : ''})</span>
                 <span>₹{total.toFixed(2)}</span>
               </div>
+              {couponApplied && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount ({couponApplied.code})</span>
+                  <span>- ₹{couponApplied.discountAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>FREE</span>
+                <span className="text-muted-foreground">Shipping</span>
+                <span className="text-green-600 font-medium">FREE</span>
               </div>
-              <div className="flex justify-between font-semibold text-base border-t pt-2">
+              <div className="flex justify-between font-bold text-base border-t pt-2 mt-2">
                 <span>Total</span>
                 <span>₹{finalAmount.toFixed(2)}</span>
               </div>
-              <p className="text-gray-500">*Inclusive of all taxes</p>
+              <p className="text-xs text-muted-foreground">*Inclusive of all taxes</p>
             </div>
           </div>
 
+          {/* Payment notice */}
+          <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg text-xs text-blue-700 dark:text-blue-300">
+            <Shield className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>You will be redirected to ICICI Bank's secure payment gateway to complete your payment.</span>
+          </div>
+
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={onClose} className="flex-1">
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" onClick={onClose} className="flex-1" disabled={loading}>
               Cancel
             </Button>
-            <Button 
-              onClick={handlePayment} 
+            <Button
+              onClick={handlePayment}
               disabled={loading || items.length === 0}
               className="flex-1"
             >
-              {loading ? 'Opening Payment Window...' : `Pay ₹${finalAmount.toFixed(2)}`}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing...
+                </span>
+              ) : `Pay ₹${finalAmount.toFixed(2)}`}
             </Button>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-
-    <PopupGuide
-      isOpen={showPopupGuide}
-      onClose={() => setShowPopupGuide(false)}
-      onRetry={() => {
-        setShowPopupGuide(false);
-        handlePayment();
-      }}
-    />
-
-  </>
-);
+  );
 };

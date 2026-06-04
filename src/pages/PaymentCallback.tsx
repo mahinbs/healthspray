@@ -1,96 +1,213 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { CheckCircle, XCircle, Loader2, Download, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useCart } from '@/contexts/CartContext';
+import { supabase } from '@/integrations/supabase/client';
 
-const PaymentPage: React.FC = () => {
+interface OrderInfo {
+  id: string;
+  invoice_number?: string;
+  invoice_url?: string;
+  amount: number;
+  status: string;
+  delivery_address: Record<string, string>;
+}
+
+const PaymentCallback: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { clearCart } = useCart();
+  const [order, setOrder] = useState<OrderInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [invoiceReady, setInvoiceReady] = useState(false);
+
+  const status = searchParams.get('status');
+  const orderId = searchParams.get('orderId');
+  const reason = searchParams.get('reason');
+  const isSuccess = status === 'success';
+
   useEffect(() => {
-    const loadRazorpayAndPay = async () => {
-      try {
-        // Get payment data from URL params
-        const urlParams = new URLSearchParams(window.location.search);
-        const paymentDataStr = urlParams.get('data');
-        
-        if (!paymentDataStr) {
-          console.error('No payment data found');
-          window.close();
-          return;
-        }
+    if (isSuccess) {
+      clearCart();
+      sessionStorage.removeItem('pending_order_id');
+    }
 
-        const paymentData = JSON.parse(decodeURIComponent(paymentDataStr));
+    if (orderId) {
+      fetchOrderWithPolling(orderId);
+    } else {
+      setLoading(false);
+    }
+  }, [orderId, isSuccess]);
 
-        // Load Razorpay script
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        
-        script.onload = () => {
-          // Initialize Razorpay payment
-          const rzp = new window.Razorpay({
-            ...paymentData,
-            handler: async (response: any) => {
-              try {
-                console.log('Payment successful:', response);
-                
-                // Use localStorage for cross-tab communication
-                localStorage.setItem('paymentSuccess', 'true');
-                localStorage.setItem('paymentOrderId', paymentData.orderDbId);
-                localStorage.setItem('razorpayPaymentId', response.razorpay_payment_id);
-                localStorage.setItem('razorpayOrderId', response.razorpay_order_id);
-                localStorage.setItem('paymentTimestamp', Date.now().toString());
-                
-                // Small delay to ensure localStorage is set
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                console.log('Payment data saved to localStorage, closing window');
-                // Close this payment window
-                window.close();
-              } catch (error) {
-                console.error('Payment success handling failed:', error);
-                localStorage.setItem('paymentSuccess', 'false');
-                localStorage.setItem('paymentTimestamp', Date.now().toString());
-                window.close();
-              }
-            },
-            modal: {
-              ondismiss: () => {
-                console.log('Payment dismissed by user');
-                localStorage.setItem('paymentSuccess', 'false');
-                localStorage.setItem('paymentTimestamp', Date.now().toString());
-                setTimeout(() => window.close(), 100);
-              }
-            }
-          });
-          
-          // Open payment modal
-          rzp.open();
-        };
+  const fetchOrderWithPolling = async (id: string, attempts = 0) => {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, amount, status, delivery_address, invoice_number, invoice_url')
+        .eq('id', id)
+        .single();
 
-        script.onerror = () => {
-          console.error('Failed to load Razorpay script');
-          localStorage.setItem('paymentSuccess', 'false');
-          localStorage.setItem('paymentTimestamp', Date.now().toString());
-          window.close();
-        };
+      if (error) throw error;
 
-        document.body.appendChild(script);
-      } catch (error) {
-        console.error('Payment initialization failed:', error);
-        localStorage.setItem('paymentSuccess', 'false');
-        localStorage.setItem('paymentTimestamp', Date.now().toString());
-        window.close();
+      setOrder(data as OrderInfo);
+
+      // Poll for invoice generation (up to 10 attempts, 2s apart)
+      if (isSuccess && !data.invoice_url && attempts < 10) {
+        setTimeout(() => fetchOrderWithPolling(id, attempts + 1), 2000);
+      } else {
+        if (data.invoice_url) setInvoiceReady(true);
+        setLoading(false);
       }
-    };
+    } catch {
+      setLoading(false);
+    }
+  };
 
-    loadRazorpayAndPay();
-  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+          <p className="text-lg font-medium">Processing your payment...</p>
+          <p className="text-sm text-muted-foreground">Please wait, this may take a moment.</p>
+        </div>
+      </div>
+    );
+  }
 
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="max-w-md w-full text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="rounded-full bg-green-100 dark:bg-green-900/30 p-6">
+              <CheckCircle className="h-16 w-16 text-green-600" />
+            </div>
+          </div>
+
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Payment Successful!</h1>
+            <p className="text-muted-foreground mt-2">
+              Your order has been placed and is being processed.
+            </p>
+          </div>
+
+          {order && (
+            <div className="bg-muted/50 rounded-xl p-4 text-left space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Order ID</span>
+                <span className="font-mono font-medium">#{order.id.substring(0, 8).toUpperCase()}</span>
+              </div>
+              {order.invoice_number && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Invoice No</span>
+                  <span className="font-medium">{order.invoice_number}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Amount Paid</span>
+                <span className="font-semibold text-green-600">₹{(order.amount / 100).toFixed(2)}</span>
+              </div>
+              {(order.delivery_address as Record<string, string>)?.fullName && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Delivering to</span>
+                  <span className="font-medium">{(order.delivery_address as Record<string, string>).fullName}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            A confirmation email with your invoice has been sent to your registered email address.
+          </p>
+
+          <div className="flex flex-col gap-3">
+            {(invoiceReady || order?.invoice_url) && (
+              <Button
+                variant="outline"
+                onClick={() => window.open(order!.invoice_url!, '_blank')}
+                className="w-full"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Invoice
+              </Button>
+            )}
+
+            {!invoiceReady && !order?.invoice_url && isSuccess && (
+              <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Generating invoice...
+              </p>
+            )}
+
+            <Button
+              onClick={() => navigate(orderId ? `/orders/${orderId}` : '/orders')}
+              className="w-full"
+            >
+              View Order Details
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/shop')}
+              className="w-full"
+            >
+              Continue Shopping
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Failure state
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-        <p className="text-muted-foreground">Loading payment gateway...</p>
-        <p className="text-sm text-muted-foreground">Please wait while we initialize your payment.</p>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="max-w-md w-full text-center space-y-6">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-6">
+            <XCircle className="h-16 w-16 text-red-600" />
+          </div>
+        </div>
+
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Payment Failed</h1>
+          <p className="text-muted-foreground mt-2">
+            {reason === 'hash_mismatch'
+              ? 'Payment verification failed. Please contact support if amount was deducted.'
+              : reason === 'order_not_found'
+              ? 'We could not locate your order. Please contact support.'
+              : 'Your payment could not be processed. No amount has been charged.'}
+          </p>
+        </div>
+
+        {orderId && (
+          <div className="bg-muted/50 rounded-xl p-4 text-sm">
+            <span className="text-muted-foreground">Reference: </span>
+            <span className="font-mono">#{orderId.substring(0, 8).toUpperCase()}</span>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3">
+          <Button onClick={() => navigate('/cart')} className="w-full">
+            Return to Cart & Retry
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/')} className="w-full">
+            Go to Home
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          If you were charged and the order failed, please email us at{' '}
+          <a href="mailto:support@healthspray.in" className="underline text-primary">
+            support@healthspray.in
+          </a>
+        </p>
       </div>
     </div>
   );
 };
 
-export default PaymentPage;
+export default PaymentCallback;

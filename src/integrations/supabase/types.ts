@@ -142,6 +142,13 @@ export type Database = {
           items: Json
           razorpay_order_id: string | null
           razorpay_payment_id: string | null
+          icici_txn_no: string | null
+          icici_txn_id: string | null
+          icici_payment_id: string | null
+          payment_mode: string | null
+          invoice_number: string | null
+          invoice_url: string | null
+          invoice_generated_at: string | null
           status: string | null
           updated_at: string
           user_id: string | null
@@ -160,6 +167,13 @@ export type Database = {
           items: Json
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
+          icici_txn_no?: string | null
+          icici_txn_id?: string | null
+          icici_payment_id?: string | null
+          payment_mode?: string | null
+          invoice_number?: string | null
+          invoice_url?: string | null
+          invoice_generated_at?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -178,6 +192,13 @@ export type Database = {
           items?: Json
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
+          icici_txn_no?: string | null
+          icici_txn_id?: string | null
+          icici_payment_id?: string | null
+          payment_mode?: string | null
+          invoice_number?: string | null
+          invoice_url?: string | null
+          invoice_generated_at?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string | null

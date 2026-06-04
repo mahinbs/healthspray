@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +74,97 @@ import { useAdmin } from "@/contexts/AdminContext";
 import { toast } from "sonner";
 import { categoriesService, type AdminCategory } from "@/services/categories";
 import { blogService, type AdminBlogPost, type BlogContentBlock } from "@/services/blog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+// ─── Notification Logs Component (admin only) ─────────────────────────────────
+const NotificationLogs = () => {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLogs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data, error } = await supabase
+        .from("notification_logs" as any)
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      setLogs(data || []);
+    } catch {
+      toast.error("Failed to load notification logs");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchLogs(); }, [fetchLogs]);
+
+  const typeColor: Record<string, string> = {
+    email: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+    sms: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+    whatsapp: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300",
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Notification Logs</h2>
+        <Button variant="outline" size="sm" onClick={fetchLogs}>Refresh</Button>
+      </div>
+      <Card>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="text-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" /></div>
+          ) : logs.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No notifications sent yet.</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Event</TableHead>
+                  <TableHead>Recipient</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {logs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {new Date(log.created_at).toLocaleString("en-IN")}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      #{(log.order_id ?? "").slice(-8)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={typeColor[log.notification_type] ?? ""}>
+                        {log.notification_type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs">{log.event_type}</TableCell>
+                    <TableCell className="text-xs max-w-32 truncate">{log.recipient}</TableCell>
+                    <TableCell>
+                      <Badge className={log.status === "sent"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"}>
+                        {log.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+// ─────────────────────────────────────────────────────────────────────────────
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -1181,6 +1272,7 @@ const Admin = () => {
             <TabsTrigger value="videos">Videos</TabsTrigger>
             <TabsTrigger value="coupons">Coupons</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -3109,6 +3201,10 @@ const Admin = () => {
 
           <TabsContent value="orders" className="space-y-6">
             <OrderManagement />
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-6">
+            <NotificationLogs />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">

@@ -6,15 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye, Package, Truck, CheckCircle, Clock, XCircle, Calendar, MapPin, Phone, User, RefreshCw } from 'lucide-react';
+import {
+  Eye, Package, Truck, CheckCircle, Clock, XCircle, Calendar,
+  MapPin, Phone, User, RefreshCw, Download, Bell, FileText, CreditCard
+} from 'lucide-react';
 import { formatPrice } from '@/services/api';
 import { toast } from 'sonner';
 
 interface AdminOrder {
   id: string;
   user_id: string;
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
   amount: number;
   currency: string;
   status: string;
@@ -22,18 +23,33 @@ interface AdminOrder {
   delivery_address: any;
   created_at: string;
   updated_at: string;
+  payment_mode?: string;
+  icici_txn_id?: string;
+  icici_txn_no?: string;
+  icici_payment_id?: string;
+  invoice_number?: string;
+  invoice_url?: string;
+  invoice_generated_at?: string;
+  coupon_code?: string;
+  coupon_discount?: number;
 }
+
+const STATUS_TO_EVENT: Record<string, string> = {
+  shipped: 'order_shipped',
+  delivered: 'order_delivered',
+  cancelled: 'order_cancelled',
+};
 
 const OrderManagement: React.FC = () => {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [notifying, setNotifying] = useState<string | null>(null);
+  const [generatingInvoice, setGeneratingInvoice] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useEffect(() => { fetchOrders(); }, []);
 
   const fetchOrders = async () => {
     try {
@@ -42,11 +58,9 @@ const OrderManagement: React.FC = () => {
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       setOrders(data as AdminOrder[] || []);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
+    } catch {
       toast.error('Failed to load orders');
     } finally {
       setLoading(false);
@@ -58,170 +72,137 @@ const OrderManagement: React.FC = () => {
       setUpdating(orderId);
       const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus })
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', orderId);
-
       if (error) throw error;
 
-      setOrders(prev => 
-        prev.map(order => 
-          order.id === orderId 
-            ? { ...order, status: newStatus }
-            : order
-        )
-      );
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      if (selectedOrder?.id === orderId) setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : prev);
+      toast.success('Order status updated');
 
-      toast.success('Order status updated successfully');
-    } catch (error) {
-      console.error('Error updating order status:', error);
+      // Auto-send notification for key status changes
+      const eventType = STATUS_TO_EVENT[newStatus];
+      if (eventType) {
+        await sendNotification(orderId, eventType, true);
+      }
+    } catch {
       toast.error('Failed to update order status');
     } finally {
       setUpdating(null);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-          <CheckCircle className="h-3 w-3 mr-1" />
-          Paid
-        </Badge>;
-      case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-          <Clock className="h-3 w-3 mr-1" />
-          Pending
-        </Badge>;
-      case 'processing':
-        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-          <Package className="h-3 w-3 mr-1" />
-          Processing
-        </Badge>;
-      case 'shipped':
-        return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
-          <Truck className="h-3 w-3 mr-1" />
-          Shipped
-        </Badge>;
-      case 'delivered':
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-          <CheckCircle className="h-3 w-3 mr-1" />
-          Delivered
-        </Badge>;
-      case 'cancelled':
-        return <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-          <XCircle className="h-3 w-3 mr-1" />
-          Cancelled
-        </Badge>;
-      case 'failed':
-        return <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-          <XCircle className="h-3 w-3 mr-1" />
-          Failed
-        </Badge>;
-      default:
-        return <Badge>{status}</Badge>;
+  const sendNotification = async (orderId: string, eventType: string, silent = false) => {
+    if (!silent) setNotifying(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-order-notification', {
+        body: { orderId, eventType },
+      });
+      if (error || !data?.success) throw new Error('Notification failed');
+      if (!silent) toast.success('Notification sent successfully');
+    } catch {
+      if (!silent) toast.error('Failed to send notification');
+    } finally {
+      if (!silent) setNotifying(null);
     }
   };
 
-  const getStatusOptions = (currentStatus: string) => {
-    const allStatuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'failed'];
-    return allStatuses.filter(status => status !== currentStatus);
+  const generateInvoice = async (orderId: string) => {
+    setGeneratingInvoice(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-invoice', {
+        body: { orderId },
+      });
+      if (error || !data?.success) throw new Error('Generation failed');
+      toast.success(`Invoice generated: ${data.invoiceNumber}`);
+      await fetchOrders();
+    } catch {
+      toast.error('Failed to generate invoice');
+    } finally {
+      setGeneratingInvoice(null);
+    }
   };
 
-  const filteredOrders = orders.filter(order => 
-    statusFilter === 'all' || order.status === statusFilter
-  );
-
-  const getOrderStats = () => {
-    const total = orders.length;
-    const paid = orders.filter(o => o.status === 'paid' || o.status === 'processing' || o.status === 'shipped' || o.status === 'delivered').length;
-    const pending = orders.filter(o => o.status === 'pending').length;
-    const delivered = orders.filter(o => o.status === 'delivered').length;
-    
-    return { total, paid, pending, delivered };
+  const getStatusBadge = (status: string) => {
+    const icons: Record<string, React.ReactNode> = {
+      paid: <CheckCircle className="h-3 w-3 mr-1" />,
+      pending: <Clock className="h-3 w-3 mr-1" />,
+      processing: <Package className="h-3 w-3 mr-1" />,
+      shipped: <Truck className="h-3 w-3 mr-1" />,
+      delivered: <CheckCircle className="h-3 w-3 mr-1" />,
+      cancelled: <XCircle className="h-3 w-3 mr-1" />,
+      failed: <XCircle className="h-3 w-3 mr-1" />,
+    };
+    const colors: Record<string, string> = {
+      paid: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+      processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+      shipped: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+      delivered: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+      failed: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+    };
+    return (
+      <Badge className={colors[status] ?? ''}>
+        {icons[status]}
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
   };
 
-  const stats = getOrderStats();
+  const filteredOrders = orders.filter(o => statusFilter === 'all' || o.status === statusFilter);
+
+  const stats = {
+    total: orders.length,
+    paid: orders.filter(o => ['paid', 'processing', 'shipped', 'delivered'].includes(o.status)).length,
+    pending: orders.filter(o => o.status === 'pending').length,
+    delivered: orders.filter(o => o.status === 'delivered').length,
+    revenue: orders
+      .filter(o => ['paid', 'processing', 'shipped', 'delivered'].includes(o.status))
+      .reduce((sum, o) => sum + o.amount, 0),
+  };
 
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Package className="h-6 w-6 text-blue-500" />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {[
+          { label: 'Total Orders', value: stats.total, icon: <Package className="h-5 w-5 text-blue-500" /> },
+          { label: 'Paid Orders', value: stats.paid, icon: <CheckCircle className="h-5 w-5 text-green-500" /> },
+          { label: 'Pending', value: stats.pending, icon: <Clock className="h-5 w-5 text-yellow-500" /> },
+          { label: 'Delivered', value: stats.delivered, icon: <Truck className="h-5 w-5 text-purple-500" /> },
+          { label: 'Revenue', value: formatPrice(stats.revenue / 100), icon: <CreditCard className="h-5 w-5 text-emerald-500" /> },
+        ].map(({ label, value, icon }) => (
+          <Card key={label}>
+            <CardContent className="p-4 flex items-center gap-3">
+              {icon}
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
-                <p className="text-xl font-bold">{stats.total}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="text-lg font-bold">{value}</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-6 w-6 text-green-500" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Paid Orders</p>
-                <p className="text-xl font-bold">{stats.paid}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-6 w-6 text-yellow-500" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Pending Orders</p>
-                <p className="text-xl font-bold">{stats.pending}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Truck className="h-6 w-6 text-purple-500" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Delivered</p>
-                <p className="text-xl font-bold">{stats.delivered}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Controls */}
       <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Orders</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            {['all', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'failed'].map(s => (
+              <SelectItem key={s} value={s}>{s === 'all' ? 'All Orders' : s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button onClick={fetchOrders} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
+          <RefreshCw className="h-4 w-4 mr-2" />Refresh
         </Button>
       </div>
 
-      {/* Orders Table */}
+      {/* Table */}
       <Card>
         <CardHeader>
           <CardTitle>Orders ({filteredOrders.length})</CardTitle>
@@ -229,175 +210,228 @@ const OrderManagement: React.FC = () => {
         <CardContent>
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
               <p className="mt-2 text-sm text-muted-foreground">Loading orders...</p>
             </div>
           ) : filteredOrders.length === 0 ? (
             <div className="text-center py-8">
               <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg font-medium">No orders found</p>
-              <p className="text-sm text-muted-foreground">
-                {statusFilter === 'all' ? 'No orders have been placed yet.' : `No ${statusFilter} orders found.`}
-              </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order ID</TableHead>
+                  <TableHead>Order</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Amount</TableHead>
+                  <TableHead>Payment</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Items</TableHead>
+                  <TableHead>Invoice</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredOrders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-mono text-sm">
-                      #{order.id.slice(-8)}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(order.created_at).toLocaleDateString()}
+                    <TableCell className="font-mono text-xs">#{order.id.slice(-8)}</TableCell>
+                    <TableCell className="text-sm">
+                      {new Date(order.created_at).toLocaleDateString('en-IN')}
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{order.delivery_address?.fullName || 'N/A'}</p>
-                        <p className="text-sm text-muted-foreground">{order.delivery_address?.phone || 'N/A'}</p>
+                        <p className="font-medium text-sm">{order.delivery_address?.fullName || 'N/A'}</p>
+                        <p className="text-xs text-muted-foreground">{order.delivery_address?.phone || ''}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="font-semibold">
+                    <TableCell className="font-semibold text-sm">
                       {formatPrice(order.amount / 100)}
                     </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {order.payment_mode || '—'}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell>
-                      {getStatusBadge(order.status)}
+                      {order.invoice_url ? (
+                        <Button size="sm" variant="ghost" onClick={() => window.open(order.invoice_url!, '_blank')}>
+                          <Download className="h-3 w-3 mr-1" />
+                          {order.invoice_number || 'PDF'}
+                        </Button>
+                      ) : order.status === 'paid' ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={generatingInvoice === order.id}
+                          onClick={() => generateInvoice(order.id)}
+                        >
+                          <FileText className="h-3 w-3 mr-1" />
+                          {generatingInvoice === order.id ? 'Generating...' : 'Generate'}
+                        </Button>
+                      ) : <span className="text-xs text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell>
-                      {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-1">
+                        {/* View Details Dialog */}
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => setSelectedOrder(order)}
-                            >
+                            <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}>
                               <Eye className="h-4 w-4" />
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
-                              <DialogTitle>Order Details - #{order.id.slice(-8)}</DialogTitle>
+                              <DialogTitle>Order #{order.id.slice(-8).toUpperCase()}</DialogTitle>
                             </DialogHeader>
-                            
+
                             {selectedOrder && (
                               <div className="space-y-6">
-                                {/* Order Info */}
-                                <div className="grid grid-cols-2 gap-4">
+                                {/* Two-column info */}
+                                <div className="grid grid-cols-2 gap-6">
                                   <div>
-                                    <h4 className="font-semibold mb-2">Order Information</h4>
+                                    <h4 className="font-semibold mb-2 text-sm uppercase text-muted-foreground">Order Info</h4>
                                     <div className="space-y-1 text-sm">
-                                      <p><span className="font-medium">Order ID:</span> #{selectedOrder.id.slice(-8)}</p>
                                       <p><span className="font-medium">Date:</span> {new Date(selectedOrder.created_at).toLocaleString()}</p>
-                                      <p><span className="font-medium">Payment ID:</span> {selectedOrder.razorpay_payment_id || 'N/A'}</p>
+                                      <p><span className="font-medium">Amount:</span> {formatPrice(selectedOrder.amount / 100)}</p>
                                       <p><span className="font-medium">Status:</span> {getStatusBadge(selectedOrder.status)}</p>
+                                      {selectedOrder.payment_mode && <p><span className="font-medium">Payment Mode:</span> {selectedOrder.payment_mode}</p>}
+                                      {selectedOrder.icici_txn_id && <p className="font-mono text-xs"><span className="font-semibold not-italic">Txn ID:</span> {selectedOrder.icici_txn_id}</p>}
+                                      {selectedOrder.icici_payment_id && <p className="font-mono text-xs"><span className="font-semibold not-italic">Payment ID:</span> {selectedOrder.icici_payment_id}</p>}
+                                      {selectedOrder.invoice_number && <p><span className="font-medium">Invoice:</span> {selectedOrder.invoice_number}</p>}
                                     </div>
                                   </div>
-                                  
+
                                   <div>
-                                    <h4 className="font-semibold mb-2">Delivery Address</h4>
+                                    <h4 className="font-semibold mb-2 text-sm uppercase text-muted-foreground">Delivery</h4>
                                     <div className="space-y-1 text-sm">
-                                      <p className="flex items-center">
-                                        <User className="h-3 w-3 mr-1" />
-                                        {selectedOrder.delivery_address?.fullName}
-                                      </p>
-                                      <p className="flex items-center">
-                                        <Phone className="h-3 w-3 mr-1" />
-                                        {selectedOrder.delivery_address?.phone}
-                                      </p>
-                                      <p className="flex items-start">
-                                        <MapPin className="h-3 w-3 mr-1 mt-0.5" />
-                                        <span>
-                                          {selectedOrder.delivery_address?.address}<br />
-                                          {selectedOrder.delivery_address?.city}, {selectedOrder.delivery_address?.state} - {selectedOrder.delivery_address?.pincode}
-                                        </span>
+                                      <p className="flex items-center gap-1"><User className="h-3 w-3" />{selectedOrder.delivery_address?.fullName}</p>
+                                      <p className="flex items-center gap-1"><Phone className="h-3 w-3" />{selectedOrder.delivery_address?.phone}</p>
+                                      <p className="flex items-start gap-1">
+                                        <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
+                                        <span>{selectedOrder.delivery_address?.address}, {selectedOrder.delivery_address?.city}, {selectedOrder.delivery_address?.state} - {selectedOrder.delivery_address?.pincode}</span>
                                       </p>
                                     </div>
                                   </div>
                                 </div>
 
-                                {/* Order Items */}
+                                {/* Items */}
                                 <div>
-                                  <h4 className="font-semibold mb-2">Order Items</h4>
+                                  <h4 className="font-semibold mb-2 text-sm uppercase text-muted-foreground">Items</h4>
                                   <div className="space-y-2">
                                     {selectedOrder.items?.map((item: any, index: number) => (
-                                      <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg">
-                                        <img 
-                                          src={item.product?.image || '/placeholder.svg'} 
+                                      <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                                        <img
+                                          src={item.product?.image || '/placeholder.svg'}
                                           alt={item.product?.name}
                                           className="w-12 h-12 object-cover rounded"
                                         />
                                         <div className="flex-1">
-                                          <p className="font-medium">{item.product?.name}</p>
-                                          <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                          <p className="font-medium text-sm">{item.product?.name}</p>
+                                          <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                                         </div>
-                                        <p className="font-semibold">
-                                          {formatPrice((item.product?.price || 0) * item.quantity)}
-                                        </p>
+                                        <p className="font-semibold text-sm">{formatPrice((item.product?.price || 0) * item.quantity)}</p>
                                       </div>
                                     ))}
                                   </div>
                                 </div>
 
-                                {/* Status Update */}
-                                <div>
-                                  <h4 className="font-semibold mb-2">Update Status</h4>
-                                  <Select 
-                                    value={selectedOrder.status} 
-                                    onValueChange={(newStatus) => updateOrderStatus(selectedOrder.id, newStatus)}
-                                    disabled={updating === selectedOrder.id}
-                                  >
-                                    <SelectTrigger className="w-48">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="pending">Pending</SelectItem>
-                                      <SelectItem value="paid">Paid</SelectItem>
-                                      <SelectItem value="processing">Processing</SelectItem>
-                                      <SelectItem value="shipped">Shipped</SelectItem>
-                                      <SelectItem value="delivered">Delivered</SelectItem>
-                                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                                      <SelectItem value="failed">Failed</SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                                {/* Admin Actions */}
+                                <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                                  {/* Status Update */}
+                                  <div>
+                                    <h4 className="font-semibold mb-2 text-sm">Update Status</h4>
+                                    <Select
+                                      value={selectedOrder.status}
+                                      onValueChange={(v) => updateOrderStatus(selectedOrder.id, v)}
+                                      disabled={updating === selectedOrder.id}
+                                    >
+                                      <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'failed'].map(s => (
+                                          <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  {/* Manual Notifications */}
+                                  <div>
+                                    <h4 className="font-semibold mb-2 text-sm">Send Notification</h4>
+                                    <div className="flex flex-col gap-2">
+                                      {Object.entries({
+                                        payment_confirmed: 'Payment Confirmed',
+                                        order_shipped: 'Shipped',
+                                        order_delivered: 'Delivered',
+                                        order_cancelled: 'Cancelled',
+                                      }).map(([event, label]) => (
+                                        <Button
+                                          key={event}
+                                          size="sm"
+                                          variant="outline"
+                                          disabled={notifying === selectedOrder.id}
+                                          onClick={() => sendNotification(selectedOrder.id, event)}
+                                        >
+                                          <Bell className="h-3 w-3 mr-1" />
+                                          {label}
+                                        </Button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Invoice actions */}
+                                <div className="flex gap-3 pt-2 border-t">
+                                  {selectedOrder.invoice_url ? (
+                                    <Button onClick={() => window.open(selectedOrder.invoice_url!, '_blank')} variant="outline">
+                                      <Download className="h-4 w-4 mr-2" />Download Invoice
+                                    </Button>
+                                  ) : null}
+                                  {selectedOrder.status === 'paid' && (
+                                    <Button
+                                      variant="outline"
+                                      disabled={generatingInvoice === selectedOrder.id}
+                                      onClick={() => generateInvoice(selectedOrder.id)}
+                                    >
+                                      <FileText className="h-4 w-4 mr-2" />
+                                      {selectedOrder.invoice_url ? 'Regenerate Invoice' : 'Generate Invoice'}
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
                             )}
                           </DialogContent>
                         </Dialog>
 
-                        <Select 
-                          value={order.status} 
-                          onValueChange={(newStatus) => updateOrderStatus(order.id, newStatus)}
+                        {/* Quick status update */}
+                        <Select
+                          value={order.status}
+                          onValueChange={(v) => updateOrderStatus(order.id, v)}
                           disabled={updating === order.id}
                         >
-                          <SelectTrigger className="w-32">
+                          <SelectTrigger className="w-28 h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="paid">Paid</SelectItem>
-                            <SelectItem value="processing">Processing</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
-                            <SelectItem value="delivered">Delivered</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                            <SelectItem value="failed">Failed</SelectItem>
+                            {['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'failed'].map(s => (
+                              <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
+
+                        {/* Quick notify button */}
+                        {STATUS_TO_EVENT[order.status] && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            title="Send status notification"
+                            disabled={notifying === order.id}
+                            onClick={() => sendNotification(order.id, STATUS_TO_EVENT[order.status])}
+                          >
+                            <Bell className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
